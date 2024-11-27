@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 992d7a813385f6448a4aa95577145c1b, type: 3}
+  m_Name: Gradeshang
+  m_EditorClassIdentifier: 
+  Gradeproperties:
+  - grade: 0
+    shanghai: 10
+    RankexperienceUP: 100
+    HPUP: 100
+  - grade: 1
+    shanghai: 12
+    RankexperienceUP: 130
+    HPUP: 130
+  - grade: 2
+    shanghai: 14
+    RankexperienceUP: 145
+    HPUP: 145
+  - grade: 3
+    shanghai: 16
+    RankexperienceUP: 165
+    HPUP: 200
+  - grade: 4
+    shanghai: 18
+    RankexperienceUP: 200
+    HPUP: 256
+  - grade: 5
+    shanghai: 20
+    RankexperienceUP: 265
+    HPUP: 300
+  GradeDrone: {fileID: 11400000, guid: fc095ad6d0205114e90d28339425e4bc, type: 2}

@@ -1,0 +1,129 @@
+character_mini_range.png
+size:1552,1552
+filter:Linear,Linear
+pma:true
+1.1/backpack
+bounds:1006,69,98,180
+offsets:1,1,100,182
+rotate:90
+1.1/eye
+bounds:1006,2,152,65
+1.1/eye2
+bounds:307,233,126,38
+rotate:90
+1.1/eye3
+bounds:2,6,150,33
+1.1/eye4
+bounds:1345,174,150,55
+1.1/eye5
+bounds:383,1057,150,8
+rotate:90
+1.1/l leg
+bounds:1160,3,56,64
+1.1/r leg
+bounds:1160,3,56,64
+1.1/shadow
+bounds:307,361,244,72
+offsets:1,1,246,74
+rotate:90
+1.1/weapon
+bounds:256,2,172,165
+1.2/weapon
+bounds:406,1306,441,244
+1.3/weapon
+bounds:1254,473,213,236
+1.4/weapon
+bounds:2,41,208,252
+rotate:90
+1.5/weapon
+bounds:925,169,265,254
+1.6/weapon
+bounds:2,889,379,318
+1.7/weapon
+bounds:2,1209,402,341
+iron_1/body
+bounds:753,1019,257,329
+rotate:90
+iron_1/eye
+bounds:1310,730,171,47
+iron_2/eye
+bounds:1310,730,171,47
+iron_1/l weapon
+bounds:634,36,184,131
+offsets:0,0,185,131
+iron_1/r weapon
+bounds:820,36,184,131
+offsets:1,0,185,131
+iron_2/body
+bounds:383,765,257,329
+rotate:90
+iron_2/l shoulder
+bounds:1345,86,86,105
+offsets:0,0,87,105
+rotate:90
+iron_2/l weapon
+bounds:430,10,186,202
+rotate:90
+iron_3/l weapon
+bounds:430,10,186,202
+rotate:90
+iron_2/r shoulder
+bounds:1452,67,86,105
+offsets:1,0,87,105
+iron_2/r weapon
+bounds:1310,779,186,202
+iron_3/r weapon
+bounds:1310,779,186,202
+iron_3/body
+bounds:849,1278,272,361
+rotate:90
+iron_3/eye
+bounds:1365,1002,166,48
+iron_3/l shoulder
+bounds:1365,1052,193,176
+rotate:90
+iron_3/r shoulder
+bounds:1192,260,193,177
+rotate:90
+mini/body1
+bounds:982,455,270,254
+mini/body2
+bounds:381,198,270,254
+mini/body3
+bounds:653,169,270,254
+mini/head1
+bounds:1084,983,262,279
+rotate:90
+mini/head2
+bounds:2,607,377,280
+mini/head3
+bounds:406,1024,345,280
+ninja_1/body
+bounds:1212,1247,303,322
+rotate:90
+ninja_1/fabric1
+bounds:1192,167,91,151
+rotate:90
+ninja_1/fabric2
+bounds:1371,352,111,119
+ninja_1/weapon
+bounds:1038,711,270,270
+ninja_2/body
+bounds:714,714,303,322
+rotate:90
+ninja_2/fabric1
+bounds:1188,74,91,151
+rotate:90
+ninja_3/fabric1
+bounds:1188,74,91,151
+rotate:90
+ninja_2/fabric2
+bounds:1371,231,111,119
+ninja_3/fabric2
+bounds:1371,231,111,119
+ninja_2/weapon
+bounds:692,425,288,287
+ninja_3/body
+bounds:2,251,303,354
+ninja_3/weapon
+bounds:381,454,309,309
