@@ -4885,7 +4885,7 @@ GameObject:
   - component: {fileID: 2740203799109732127}
   m_Layer: 0
   m_Name: monster3
-  m_TagString: Enermy
+  m_TagString: Monster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5137,12 +5137,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9705b1ebc3516e240828698a93d2a8f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _animationController: {fileID: 0}
   effectenergy: {fileID: 1837943765867087, guid: ae233c0d4b831624fae5518f4282ab90, type: 3}
-  UItexte: {fileID: 6795775934146990565, guid: 7fa5d06306e9bd642b93a4d95e9cbf63, type: 3}
   UItransfrom: {fileID: 6924285301264009190}
   Audio: {fileID: -6099225136046553090}
-  HP: 20
-  isDad: 0
+  ice: {fileID: 0}
+  isDead: 0
   idle_name: idle
   dead_name: dead
   attack_name: attack

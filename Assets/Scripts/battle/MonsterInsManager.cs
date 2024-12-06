@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using entity;
 using Newtonsoft.Json;
@@ -13,20 +14,19 @@ namespace battle
         
         public class MonsterSetting
         {
-            public int[] monsterIds;
+            public string[] monsterIds;
             public int times;
             public float frequency;
         }
         public static MonsterInsManager Instant;
         private List<MonsterSetting> _monsterSettings;
         
-        public List<Transform> inspos = new();
         [Header("Vectors Controller")] public GameObject SpawenLocalisation;
-        private readonly Dictionary<int, GameObject> _monsterGames = new();
+        private readonly Dictionary<string, GameObject> _monsterGames = new();
 
-        private float _timer;
         private float _times;
         public Boolean isGenerateOver = false;
+        private bool _isformation;
 
         private void Awake()
         {
@@ -37,16 +37,17 @@ namespace battle
         private void Start()
         {
             string settingStr =
-                "[{\"monsterIds\":[1],  \"times\": 1000,\"frequency\": 0.2},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
+                "[{\"monsterIds\":[\"Abyss_Warlord\",\"Bone_Imp\",\"Clockwork_Phantom\",\"Creeping_Corpse\",\"Dark_Fang\",\"Elemental_Titan\",\"Evil_Goat\",\"Fire_Fiend\",\"Flaming_Giant\",\"Flying_Dragon\",\"Goblin\",\"Grim_Reaper\",\"Havoc_Goat\",\"Mech_Goblin\",\"Mech_Spider\",\"Scrap_Crawler\",\"Shadow_Bat\",\"Spitting_Bloom\",\"Vampire\",\"Venom_Frog\",], " +
+                " \"times\": 1000,\"frequency\": 0.5},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
 
             _monsterSettings = JsonConvert.DeserializeObject<List<MonsterSetting>>(settingStr);
             foreach (MonsterSetting setting in _monsterSettings)
             {
-                foreach (int monsterId in setting.monsterIds)
+                foreach (string monsterId in setting.monsterIds)
                 {
                     if (!_monsterGames.ContainsKey(monsterId))
                     {
-                        GameObject monster = LoadPrefab.Load("monster/monster" + monsterId);
+                        GameObject monster = LoadPrefab.Load("monster/M_" + monsterId);
                         if (monster != null)
                             _monsterGames[monsterId] = monster;
                     }
@@ -56,7 +57,6 @@ namespace battle
 
         private void Update()
         {
-            _timer += Time.deltaTime;
             MonsterSetting currentSetting = null;
             int timesStep = 0;
             foreach (var setting in _monsterSettings)
@@ -68,7 +68,15 @@ namespace battle
 
             if (_times > timesStep) isGenerateOver = true;
             if (isGenerateOver) return;
-            if (currentSetting != null && _timer >= currentSetting.frequency)
+            if (!_isformation)
+                StartCoroutine(InsMonster(currentSetting));
+
+        }
+
+        IEnumerator InsMonster(MonsterSetting currentSetting)
+        {
+            _isformation = true;
+            if (currentSetting != null)
             {
                 foreach (var id in currentSetting.monsterIds)
                 {
@@ -77,27 +85,27 @@ namespace battle
                     MonsterManager monsterManager = monster.GetComponent<MonsterManager>();
                     Monster entity = new Monster
                     {
-                        Hp = 400,
-                        Speed = 50
+                        Hp = 1000,
+                        Atk = 50,
+                        Speed = 50,
+                        Exp = 1,
                     };
-                    // entity.BuffManager.AddBuff(new BurnBuff(1000, 1, 15));
                     monsterManager.monster = entity;
+                    yield return new WaitForSeconds(currentSetting.frequency);
                 }
-
                 _times++;
-                _timer = 0;
             }
+            _isformation = false;
         }
+        
 
 
         Vector3 Pos()
         {
-            if (inspos.Count == 1) return inspos[0].transform.position;
-
             return new Vector3(
-                Random.Range(inspos[0].transform.position.x, inspos[1].transform.position.x),
-                inspos[0].transform.position.y,
-                inspos[0].transform.position.z
+                Random.Range(BattleGridManager.Instance.topLeft.transform.position.x, BattleGridManager.Instance.bottomRight.transform.position.x),
+                BattleGridManager.Instance.topLeft.transform.position.y,
+                BattleGridManager.Instance.topLeft.transform.position.z
             );
         }
     }

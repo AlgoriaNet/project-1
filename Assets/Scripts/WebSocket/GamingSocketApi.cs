@@ -11,7 +11,7 @@ public class GamingSocketApi : BaseWebSocketApi
             if (_instance == null)
             {
                 _instance = new GamingSocketApi();
-                _instance.setChannel("GamingChannel");
+                _instance.SetChannel("GamingChannel");
             }
 
             return _instance;

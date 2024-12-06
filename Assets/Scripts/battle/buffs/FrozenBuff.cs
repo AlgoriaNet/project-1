@@ -12,12 +12,11 @@ namespace battle
         
         protected override void OnEnable(Living target, GameObject player)
         {
-            Debug.Log("Frozen");
             target.IsFrozen = true;
             if (player.gameObject.CompareTag("Monster"))
             {
                 var monsterManager = player.GetComponent<MonsterManager>();
-                monsterManager._animationController.timeScale = 0;
+                // monsterManager._animationController.timeScale = 0;
                 monsterManager.ice.SetActive(true);
             }
         }
@@ -28,7 +27,7 @@ namespace battle
             if (player.gameObject.CompareTag("Monster"))
             {
                 var monsterManager = player.GetComponent<MonsterManager>();
-                monsterManager._animationController.timeScale = 1;
+                // monsterManager._animationController.timeScale = 1;
                 monsterManager.ice.SetActive(false);
             }
         }

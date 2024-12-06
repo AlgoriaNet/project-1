@@ -34,7 +34,7 @@ public class HeroManager : MonoBehaviour
     public string wark_name = null;
     public Hero hero;
 
-    private GameObject _closestMonster;
+    private MonsterManager _closestMonster;
 
     public float attacktime = 0f;
     private IEnumerator _enumerator;
@@ -54,10 +54,10 @@ public class HeroManager : MonoBehaviour
         time += Time.deltaTime;
 
         if (!(time > attacktime)) return;
-        if (BattleManager.Instance.monsters.Count==0) return;
-        if (BattleManager.Instance.monsters.Count>0)
+        if (BattleGridManager.Instance.monsters.Count==0) return;
+        if (BattleGridManager.Instance.monsters.Count>0)
         {
-            _closestMonster = BattleManager.Instance.monsters[0].gameObject;
+            _closestMonster = BattleGridManager.Instance.LatestMonster();
             StartCoroutine(_enumerator);
             Hit();
         }
@@ -68,9 +68,9 @@ public class HeroManager : MonoBehaviour
     {
         hero = new Hero()
         {
-            Atk = 20,
+            Atk = 50,
             AtkBonus = 4,
-            CRI = 50,
+            Cri = 50,
         };
         _animationController = GetComponentInChildren<SkeletonAnimation>();
         _animationController.AnimationState.SetAnimation(0, idle_name, true);
@@ -95,7 +95,7 @@ public class HeroManager : MonoBehaviour
     {
         if (_closestMonster != null)
         {
-            if (_closestMonster.gameObject.GetComponent <MonsterManager>().isDead)
+            if (_closestMonster.isDead)
             {
                 return;
             }

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class aigue : Bullet
 {
-    
     internal Rigidbody2D rb;
     internal Vector3 LastVeclocity;
     internal bool CheckPos = true;
@@ -13,23 +12,20 @@ public class aigue : Bullet
     {
         rb = this.gameObject.GetComponent<Rigidbody2D>();
     }
+
     void Update()
     {
-        if (BattleManager.Instance.monsters.Count==0)
-        {
-            return;
-        }
-            var trages = BattleManager.Instance.monsters[0];
+        var target = BattleGridManager.Instance.LatestMonster();
+        if (target == null) return;
 
-            transform.position =
+        transform.position =
             Vector2.MoveTowards(this.transform.position,
-            trages.transform.position,
-            10f * Time.deltaTime);
-            Vector2 direction =
-                trages.transform.position
-                - transform.position;
-            float Angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            this.gameObject.GetComponent<Rigidbody2D>().rotation = Angle;
+                target.transform.position,
+                10f * Time.deltaTime);
+        Vector2 direction =
+            target.transform.position
+            - transform.position;
+        float Angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        this.gameObject.GetComponent<Rigidbody2D>().rotation = Angle;
     }
-
 }

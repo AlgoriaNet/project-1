@@ -23,14 +23,13 @@ namespace battle
                 if (player.gameObject.CompareTag("Monster"))
                 {
                     var monsterManager = player.GetComponent<MonsterManager>();
-                    monsterManager.BeHarmed(new DamageResult(DamageType.Fire, Value, false));
+                    monsterManager.BeHarmed(new DamageResult(DamageType.Burn, Value, false));
                     if (target.Hp <= 0)
                     {
                         IsActive = false;
                         monsterManager.CheckDead();
                     }
                 }
-                Debug.Log("Burn Damage: " + Value);
                 _timeData = 0;
             }
         }

@@ -16,11 +16,7 @@ namespace utils
                 // 实例化预制件并返回新创建的GameObject
                 return prefab;
             }
-            else
-            {
-                Debug.LogError("Failed to load prefab: " + prefabName);
-                return null;
-            }
+            return null;
         }
     }
 }

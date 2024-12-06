@@ -26,7 +26,6 @@ namespace entity
                 GameObject bullet = Instantiate(buttet, firePoint.position, Quaternion.AngleAxis(angle, Vector3.forward));
                 Rigidbody2D bulletRigidbody = bullet.GetComponent<Rigidbody2D>();
                 bulletRigidbody.velocity = direction * bulletSpeed;
-                bullet.GetComponent<Bullet>().shanghai = BattleManager.Instance.shanghai;
                 Destroy(bullet, 4);
             }
         }

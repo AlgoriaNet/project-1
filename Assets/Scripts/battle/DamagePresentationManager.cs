@@ -10,7 +10,7 @@ namespace battle
         private class DamagePresentation
         {
             public Color Color { get; set; }
-            public int FontSize { get; set; } = 270;
+            public int FontSize { get; set; } = 230;
             public FontStyle FontStyle { get; set; } = FontStyle.Bold;
             public string Icon { get; set; }
 
@@ -34,6 +34,7 @@ namespace battle
             _damagePresentations[DamageType.Wind] = new DamagePresentation(new Color(1f, 1f, 1f));
             _damagePresentations[DamageType.Mechanical] = new DamagePresentation(new Color(1f, 1f, 1f));
             _damagePresentations[DamageType.Physics] = new DamagePresentation(new Color(1f, 1f, 1f));
+            _damagePresentations[DamageType.Burn] = new DamagePresentation(Color.red);
             
         }
 
@@ -49,7 +50,7 @@ namespace battle
                 a.fontStyle = _damagePresentations[damageResult.DamageType].FontStyle;
                 if (damageResult.IsCrit)
                 {
-                    a.color = Color.red;
+                    a.color = Color.yellow;
                     a.fontStyle = FontStyle.Bold;
                     a.fontSize = 300;
                 }

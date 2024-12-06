@@ -19,26 +19,26 @@ public class MonsterManager : MonoBehaviour
     private float timedata = 0;
 
     public bool isDead = false;
-    [Header("playanimationname")] 
-    public string idle_name = null;
+    [Header("playanimationname")] public string idle_name = null;
     public string dead_name = null;
     public string attack_name = null;
     public string wark_name = null;
-    public float attacktime = 0f;
-    
-    [Header("check buff time")]
-    private float buffCheckInterval = 0.1f; // 每 0.1 秒检测一次 Buff
-    private float buffCheckTimer = 0f; 
+    public float attacktime = 1f;
+
+    [Header("check buff time")] private float buffCheckInterval = 0.1f; // 每 0.1 秒检测一次 Buff
+    private float buffCheckTimer = 0f;
 
     public Monster monster = new Monster();
-    
+    public bool canMove = true;
+
 
     void Start()
     {
         timedata = 0;
         _animationController = GetComponentInChildren<SkeletonAnimation>();
         ChangeAnimation(wark_name);
-        attacktime = _animationController.AnimationState.Data.SkeletonData.FindAnimation(attack_name).Duration;
+        if(_animationController != null)
+            attacktime = _animationController.AnimationState.Data.SkeletonData.FindAnimation(attack_name).Duration;
     }
 
     // Update is called once per frame
@@ -50,12 +50,18 @@ public class MonsterManager : MonoBehaviour
         {
             buffCheckTimer -= buffCheckInterval; // 减去间隔时间，支持累计误差
             monster.BuffManager.TickAllBuffs(buffCheckInterval, monster, this.gameObject);
-            Debug.Log( monster.BuffManager._buffs.Count);
         }
-        if(monster.IsFrozen) return;
+
+        CheckBoundary();
+        if (monster.IsFrozen || !canMove) return;
         transform.position -= new Vector3(0, monster.Speed * Time.deltaTime / 100, 0);
     }
-    
+
+    private  void CheckBoundary()
+    {
+        BattleGridManager.Instance.TryReflectBulletIfOutOfBounds(gameObject);
+    }
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -70,11 +76,11 @@ public class MonsterManager : MonoBehaviour
         {
             var attacker = collision.gameObject.GetComponent<Attacker>();
             if (attacker == null) return;
-            var damageResult = attacker.Living.AttackDamage(DamageType.Mechanical, monster);
+            var damageResult = attacker.Living.Attack(DamageType.Mechanical, monster);
             BeHarmed(damageResult);
             CheckDead();
             Destroy(collision.gameObject);
-            Audio.Play();
+            // Audio.Play();
         }
     }
 
@@ -88,7 +94,7 @@ public class MonsterManager : MonoBehaviour
             if (timedata > 1.5f)
             {
                 Audio.Play();
-                BeHarmed(new DamageResult(DamageType.Light,0, false));
+                BeHarmed(new DamageResult(DamageType.Light, 0, false));
                 if (monster.Hp <= 0)
                 {
                     ChangeAnimation(dead_name);
@@ -104,7 +110,7 @@ public class MonsterManager : MonoBehaviour
             if (timedata > 1.5f)
             {
                 Audio.Play();
-                BeHarmed(new DamageResult(DamageType.Cure,0, false));
+                BeHarmed(new DamageResult(DamageType.Cure, 0, false));
                 if (monster.Hp <= 0)
                 {
                     ChangeAnimation(dead_name);
@@ -120,10 +126,9 @@ public class MonsterManager : MonoBehaviour
             if (timedata > attacktime + 1f)
             {
                 var rampart = BattleManager.Instance.Rampart;
-                if(rampart == null) return;
-                var attackDamage = monster.AttackDamage(DamageType.Physics, rampart);
-                rampart.Hp -= attackDamage.Damage;
-                if (rampart.Hp <= 0) BattleManager.Instance.GameOver();
+                if (rampart == null) return;
+                var attackDamage = monster.Attack(DamageType.Physics, rampart);
+                BattleManager.Instance.ReduceHp(attackDamage.Damage);
                 timedata = 0;
             }
         }
@@ -153,14 +158,8 @@ public class MonsterManager : MonoBehaviour
             GetComponent<Rigidbody2D>().velocity = Vector2.zero;
             var game = Instantiate(effectenergy, transform.position, effectenergy.transform.rotation);
             Destroy(game.gameObject, 0.5f);
-            BattleManager.Instance.Rankexperience += monster.Exp;
-            if (BattleManager.Instance.Rankexperience >= BattleManager.Instance.RankexperienceUP)
-            {
-                BattleManager.Instance.UpSetGrad();
-            }
-
-            Destroy(this.gameObject,
-                _animationController.AnimationState.Data.SkeletonData.FindAnimation(dead_name).Duration - 0.1f);
+            BattleManager.Instance.UpdateExperience(monster.Exp);
+            Destroy(this.gameObject);
             ChangeAnimation(dead_name);
             return true;
         }

@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 using WebSocketSharp;
-using Object = UnityEngine.Object;
 
 public class WebSocketManager : MonoBehaviour
 {
@@ -32,12 +31,11 @@ public class WebSocketManager : MonoBehaviour
         }
     }
 
-    private WebSocket ws;
+    private WebSocketSharp.WebSocket ws;
 
     private static WebSocketManager _instance;
 
-    private static Dictionary<string, Dictionary<string, Action<object>>> _actionCallbacks =
-        new Dictionary<string, Dictionary<string, Action<object>>>();
+    private static readonly Dictionary<string, Dictionary<string, Action<JObject>>> ActionCallbacks = new();
 
     public static WebSocketManager Instance
     {
@@ -55,7 +53,7 @@ public class WebSocketManager : MonoBehaviour
 
     public void ConnectWebSocket()
     {
-        ws = new WebSocket(Config.websocket);
+        ws = new WebSocketSharp.WebSocket(Config.websocket);
 
         // 添加事件处理
         ws.OnOpen += (sender, e) =>
@@ -71,18 +69,16 @@ public class WebSocketManager : MonoBehaviour
             if (e.Data != null)
             {
                 JObject res = JObject.Parse(e.Data);
+                Debug.Log("Socket response" + e.Data);
                 if (res["type"] != null) return;
                 MessageData data = JsonConvert.DeserializeObject<MessageData>(e.Data);
-                Debug.Log(e.Data);
-                if (e.Data.Contains("type")) return;
-                Debug.Log(data);
                 if (data.Channel != null && data.message is { action: not null })
                 {
                     string channel = data.Channel;
                     string action = data.message.action;
-                    if (_actionCallbacks.ContainsKey(channel) && _actionCallbacks[channel].ContainsKey(action))
+                    if (ActionCallbacks.ContainsKey(channel) && ActionCallbacks[channel].ContainsKey(action))
                     {
-                        Action<object> callback = _actionCallbacks[channel][action];
+                        Action<JObject> callback = ActionCallbacks[channel][action];
                         JObject result = JObject.Parse(data.message.data);
                         callback?.Invoke(result);
                     }
@@ -103,7 +99,7 @@ public class WebSocketManager : MonoBehaviour
         var subscriptionMessage = new
         {
             command = "subscribe",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("user_id") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1}),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
         ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
@@ -117,17 +113,17 @@ public class WebSocketManager : MonoBehaviour
         var sendMessage = new
         {
             command = "message",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("user_id") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
             data = JsonConvert.SerializeObject(new { action, json, sign })
         };
         ws.Send(JsonConvert.SerializeObject(sendMessage));
     }
 
-    public void RegisterOnActionResponse(string channel, string action, Action<object> successCallback)
+    public void RegisterOnActionResponse(string channel, string action, Action<JObject> successCallback)
     {
-        if (!_actionCallbacks.ContainsKey(channel))
-            _actionCallbacks.Add(channel, new Dictionary<string, Action<object>>());
-        _actionCallbacks[channel][action] = successCallback;
+        if (!ActionCallbacks.ContainsKey(channel))
+            ActionCallbacks.Add(channel, new Dictionary<string, Action<JObject>>());
+        ActionCallbacks[channel][action] = successCallback;
     }
 
     void OnDestroy()

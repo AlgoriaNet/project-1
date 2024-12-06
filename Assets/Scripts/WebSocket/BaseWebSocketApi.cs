@@ -3,19 +3,20 @@ using Object = System.Object;
 
 public class BaseWebSocketApi
 {
-    protected string channel;
+    public string Channel { get; private set; }
 
-    public void setChannel(string channel)
+    public void SetChannel(string channel)
     {
-        this.channel = channel;
+        Channel = channel;
     }
+
     public void Subscribe()
     {
-        WebSocketManager.Instance.Subscribe(channel);
+        WebSocketManager.Instance.Subscribe(Channel);
     }
 
     public void Action(string action, Object data)
     {
-        WebSocketManager.Instance.Action(channel, action, data);
+        WebSocketManager.Instance.Action(Channel, action, data);
     }
 }

@@ -21,10 +21,10 @@ namespace battle
                     target.DefBonus += Value;
                     break;
                 case AttributeType.CRI:
-                    target.CRIBonus += Value;
+                    target.CriBonus += Value;
                     break;
                 case AttributeType.CRT:
-                    target.CRTBonus += Value;
+                    target.CrtBonus += Value;
                     break;
                 case AttributeType.Speed:
                     target.SpeedBonus += Value;
@@ -46,10 +46,10 @@ namespace battle
                     target.DefBonus -= Value;
                     break;
                 case AttributeType.CRI:
-                    target.CRIBonus -= Value;
+                    target.CriBonus -= Value;
                     break;
                 case AttributeType.CRT:
-                    target.CRTBonus -= Value;
+                    target.CrtBonus -= Value;
                     break;
                 case AttributeType.Speed:
                     target.SpeedBonus -= Value;

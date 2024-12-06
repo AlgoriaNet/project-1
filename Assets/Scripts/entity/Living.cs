@@ -7,6 +7,7 @@ namespace entity
 {
     public abstract class Living
     {
+        public int Id { get; set; }
         public string Name { get; set; }
 
         //最大生命值
@@ -28,14 +29,14 @@ namespace entity
         public int DefBonusRate { get; set; }
 
         //暴击率
-        public int CRI { get; set; }
+        public int Cri { get; set; }
 
-        public int CRIBonus { get; set; }
+        public int CriBonus { get; set; }
 
         //暴击伤害
-        public int CRT { get; set; } = 150;
+        public int Crt { get; set; } = 150;
 
-        public int CRTBonus { get; set; }
+        public int CrtBonus { get; set; }
 
         //移动速度
         public int Speed { get; set; }
@@ -63,10 +64,12 @@ namespace entity
         public bool IsFrozen { get; set; }
         public bool IsBurned { get; set; }
         public bool IsSpeedCut { get; set; }
-
+        
+        public Skill Skill  { get; set; }
+        
         public BuffManager BuffManager { get; } = new();
 
-        public DamageResult AttackDamage(DamageType damageType, Living target)
+        public DamageResult Attack(DamageType damageType, Living target, float damageBonusRate = 1)
         {
             int eventualAtk = (int)Math.Round((Atk + AtkBonus) * (1.0f + AtkBonusRate / 100f));
             eventualAtk += VarietyDamage.GetValueOrDefault(damageType, 0);
@@ -78,13 +81,13 @@ namespace entity
                             (1.0 + VarietyDamageBonusRate.GetValueOrDefault(damageType, 0) / 100f -
                              target.SufferedVarietyDamageBonusRate.GetValueOrDefault(damageType, 0) / 100f) *
                             (1.0 + DamageBonusRate / 100f - target.SufferedDamageBonusRate / 100f) *
-                            (1.0 + randomFactor);
+                            (1.0 + randomFactor) * damageBonusRate;
             int damageInt = (int)Math.Round(damage);
 
-            bool isCrit = new Random().Next(0, 100) <= CRI + CRIBonus;
+            bool isCrit = new Random().Next(0, 100) <= Cri + CriBonus;
             if (isCrit)
             {
-                damageInt = (int)Math.Round(damageInt * (CRT + CRTBonus) / 100f);
+                damageInt = (int)Math.Round(damageInt * (Crt + CrtBonus) / 100f);
             }
           
             
