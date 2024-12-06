@@ -70,17 +70,19 @@ namespace battle
                 if (_sidekick.Skill.IsLivingPositionRelease)
                 {
                     skillObject.transform.position = releaseSkillPosition.position;
-                    var targetPosition = BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.TargetType, i);
-                    if (_sidekick.Skill.TargetType == SkillTargetType.LatestNearby)
+                    var targetPosition = BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.SkillTargetType, i);
+                    if (_sidekick.Skill.SkillTargetType == SkillTargetType.LatestNearby)
+                    {
                         skillManager.targetDirection = Utils.AngleOffsetDirection(
                             targetPosition - releaseSkillPosition.position,
                             _sidekick.Skill.MaxAngle, _sidekick.Skill.ReleaseCount, i);
+                    }
                     else
                         skillManager.targetDirection = (targetPosition - releaseSkillPosition.position).normalized;
                 }
                 else
                     skillObject.transform.position =
-                        BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.TargetType, i);
+                        BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.SkillTargetType, i);
             }
             OnSkillReleased();
         }

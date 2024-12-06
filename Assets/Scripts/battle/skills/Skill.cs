@@ -36,7 +36,7 @@ namespace battle
         public bool IsCdRestByReleased = false;
 
         public DamageType DamageType;
-        public SkillTargetType TargetType = SkillTargetType.LatestMultiple;
+        public SkillTargetType SkillTargetType = SkillTargetType.LatestMultiple;
         public List<string> ActiveCharacter = new();
         
         public bool HasCharacter(string character)

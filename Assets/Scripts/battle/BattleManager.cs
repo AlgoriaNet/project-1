@@ -213,6 +213,7 @@ public class BattleManager : MonoBehaviour
         var sidekickList = sidekicksArray.ToObject<List<Sidekick>>();
         foreach (var sidekick in sidekickList)
         {
+            Debug.Log("Sidekick Skill target type: " + sidekick.Skill.SkillTargetType);
             BattleGridManager.Instance.Sidekicks.Add(sidekick);
         }
     }

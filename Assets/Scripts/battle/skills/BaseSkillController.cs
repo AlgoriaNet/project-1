@@ -79,7 +79,7 @@ namespace battle
 
         protected virtual MonsterManager GetTarget()
         {
-            return BattleGridManager.Instance.GetTarget(Skill.TargetType, TargetIndex);
+            return BattleGridManager.Instance.GetTarget(Skill.SkillTargetType, TargetIndex);
         }
 
         protected virtual void WhenAttackAfter()
