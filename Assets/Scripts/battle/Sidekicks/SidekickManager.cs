@@ -52,7 +52,7 @@ namespace battle
 
             var skillPrefab = Resources.Load<GameObject>(Path.GetPath(Path.SkillPrefab, sidekick.Skill.Name));
             Debug.Log($"SKill Path: {Path.GetPath(Path.SkillPrefab, sidekick.Skill.Name)}");
-            Debug.Log($"skill prefab: {skillPrefab}");
+            Debug.Log($"Skill Prefab: {skillPrefab}");
             if(skillPrefab) _skillPrefab = skillPrefab;
             sidekickBack.sprite = Resources.Load<Sprite>(Path.GetPath(Path.SidekickBackSprite, sidekick.Name));
         }

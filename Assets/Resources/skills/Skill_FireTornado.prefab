@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 7361138120082762040}
   m_Layer: 0
   m_Name: Skill_FireTornado
-  m_TagString: Untagged
+  m_TagString: Skill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,6 +73,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b96eb91aa364ad1bd7de4f1d3980433, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  releasingAudio: {fileID: 0}
+  releaseAudio: {fileID: 0}
+  hitAudio: {fileID: 0}
+  IsDestroyAfterDuration: 0
   isChangeRotation: 0
 --- !u!1001 &6871028570152870917
 PrefabInstance:

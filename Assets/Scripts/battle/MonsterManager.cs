@@ -41,7 +41,6 @@ public class MonsterManager : MonoBehaviour
         _hitEffectWaitTime = 0;
         Monster = monster;
         monsterSprite.sprite = Resources.Load<Sprite>(Path.GetPath(Path.MonsterSprite, monster.Name));
-        Debug.Log("Monster name:" + monster.Name);
         moveAnimator.Play(monster.Name);
     }
 

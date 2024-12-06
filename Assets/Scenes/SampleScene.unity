@@ -1840,7 +1840,6 @@ MonoBehaviour:
   - {fileID: 2102280087}
   - {fileID: 210453340}
   - {fileID: 1254879210}
-  sidekicks: []
 --- !u!1 &507908590
 GameObject:
   m_ObjectHideFlags: 0
@@ -6621,7 +6620,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64f9e3601c694d218f67fd88e56c9f36, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpawenLocalisation: {fileID: 642803747}
+  baseMonsterPrefab: {fileID: 4699004017245701607, guid: 624915f80d2e447139bcc602b1da22a9, type: 3}
+  spawenLocalisation: {fileID: 642803748}
   isGenerateOver: 0
 --- !u!1001 &1992164107
 PrefabInstance:

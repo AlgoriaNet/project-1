@@ -43,7 +43,6 @@ namespace battle
         public void IntoBattle(int index, Sidekick sidekick)
         {
             if(index > 3) return;
-            Debug.Log("SidekickIntoBattleManager IntoBattle:" + sidekick.Atk);
             try
             {
                 var sidekickObj = Instantiate(baseSidekickPrefab,
@@ -59,7 +58,6 @@ namespace battle
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                Debug.Log("SidekickIntoBattleManager IntoBattle Error:" + e);
                 throw;
             }
             

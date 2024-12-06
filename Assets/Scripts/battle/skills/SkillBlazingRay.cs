@@ -1,14 +1,12 @@
 using System.Collections;
 using battle.bullets;
-using entity;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using utils;
 using Utils = utils.Utils;
 
 namespace battle
 {
-    public class SkillFlameRay : BaseSkillController
+    public class SkillBlazingRay : BaseSkillController
     {
         private LineRenderer _lineRenderer;
         private LaserManager _laserManager;
@@ -17,7 +15,8 @@ namespace battle
         private Vector2 _direction;
         private readonly float _attackInterval = 0.2f;
         private float _lastAttackTime = 0f;
-        private MonsterManager _target; 
+        private MonsterManager _target;
+        
 
         protected override void Start()
         {
@@ -31,6 +30,7 @@ namespace battle
             _target = GetTarget();
             SetLaserQuat();
             ComputeDirection();
+            releasingAudio.Play();
         }
 
         private void Update()
@@ -47,7 +47,6 @@ namespace battle
             if (_lastAttackTime >= _attackInterval)
             {
                 RaycastHit2D[] hits = Physics2D.RaycastAll(_startPos, _direction, _length, Consts.MonsterLayer);
-                Debug.Log("Hit Count: " + hits.Length);
                 _lastAttackTime -= _attackInterval;
                 StartCoroutine(AttackDelay(hits));
             }

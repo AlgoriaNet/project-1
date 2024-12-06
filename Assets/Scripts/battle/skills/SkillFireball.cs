@@ -6,7 +6,7 @@ namespace battle
     {
         public GameObject fireball;
         public GameObject blast;
-        
+
         protected override void OnTriggerEnter2D(Collider2D other)
         {
             if (other.gameObject.CompareTag("Monster"))

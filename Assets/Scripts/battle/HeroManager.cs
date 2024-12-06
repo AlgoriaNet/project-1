@@ -113,7 +113,6 @@ public class HeroManager : MonoBehaviour
     }
     private void HandleAnimationEvent(TrackEntry trackEntry, Event e)
     {
-        Debug.Log("Animation Event: " + e.Data.Name);
         // if (e.Data.Name.Equals("hit"))
     }
 }

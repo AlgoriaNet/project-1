@@ -1,10 +1,17 @@
 using entity;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace battle
 {
-    public abstract class BaseSkillController : MonoBehaviour
+    public class BaseSkillController : MonoBehaviour
     {
+        public AudioSource releasingAudio;
+        public AudioSource releaseAudio;
+        public AudioSource hitAudio;
+        [FormerlySerializedAs("IsDestroyAfterDuration")] 
+        public bool isDestroyAfterDuration = true;
+
         protected Living Living;
         protected SkillSetting SkillSetting;
         protected Vector2 TargetDirection;
@@ -12,16 +19,20 @@ namespace battle
         protected Skill Skill;
         protected int Stage = 1;
 
+
         protected virtual void Start()
         {
             SetSkillSetting(GetComponent<SkillSetting>());
             Init();
+            if(isDestroyAfterDuration) Destroy(gameObject, Skill.Duration);
         }
 
         protected void Init()
         {
-            Debug.Log("Skill Scope:" + Skill.Scope);
             gameObject.transform.localScale *= Skill.Scope;
+
+            if (releaseAudio) releaseAudio.Play();
+            if (releasingAudio) releasingAudio.PlayDelayed(releaseAudio ? releaseAudio.time : 0);
         }
 
         protected virtual void OnTriggerEnter2D(Collider2D other)
@@ -46,10 +57,17 @@ namespace battle
         // ReSharper disable Unity.PerformanceAnalysis
         protected void Attack(MonsterManager monster)
         {
+            if (hitAudio && !hitAudio.isPlaying)
+            {
+                if (releaseAudio) releaseAudio.Stop();
+                if (releasingAudio) releasingAudio.Stop();
+                hitAudio.Play();
+            }
+
             var damageRatio = Skill.DamageRatio;
             if (Stage == 2) damageRatio = Skill.TwoStageDamageRatio;
             if (Stage == 3) damageRatio = Skill.ThreeStageDamageRatio;
-                
+
             var ultimatelyDamageRatio = damageRatio * (1 + Skill.ExtraDamageGain);
             var result = Living.Attack(Skill.DamageType, monster.Monster, ultimatelyDamageRatio);
             monster.BeHarmed(result);

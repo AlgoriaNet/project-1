@@ -45,7 +45,6 @@ namespace battle
         public int GenerateOptionCount()
         {
             int count = 0;
-            Debug.Log(Effects.Count);
             foreach (var effect in Effects)
             {
                 if (effect.DependCharacter == null) count++;

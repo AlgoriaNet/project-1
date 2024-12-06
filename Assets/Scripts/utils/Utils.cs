@@ -36,7 +36,6 @@ namespace utils
             float angleStep =  angle / (maxCount - 1);
             float currentAngle = -angle / 2 + angleStep * index;
             
-            Debug.Log("currentAngle: " + currentAngle);
             return RotateVector(direction, currentAngle);
         }
         

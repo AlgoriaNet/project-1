@@ -262,7 +262,6 @@ public class BattleManager : MonoBehaviour
 
     public void ReduceHp(int hp)
     {
-        Debug.Log("ReduceHp: " + hp);
         var isDead = State.ReduceHp(hp);
         if (hpText != null) hpText.text = State.Hp.ToString();
         if (hpBar != null) hpBar.localScale = new Vector3(State.HpRate, 1, 1);
