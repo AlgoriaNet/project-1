@@ -47,9 +47,8 @@ namespace battle
                 {
                     if (!_monsterGames.ContainsKey(monsterId))
                     {
-                        GameObject monster = LoadPrefab.Load("monster/M_" + monsterId);
-                        if (monster != null)
-                            _monsterGames[monsterId] = monster;
+                        GameObject monster = Resources.Load<GameObject>(Path.GetPath(Path.MonsterPrefab, monsterId));
+                        if (monster != null) _monsterGames[monsterId] = monster;
                     }
                 }
             }
@@ -70,7 +69,6 @@ namespace battle
             if (isGenerateOver) return;
             if (!_isformation)
                 StartCoroutine(InsMonster(currentSetting));
-
         }
 
         IEnumerator InsMonster(MonsterSetting currentSetting)

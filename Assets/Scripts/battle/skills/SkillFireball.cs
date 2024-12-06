@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace battle
 {
-    public class SkillFireballSpell : BaseSkillController
+    public class SkillFireball : BaseSkillController
     {
         public GameObject fireball;
         public GameObject blast;
@@ -19,7 +19,7 @@ namespace battle
                     Destroy(gameObject, Living.Skill.DestroyDelay);
                 }
                 fireball.SetActive(false);
-                if(Skill.HasCharacter("blast")) blast.SetActive(true);
+                blast.SetActive(true);
             }
         }
     }

@@ -10,7 +10,7 @@ namespace battle
         protected Vector2 TargetDirection;
         protected int TargetIndex;
         protected Skill Skill;
-
+        protected int Stage = 1;
 
         protected virtual void Start()
         {
@@ -43,10 +43,15 @@ namespace battle
             TargetDirection = skillSetting.targetDirection;
         }
 
+        // ReSharper disable Unity.PerformanceAnalysis
         protected void Attack(MonsterManager monster)
         {
-            var damageRatio = Skill.DamageRatio * (1 + Skill.ExtraDamageGain);
-            var result = Living.Attack(Skill.DamageType, monster.monster, damageRatio);
+            var damageRatio = Skill.DamageRatio;
+            if (Stage == 2) damageRatio = Skill.TwoStageDamageRatio;
+            if (Stage == 3) damageRatio = Skill.ThreeStageDamageRatio;
+                
+            var ultimatelyDamageRatio = damageRatio * (1 + Skill.ExtraDamageGain);
+            var result = Living.Attack(Skill.DamageType, monster.monster, ultimatelyDamageRatio);
             monster.BeHarmed(result);
             monster.CheckDead();
             var buffs = Skill.ActiveCharacter.FindAll(character => character.Contains("ADD_BUFF_"));
