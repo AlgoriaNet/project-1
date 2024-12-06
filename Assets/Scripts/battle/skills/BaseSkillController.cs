@@ -51,11 +51,11 @@ namespace battle
             if (Stage == 3) damageRatio = Skill.ThreeStageDamageRatio;
                 
             var ultimatelyDamageRatio = damageRatio * (1 + Skill.ExtraDamageGain);
-            var result = Living.Attack(Skill.DamageType, monster.monster, ultimatelyDamageRatio);
+            var result = Living.Attack(Skill.DamageType, monster.Monster, ultimatelyDamageRatio);
             monster.BeHarmed(result);
             monster.CheckDead();
             var buffs = Skill.ActiveCharacter.FindAll(character => character.Contains("ADD_BUFF_"));
-            buffs.ForEach(buff => AppendBuff(monster.monster, buff));
+            buffs.ForEach(buff => AppendBuff(monster.Monster, buff));
             WhenAttackAfter();
         }
 
