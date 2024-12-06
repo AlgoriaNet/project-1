@@ -5,7 +5,7 @@ namespace battle
 {
     public class DamageBonusRateBuff : Buff
     {
-        public DamageBonusRateBuff(string name, float duration, int value) : base(name, duration, value)
+        public DamageBonusRateBuff(float duration, int value) : base("DamageBonusRate", duration, value)
         {
         }
 

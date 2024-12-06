@@ -6,7 +6,13 @@ namespace battle
     public class SufferedVarietyDamageBonusRateBuff : Buff
     {
         private readonly DamageType _damageType;
-
+        
+        public SufferedVarietyDamageBonusRateBuff(float duration, DamageType damageType, int value)
+            : base("SufferedVarietyDamageBonus", duration, value)
+        {
+            _damageType = damageType;
+        }
+        
         public SufferedVarietyDamageBonusRateBuff(string name, float duration, DamageType damageType, int value)
             : base(name, duration, value)
         {

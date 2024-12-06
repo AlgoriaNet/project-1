@@ -45,21 +45,28 @@ namespace battle
 
         protected void Attack(MonsterManager monster)
         {
-            var damageRatio = Skill.DamageRatio * (1 + Skill.ExtraDamageGain) ;
+            var damageRatio = Skill.DamageRatio * (1 + Skill.ExtraDamageGain);
             var result = Living.Attack(Skill.DamageType, monster.monster, damageRatio);
             monster.BeHarmed(result);
             monster.CheckDead();
+            var buffs = Skill.ActiveCharacter.FindAll(character => character.Contains("ADD_BUFF_"));
+            buffs.ForEach(buff => AppendBuff(monster.monster, buff));
             WhenAttackAfter();
         }
-        
+
         protected virtual MonsterManager GetTarget()
         {
             return BattleGridManager.Instance.GetTarget(Skill.TargetType, TargetIndex);
         }
-        
+
         protected virtual void WhenAttackAfter()
         {
-           
+        }
+
+        protected virtual void AppendBuff(Monster monster, string buffCharacter)
+        {
+            var buff = BuffFactory.CreateBuff(buffCharacter);
+            monster.BuffManager.AddBuff(buff);
         }
     }
 }
