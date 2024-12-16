@@ -1,4 +1,4 @@
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle
@@ -17,6 +17,7 @@ namespace battle
         {
             IsActive = true;
             _timeData += deltaTime;
+            target.IsBurned = true;
             if (_timeData > _frequency)
             {
                 target.Hp -= Value;
@@ -32,6 +33,11 @@ namespace battle
                 }
                 _timeData = 0;
             }
+        }
+        
+        protected override void OnDisable(Living target, GameObject player)
+        {
+            target.IsBurned = false;
         }
     }
 }

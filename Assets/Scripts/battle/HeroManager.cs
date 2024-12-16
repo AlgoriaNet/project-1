@@ -1,6 +1,6 @@
 using System.Collections;
 using battle;
-using entity;
+using model;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -113,7 +113,6 @@ public class HeroManager : MonoBehaviour
     }
     private void HandleAnimationEvent(TrackEntry trackEntry, Event e)
     {
-        Debug.Log("Animation Event: " + e.Data.Name);
         // if (e.Data.Name.Equals("hit"))
     }
 }

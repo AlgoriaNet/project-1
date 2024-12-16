@@ -1,13 +1,20 @@
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle
 {
-    public class VarietyDamageBonusBuffRate : Buff
+    public class VarietyDamageBonusRateBuff : Buff
     {
         private readonly DamageType _damageType;
 
-        public VarietyDamageBonusBuffRate(string name, float duration, DamageType damageType, int value)
+        
+        public VarietyDamageBonusRateBuff(float duration, DamageType damageType, int value)
+            : base("VarietyDamageBonusBuff", duration, value)
+        {
+            _damageType = damageType;
+        }
+        
+        public VarietyDamageBonusRateBuff(string name, float duration, DamageType damageType, int value)
             : base(name, duration, value)
         {
             _damageType = damageType;

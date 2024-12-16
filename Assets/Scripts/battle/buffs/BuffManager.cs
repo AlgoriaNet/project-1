@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using entity;
+using System.Linq;
+using model;
 using UnityEngine;
 
 namespace battle
@@ -10,6 +11,7 @@ namespace battle
 
         public void AddBuff(Buff buff)
         {
+            if(buff == null) return;
             if (buff.Name == "Frozen")
             {
                 var oldBuff = _buffs.Find(v => v.Name == "Frozen");
@@ -38,13 +40,10 @@ namespace battle
 
         public void TickAllBuffs(float deltaTime, Living target, GameObject player)
         {
-            for (int i = _buffs.Count - 1; i >= 0; i--)
+            foreach (var buff in _buffs.ToList())
             {
-                _buffs[i].Tick(deltaTime, target, player);
-                if (!_buffs[i].IsActive)
-                {
-                    _buffs.RemoveAt(i); // 移除已过期的Buff
-                }
+                buff.Tick(deltaTime, target, player);
+                if (!buff.IsActive) _buffs.Remove(buff); // 移除已过期的Buff
             }
         }
     }

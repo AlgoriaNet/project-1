@@ -1,5 +1,5 @@
 using battle;
-using entity;
+using model;
 using UnityEngine;
 using utils;
 

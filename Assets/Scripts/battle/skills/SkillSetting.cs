@@ -1,20 +1,19 @@
-using System;
-using entity;
+using model;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace battle
 {
     public class SkillSetting : MonoBehaviour
     {
         public Living Living;
+        public Skill Skill;
         public int targetIndex;
-        public bool IsDynamic { get;  set; }
         public Vector2 targetDirection;
-
-        private void Start()
+        public bool isDestroyAfterDuration = true;
+        
+        public void Start()
         {
-            IsDynamic = Living.Skill.IsDynamic;
+            if(isDestroyAfterDuration) Destroy(gameObject, Skill?.Duration ?? 0);
         }
     }
 }

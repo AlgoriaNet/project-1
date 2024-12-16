@@ -15,7 +15,7 @@ namespace battle.BulletTrajectory
         private float _percentSpeed;
         private float _percent;
 
-        protected override void Start()
+        public override void Start()
         {
             base.Start();
             SelfInit();
@@ -24,7 +24,7 @@ namespace battle.BulletTrajectory
 
         private void Update()
         {
-            if (!SkillSetting.IsDynamic) return;
+            if (!Skill.IsDynamic) return;
             if (_percent < 1f)
             {
                 _percent += _percentSpeed * Time.deltaTime;

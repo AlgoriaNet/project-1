@@ -1,4 +1,4 @@
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle.test
@@ -35,7 +35,7 @@ namespace battle.test
                         ReleaseCount = 3,
                         Cd = 5,
                         DamageType = DamageType.Light,
-                        TargetType = SkillTargetType.LatestMultiple,
+                        SkillTargetType = SkillTargetType.LatestMultiple,
                         IsDynamic = true,
                     }
                 };

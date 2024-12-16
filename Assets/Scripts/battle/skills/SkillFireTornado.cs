@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle
@@ -19,9 +19,7 @@ namespace battle
         public int separateNumber = 12;
         public void Start()
         {
-            SetSkillSetting(GetComponentInParent<SkillSetting>());
-            Init();
-            Destroy(gameObject, Skill.Duration);
+            base.Start();
             _boxCollider = GetComponent<BoxCollider2D>();
             _radius = (_boxCollider.size.x / 2f * 0.9f);
 

@@ -1,5 +1,5 @@
 using battle;
-using entity;
+using model;
 using UnityEngine;
 using utils;
 
@@ -13,13 +13,12 @@ public class BezierBullet : BaseSkillController
     private float _percentSpeed;
     private Vector2 _middlePoint;
     private Vector2 _lastPos;
-    
 
-    protected override void Start()
+
+    public override void Start()
     {
         base.Start();
         _currentTarget = GetTarget();
-
         _speed = Skill.Speed;
         _startPos = transform.position;
         _lastPos = transform.position;
@@ -37,7 +36,7 @@ public class BezierBullet : BaseSkillController
 
     void Update()
     {
-        if (!SkillSetting.IsDynamic) return;
+        if (!Skill.IsDynamic) return;
         if (_currentTarget != null && !_currentTarget.isDead)
         {
             _percent += _percentSpeed * Time.deltaTime;

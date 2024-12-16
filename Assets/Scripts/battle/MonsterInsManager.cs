@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using entity;
+using model;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Serialization;
 using utils;
 using Random = UnityEngine.Random;
 
@@ -11,22 +12,20 @@ namespace battle
 {
     public class MonsterInsManager : MonoBehaviour
     {
-        
         public class MonsterSetting
         {
-            public string[] monsterIds;
-            public int times;
-            public float frequency;
+            public string[] MonsterIds;
+            public int Times;
+            public float Frequency;
         }
         public static MonsterInsManager Instant;
         private List<MonsterSetting> _monsterSettings;
+        [SerializeField] private GameObject baseMonsterPrefab;
+        [FormerlySerializedAs("SpawenLocalisation")] [Header("Vectors Controller")] public Transform spawenLocalisation;
+        [HideInInspector]public Boolean isGenerateOver;
         
-        [Header("Vectors Controller")] public GameObject SpawenLocalisation;
-        private readonly Dictionary<string, GameObject> _monsterGames = new();
-
         private float _times;
-        public Boolean isGenerateOver = false;
-        private bool _isformation;
+        private bool _isFormation;
 
         private void Awake()
         {
@@ -36,23 +35,12 @@ namespace battle
 
         private void Start()
         {
-            string settingStr =
+            isGenerateOver = false;
+            var settingStr =
                 "[{\"monsterIds\":[\"Abyss_Warlord\",\"Bone_Imp\",\"Clockwork_Phantom\",\"Creeping_Corpse\",\"Dark_Fang\",\"Elemental_Titan\",\"Evil_Goat\",\"Fire_Fiend\",\"Flaming_Giant\",\"Flying_Dragon\",\"Goblin\",\"Grim_Reaper\",\"Havoc_Goat\",\"Mech_Goblin\",\"Mech_Spider\",\"Scrap_Crawler\",\"Shadow_Bat\",\"Spitting_Bloom\",\"Vampire\",\"Venom_Frog\",], " +
-                " \"times\": 1000,\"frequency\": 0.5},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
+                " \"times\": 1000,\"frequency\": 1},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
 
             _monsterSettings = JsonConvert.DeserializeObject<List<MonsterSetting>>(settingStr);
-            foreach (MonsterSetting setting in _monsterSettings)
-            {
-                foreach (string monsterId in setting.monsterIds)
-                {
-                    if (!_monsterGames.ContainsKey(monsterId))
-                    {
-                        GameObject monster = LoadPrefab.Load("monster/M_" + monsterId);
-                        if (monster != null)
-                            _monsterGames[monsterId] = monster;
-                    }
-                }
-            }
         }
 
         private void Update()
@@ -62,40 +50,41 @@ namespace battle
             foreach (var setting in _monsterSettings)
             {
                 currentSetting = setting;
-                timesStep += setting.times;
+                timesStep += setting.Times;
                 if (_times <= timesStep) break;
             }
 
             if (_times > timesStep) isGenerateOver = true;
             if (isGenerateOver) return;
-            if (!_isformation)
+            if (!_isFormation)
                 StartCoroutine(InsMonster(currentSetting));
-
         }
 
         IEnumerator InsMonster(MonsterSetting currentSetting)
         {
-            _isformation = true;
+            _isFormation = true;
             if (currentSetting != null)
             {
-                foreach (var id in currentSetting.monsterIds)
+                foreach (var id in currentSetting.MonsterIds)
                 {
-                    GameObject monster = Instantiate(_monsterGames[id], Pos(), _monsterGames[id].transform.rotation);
-                    monster.transform.parent = SpawenLocalisation.transform;
+                    GameObject monster = Instantiate(baseMonsterPrefab, Pos(), Quaternion.identity,  spawenLocalisation);
                     MonsterManager monsterManager = monster.GetComponent<MonsterManager>();
                     Monster entity = new Monster
                     {
-                        Hp = 1000,
+                        Name = id,
+                        Hp = 200,
                         Atk = 50,
                         Speed = 50,
-                        Exp = 1,
+                        Exp = 10,
                     };
-                    monsterManager.monster = entity;
-                    yield return new WaitForSeconds(currentSetting.frequency);
+                    monsterManager.Init(entity);
+                    
+                    monsterManager.Monster = entity;
+                    yield return new WaitForSeconds(currentSetting.Frequency);
                 }
                 _times++;
             }
-            _isformation = false;
+            _isFormation = false;
         }
         
 

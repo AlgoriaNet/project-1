@@ -1,4 +1,4 @@
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle
@@ -7,6 +7,12 @@ namespace battle
     {
         private readonly DamageType _damageType;
 
+        
+        public VarietyDamageBonusBuff(float duration, DamageType damageType, int value)
+            : base("VarietyDamageBonus", duration, value)
+        {
+            _damageType = damageType;
+        }
         public VarietyDamageBonusBuff(string name, float duration, DamageType damageType, int value)
             : base(name, duration, value)
         {

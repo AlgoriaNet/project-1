@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using entity;
+using model;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour

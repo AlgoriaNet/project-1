@@ -1,10 +1,13 @@
-using entity;
+using model;
 using UnityEngine;
 
 namespace battle
 {
     public class RateBonusBuff : BasicAttributeBuff
     {
+        public RateBonusBuff(float duration, AttributeType type, int value) : base("RateBonus", duration, type, value)
+        {
+        }
         public RateBonusBuff(string name, float duration, AttributeType type, int value) : base(name, duration, type, value)
         {
         }
@@ -19,9 +22,9 @@ namespace battle
                 case AttributeType.Def:
                     target.DefBonusRate += Value;
                     break;
-                case AttributeType.CRI:
+                case AttributeType.Cri:
                     break;
-                case AttributeType.CRT:
+                case AttributeType.Crt:
                     break;
                 case AttributeType.Speed:
                     target.SpeedBonusRate += Value;
@@ -41,9 +44,9 @@ namespace battle
                 case AttributeType.Def:
                     target.DefBonusRate -= Value;
                     break;
-                case AttributeType.CRI:
+                case AttributeType.Cri:
                     break;
-                case AttributeType.CRT:
+                case AttributeType.Crt:
                     break;
                 case AttributeType.Speed:
                     target.SpeedBonusRate -= Value;

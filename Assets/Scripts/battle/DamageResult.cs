@@ -1,4 +1,4 @@
-using entity;
+using model;
 
 namespace battle
 {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using battle;
-using entity;
+using model;
 
 public class BattleGridManager : MonoBehaviour
 {

@@ -4,8 +4,8 @@ namespace battle
     {
         Atk,
         Def,
-        CRI,
-        CRT,
+        Cri,
+        Crt,
         Speed
     }
 }
