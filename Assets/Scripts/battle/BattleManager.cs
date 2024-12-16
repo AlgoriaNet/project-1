@@ -45,6 +45,7 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(this);
+        WebSocketManager.Instance.ConnectWebSocket();
         battleApi = BattleWebSocketApi.Instance;
     }
 
@@ -66,155 +67,36 @@ public class BattleManager : MonoBehaviour
         {
             State.UpgradeRequiredExperience.Add(100);
         }
-
         UpdateExperience(0);
-
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能释放数量 +1",
-            FunctionName = "AddReleaseCount",
-            Value = 1,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能释放数量 +1",
-            FunctionName = "AddReleaseCount",
-            Value = 1,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能结束后, 将分裂出多个小龙卷风",
-            FunctionName = "ActiveCharacter",
-            Value = "split",
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能范围 +30%",
-            FunctionName = "AddScope",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火龙卷风",
-            Description = "火龙卷风 技能范围 +30%",
-            FunctionName = "AddScope",
-            Value = 0.3f,
-            Weight = 10,
-        });
-
-
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能伤害提升 30%",
-            FunctionName = "ExtraDamageGain",
-            Value = 0.3f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能释放数量 +1",
-            FunctionName = "AddLaunchesCount",
-            Value = 1,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能释放数量 +1",
-            FunctionName = "AddLaunchesCount",
-            Value = 1,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 技能结束后将产生爆炸, 爆炸会对周围怪物造成范围伤害",
-            FunctionName = "ActiveCharacter",
-            Value = "blast",
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 CD  -2秒",
-            FunctionName = "ReduceCd",
-            Value = 2f,
-            Weight = 10,
-        });
-        _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
-        {
-            SkillName = "火球术",
-            Description = "火球术 CD -2秒",
-            FunctionName = "ReduceCd",
-            Value = 2f,
-            Weight = 10,
-        });
-
-        WebSocketManager.Instance.ConnectWebSocket();
-        battleApi.Subscribe();
-        WebSocketManager.Instance.RegisterOnActionResponse(battleApi.Channel, "battle", SetStatFromServer);
-        battleApi.Action("battle", new { data = "battle data" });
+        battleApi.Action("battle", new { data = "battle data" }, SetStatFromServer);
     }
 
     private void SetStatFromServer(JObject obj)
     {
-        var sidekicksArray = obj["sidekicks"];
+        SetSidekicks(obj["sidekicks"]);
+        SetLevelUpEffects(obj["levelUpEffects"]);
+    }
+
+    private void SetSidekicks(JToken sidekicksArray)
+    {
         BattleGridManager.Instance.Sidekicks.Clear();
         var sidekickList = sidekicksArray.ToObject<List<Sidekick>>();
+        Debug.Log("sidekickList.Count: " + sidekickList.Count);
         foreach (var sidekick in sidekickList)
         {
+            Debug.Log("Sidekick Skill name: " + sidekick.Skill.Name);
             Debug.Log("Sidekick Skill target type: " + sidekick.Skill.SkillTargetType);
             BattleGridManager.Instance.Sidekicks.Add(sidekick);
+        }
+    }
+    
+    private void SetLevelUpEffects(JToken levelUpEffectsArray)
+    {
+        _skillLevelUpController.Effects.Clear();
+        var levelUpEffects = levelUpEffectsArray.ToObject<List<SkillLevelUpEffect>>();
+        foreach (var levelUpEffect in levelUpEffects)
+        {
+            _skillLevelUpController.Effects.Add(levelUpEffect);
         }
     }
 
@@ -279,8 +161,6 @@ public class BattleManager : MonoBehaviour
         AddMoveWap.gameObject.SetActive(true);
         Time.timeScale = 0;
         var graders = FindObjectsOfType<UIGrader>();
-        Debug.Log("graders.Length: " + graders.Length);
-        Debug.Log("options.Count: " + options.Count);
         for (var i = graders.Length - 1; i >= 0; i--)
         {
             if (options.Count <= i) continue;
@@ -290,6 +170,9 @@ public class BattleManager : MonoBehaviour
 
     public void ChooseSkillEffect(SkillLevelUpEffect skillLevelUpEffect)
     {
+        var graders = FindObjectsOfType<UIGrader>();
+        for (var i = graders.Length - 1; i >= 0; i--) graders[i].SetEffect(null);
+        
         _skillLevelUpController.ApplyEffect(skillLevelUpEffect);
         Time.timeScale = 1;
         AddMoveWap.gameObject.SetActive(false);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace battle
@@ -10,9 +11,9 @@ namespace battle
 
         public List<SkillLevelUpEffect> GenerateOption()
         {
-            var maxCount = GenerateOptionCount();
+            var maxSize = GenerateOptionCount();
             List<SkillLevelUpEffect> options = new();
-            for (int i = 0; i < maxCount; i++)
+            for (int i = 0; i < maxSize; i++)
             {
                 int weight = 0;
                 foreach (var effect in Effects)
@@ -20,7 +21,7 @@ namespace battle
                     if (effect.DependCharacter == null ||
                         GetSkill(effect.SkillName).HasCharacter(effect.DependCharacter))
                     {
-                        weight += effect.Weight;
+                        weight += effect.Weight * effect.MaxCount;
                     }
                 }
 
@@ -30,10 +31,10 @@ namespace battle
                     if (Effects[i1].DependCharacter == null ||
                         GetSkill(Effects[i1].SkillName).HasCharacter(Effects[i1].DependCharacter))
                     {
-                        random -= Effects[i1].Weight;
+                        random -= Effects[i1].Weight * Effects[i1].MaxCount;
                         if (random <= 0)
                         {
-                            options.Add(Effects[i1].ShallowCopy());
+                            options.Add(Effects[i1]);
                             break;
                         }
                     }
@@ -66,41 +67,50 @@ namespace battle
         {
             var skill = GetSkill(effect.SkillName);
             if (skill == null) return;
-            switch (effect.FunctionName)
+            foreach (var keyValuePair in effect.Effects)
             {
-                case "ExtraDamageGain":
-                    SkillLevelUpUtils.ExtraDamageGain(skill, (float)effect.Value);
-                    break;
-                case "AddDuration":
-                    SkillLevelUpUtils.AddDuration(skill, (float)effect.Value);
-                    break;
-                case "ReduceCd":
-                    SkillLevelUpUtils.ReduceCd(skill, (float)effect.Value);
-                    break;
-                case "AddScope":
-                    SkillLevelUpUtils.AddScope(skill, (float)effect.Value);
-                    break;
-                case "AddReleaseCount":
-                    SkillLevelUpUtils.AddReleaseCount(skill, (int)effect.Value);
-                    break;
-                case "AddLaunchesCount":
-                    SkillLevelUpUtils.AddLaunchesCount(skill, (int)effect.Value);
-                    break;
-                case "ActiveCharacter":
-                    SkillLevelUpUtils.ActiveCharacter(skill, (string)effect.Value);
-                    break;
+                var functionName = keyValuePair.Key;
+                var value = keyValuePair.Value;
+                switch (functionName)
+                {
+                    case "ExtraDamageGain":
+                        
+                        SkillLevelUpUtils.ExtraDamageGain(skill, float.Parse(value));
+                        break;
+                    case "AddDuration":
+                        SkillLevelUpUtils.AddDuration(skill, float.Parse(value));
+                        break;
+                    case "ReduceCd":
+                        SkillLevelUpUtils.ReduceCd(skill, float.Parse(value));
+                        break;
+                    case "AddScope":
+                        SkillLevelUpUtils.AddScope(skill, float.Parse(value));
+                        break;
+                    case "AddReleaseCount":
+                        SkillLevelUpUtils.AddReleaseCount(skill, int.Parse(value));
+                        break;
+                    case "AddLaunchesCount":
+                        SkillLevelUpUtils.AddLaunchesCount(skill, int.Parse(value));
+                        break;
+                    case "ActiveCharacter":
+                        SkillLevelUpUtils.ActiveCharacter(skill, value);
+                        break;
+                }
             }
             DeleteEffect(effect); 
         }
-        public void DeleteEffect(SkillLevelUpEffect effect)
+
+        private void DeleteEffect(SkillLevelUpEffect effect)
         {
-            
-            foreach (var _effect in Effects)
+            foreach (var _effect in Effects.ToList())
             {
-                if(_effect.Description == effect.Description)
+                if(_effect == effect)
                 {
-                    Effects.Remove(_effect);
-                    break;
+                    Debug.Log("Delete effect: " + effect.SkillName);
+                    if (_effect.MaxCount > 1)
+                        _effect.MaxCount--;
+                    else
+                        Effects.Remove(_effect);
                 }
             }
         }

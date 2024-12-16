@@ -30,17 +30,16 @@ namespace battle
             var sidekicks = BattleGridManager.Instance.Sidekicks;
             if (sidekicks.Count > 0)
             {
+               
+                _isInit = true;
                 for (int i = 0; i < sidekicks.Count; i++)
                 {
                     IntoBattle(i, sidekicks[i]);
                 }
-
-                _isInit = true;
             }
-            else _isInit = false;
         }
-        
-        public void IntoBattle(int index, Sidekick sidekick)
+
+        private void IntoBattle(int index, Sidekick sidekick)
         {
             if(index > 3) return;
             try
@@ -52,7 +51,6 @@ namespace battle
                 var sidekickManager = sidekickObj.GetComponent<SidekickManager>();
                 sidekickManager.Init(sidekick);
                 sidekickPositions[index].gameObject.SetActive(false);
-                BattleGridManager.Instance.Sidekicks.Add(sidekick);
                 SetSkillCd(index, sidekick, sidekickManager);
             }
             catch (Exception e)

@@ -8,22 +8,17 @@ namespace battle
 {
     public class SkillBlazingRay : BaseSkillController
     {
-        private LineRenderer _lineRenderer;
-        private LaserManager _laserManager;
         private Vector2 _startPos;
         private float _length;
         private Vector2 _direction;
         private readonly float _attackInterval = 0.2f;
         private float _lastAttackTime = 0f;
         private MonsterManager _target;
-        
 
-        protected override void Start()
+
+        public override void Start()
         {
            base.Start();
-           Destroy(gameObject, Skill.Duration);
-            _lineRenderer = GetComponentInChildren<LineRenderer>();
-            _laserManager = GetComponentInChildren<LaserManager>();
 
             _startPos = transform.position;
             _length = BattleGridManager.Instance.BattlegroundOppositeLength;
@@ -31,6 +26,7 @@ namespace battle
             SetLaserQuat();
             ComputeDirection();
             releasingAudio.Play();
+            
         }
 
         private void Update()
@@ -43,7 +39,7 @@ namespace battle
                 ComputeDirection();
             }
             if (Skill.IsImpenetrability) UpdateMaxLength();
-            UpdateEndPos();
+            
             if (_lastAttackTime >= _attackInterval)
             {
                 RaycastHit2D[] hits = Physics2D.RaycastAll(_startPos, _direction, _length, Consts.MonsterLayer);
@@ -86,17 +82,14 @@ namespace battle
             {
                 var direction = Utils.DirectionQuaternion(_startPos, _target.transform.position, Vector3.right);
                 transform.rotation = direction;
+                TargetDirection = (_target.transform.position - transform.position).normalized;
             }
             else
+            {
                 transform.rotation = Quaternion.Euler(0, 0, 90);
+                TargetDirection = Vector2.up.normalized;
+            }
         }
-
-        private void UpdateEndPos()
-        {
-            Vector2 endPos = _startPos + _direction * _length;
-            _lineRenderer.SetPosition(1, new Vector2(_length, 0));
-            _laserManager.startVFX.transform.position = _startPos;
-            _laserManager.endVFX.transform.position = endPos;
-        }
+        
     }
 }

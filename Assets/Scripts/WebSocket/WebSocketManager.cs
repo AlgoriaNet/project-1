@@ -1,98 +1,91 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
-using WebSocketSharp;
+using WebSocket;
+using Random = UnityEngine.Random;
+
 
 public class WebSocketManager : MonoBehaviour
 {
-    public class MessageData
-    {
-        public class Content
-        {
-            public string action { get; set; }
-            public int code { get; set; }
-            public string data { get; set; }
-            public string sign { get; set; }
-
-        }
-        public string type { get; set; }
-        public Content message { get; set; }
-        public string identifier { get; set; }
-
-        public string Channel
-        {
-            get
-            {
-                JObject data = JObject.Parse(identifier);
-                return data["channel"]?.ToString();
-            }
-        }
-    }
-
-    private WebSocketSharp.WebSocket ws;
-
     private static WebSocketManager _instance;
+    //广播接收器
+    private static readonly Dictionary<string, Dictionary<string, Action<JObject>>> BroadcastAcceptors = new();
+    //请求回调
+    private static readonly Dictionary<string, Action<JObject>> RequestCallbacks = new();
 
-    private static readonly Dictionary<string, Dictionary<string, Action<JObject>>> ActionCallbacks = new();
-
+    private WebSocketSharp.WebSocket _ws;
     public static WebSocketManager Instance
     {
         get
         {
-            if (!_instance)
-            {
-                _instance = new GameObject("WebSocketManager").AddComponent<WebSocketManager>();
-            }
-
+            if (!_instance) _instance = new GameObject("WebSocketManager").AddComponent<WebSocketManager>();
             return _instance;
         }
     }
+    
+    // 重连连接
+    private const float ReconnectDelay = 0.5f;
+    
 
 
     public void ConnectWebSocket()
     {
-        ws = new WebSocketSharp.WebSocket(Config.websocket);
+        _ws = new WebSocketSharp.WebSocket(Config.websocket);
 
         // 添加事件处理
-        ws.OnOpen += (sender, e) =>
+        _ws.OnOpen += (sender, e) =>
         {
             Debug.Log("WebSocket Connected!");
             GamingSocketApi.Instance.Subscribe();
             GamingSocketApi.Instance.Action("login", new { data =  "WebSocket Connected!"});
         };
 
-        ws.OnMessage += (sender, e) =>
+        _ws.OnMessage += (sender, e) =>
         {
             
             if (e.Data != null)
             {
+                Debug.Log("Socket response:" + e.Data);
                 JObject res = JObject.Parse(e.Data);
-                Debug.Log("Socket response" + e.Data);
                 if (res["type"] != null) return;
-                MessageData data = JsonConvert.DeserializeObject<MessageData>(e.Data);
+                WsResponse data = JsonConvert.DeserializeObject<WsResponse>(e.Data);
                 if (data.Channel != null && data.message is { action: not null })
                 {
                     string channel = data.Channel;
                     string action = data.message.action;
-                    if (ActionCallbacks.ContainsKey(channel) && ActionCallbacks[channel].ContainsKey(action))
+                    if (BroadcastAcceptors.ContainsKey(channel) && BroadcastAcceptors[channel].ContainsKey(action))
                     {
-                        Action<JObject> callback = ActionCallbacks[channel][action];
-                        JObject result = JObject.Parse(data.message.data);
-                        callback?.Invoke(result);
+                        Action<JObject> callback = BroadcastAcceptors[channel][action];
+                        callback?.Invoke(data.message.data);
+                    }
+                }
+                if(data.Channel != null && data.message is { requestId: not null })
+                {
+                    string requestId = data.message.requestId;
+                    if (RequestCallbacks.ContainsKey(requestId))
+                    {
+                        Action<JObject> callback = RequestCallbacks[requestId];
+                        callback?.Invoke(data.message.data);
+                        RequestCallbacks.Remove(requestId);
                     }
                 }
             }
         };
 
-        ws.OnError += (sender, e) => { Debug.LogError("WebSocket Error: " + e.Message); };
+        _ws.OnError += (sender, e) => { Debug.LogError("WebSocket Error: " + e.Message); };
 
-        ws.OnClose += (sender, e) => { Debug.Log("WebSocket Closed!"); };
+        _ws.OnClose += (sender, e) =>
+        {
+            StartCoroutine(Reconnect());
+        };
 
         // 连接到 WebSocket 服务
-        ws.Connect();
+        _ws.Connect();
     }
+    
 
     public void Subscribe(string channel)
     {
@@ -102,35 +95,76 @@ public class WebSocketManager : MonoBehaviour
             identifier = JsonConvert.SerializeObject(new { channel, user_id = 1}),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
-        ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
+        _ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
     }
 
-    public void Action(string channel, string action, object data)
+    
+    public void Action(string channel, string action, object data, string requestId = null)
     {
         string json = JsonConvert.SerializeObject(data);
-        string sign = EncryptionUtil.Encrypt(json);
+        string sign = EncryptionUtil.Encrypt(json, requestId);
         
         var sendMessage = new
         {
             command = "message",
             identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
-            data = JsonConvert.SerializeObject(new { action, json, sign })
+            data = JsonConvert.SerializeObject(new { requestId, action, json, sign })
         };
-        ws.Send(JsonConvert.SerializeObject(sendMessage));
+        _ws.Send(JsonConvert.SerializeObject(sendMessage));
     }
-
-    public void RegisterOnActionResponse(string channel, string action, Action<JObject> successCallback)
+    
+    
+    public void Action(string channel, string action, object data, Action<JObject> successCallback)
     {
-        if (!ActionCallbacks.ContainsKey(channel))
-            ActionCallbacks.Add(channel, new Dictionary<string, Action<JObject>>());
-        ActionCallbacks[channel][action] = successCallback;
+        string requestId = GenerateRequestId();
+        RequestCallbacks.Add(requestId, successCallback);
+        Action(channel, action, data, requestId);
+    }
+    
+    private string GenerateRequestId()
+    {
+        return Guid.NewGuid() + Random.Range(1000, 9999).ToString();
     }
 
+    public static void AddBroadcastAcceptor(string channel, string action, Action<JObject> successCallback)
+    {
+        if (!BroadcastAcceptors.ContainsKey(channel))
+            BroadcastAcceptors.Add(channel, new Dictionary<string, Action<JObject>>());
+        BroadcastAcceptors[channel][action] = successCallback;
+    }
+    
     void OnDestroy()
     {
-        if (ws != null && ws.IsAlive)
+        if (_ws != null && _ws.IsAlive) _ws.Close();
+    }
+    
+    private IEnumerator Reconnect()
+    {
+        BeforeReconnect();
+        while (true)
         {
-            ws.Close();
+            Debug.Log("Waiting to reconnect...");
+            yield return new WaitForSeconds(ReconnectDelay);
+            try
+            {
+                ConnectWebSocket();
+                break;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError("Reconnect attempt failed: " + ex.Message);
+            }
         }
+        AfterReconnect();
+    }
+
+    private void AfterReconnect()
+    {
+        Time.timeScale = 1;
+    }
+
+    private void BeforeReconnect()
+    {
+        Time.timeScale = 0;
     }
 }

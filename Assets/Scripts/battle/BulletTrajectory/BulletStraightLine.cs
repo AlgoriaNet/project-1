@@ -7,8 +7,8 @@ namespace battle.BulletTrajectory
     {
         public bool AdjustmentRotation = true;
         public Vector2 InitialPosition;
-        
-        protected override void Start()
+
+        public override void Start()
         {
             base.Start();
             if (AdjustmentRotation) 
@@ -16,7 +16,7 @@ namespace battle.BulletTrajectory
         }
         void Update()
         {
-            if (!SkillSetting.IsDynamic) return;
+            if (!Skill.IsDynamic) return;
             transform.position +=  (Vector3)TargetDirection * (Skill.Speed * Time.deltaTime);
            
         }

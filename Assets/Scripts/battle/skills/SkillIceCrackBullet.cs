@@ -8,7 +8,7 @@ public class SkillIceCrackBullet : BaseSkillController
     private Rigidbody2D _bulletRigidbody;   
     public int separateNumber = 5;
 
-    protected override void Start()
+    public override void Start()
     {
         base.Start();
         transform.rotation = Utils.DirectionQuaternion(TargetDirection, Vector2.left);

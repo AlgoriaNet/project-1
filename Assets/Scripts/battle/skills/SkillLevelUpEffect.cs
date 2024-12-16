@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Object = System.Object;
 
@@ -6,12 +7,13 @@ namespace battle
 {
     public class SkillLevelUpEffect
     {
+        public string Id;
         public string SkillName;
         public string EffectName;
         public string Description;
-        public string FunctionName;
-        public Object Value;
+        public Dictionary<string, string> Effects;
         public int Weight;
+        public int MaxCount;
         public string DependCharacter;
 
         public Sprite LoadIconSprite()

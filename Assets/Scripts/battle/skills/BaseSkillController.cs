@@ -9,8 +9,6 @@ namespace battle
         public AudioSource releasingAudio;
         public AudioSource releaseAudio;
         public AudioSource hitAudio;
-        [FormerlySerializedAs("IsDestroyAfterDuration")] 
-        public bool isDestroyAfterDuration = true;
 
         protected Living Living;
         protected SkillSetting SkillSetting;
@@ -20,19 +18,25 @@ namespace battle
         protected int Stage = 1;
 
 
-        protected virtual void Start()
+        public virtual void Start()
         {
-            SetSkillSetting(GetComponent<SkillSetting>());
+            SkillSetting setting = GetComponent<SkillSetting>();
+            if(!setting) setting = GetComponentInParent<SkillSetting>();
+            SetSkillSetting(setting);
+            BaseInit();
             Init();
-            if(isDestroyAfterDuration) Destroy(gameObject, Skill.Duration);
         }
 
-        protected void Init()
+        private void BaseInit()
         {
-            gameObject.transform.localScale *= Skill.Scope;
-
+            gameObject.transform.localScale *= Skill?.Scope ?? 1;
             if (releaseAudio) releaseAudio.Play();
             if (releasingAudio) releasingAudio.PlayDelayed(releaseAudio ? releaseAudio.time : 0);
+        }
+
+        protected virtual void Init()
+        {
+            
         }
 
         protected virtual void OnTriggerEnter2D(Collider2D other)
@@ -40,17 +44,17 @@ namespace battle
             if (other.gameObject.CompareTag("Monster"))
             {
                 Attack(other.GetComponent<MonsterManager>());
-                if (Living.Skill.IsImpenetrability)
-                    Destroy(gameObject, Living.Skill.DestroyDelay);
+                if (Skill.IsImpenetrability)
+                    Destroy(gameObject, Skill.DestroyDelay);
             }
         }
 
-        protected virtual void SetSkillSetting(SkillSetting skillSetting)
+        protected  void SetSkillSetting(SkillSetting skillSetting)
         {
             SkillSetting = skillSetting;
             Living = skillSetting.Living;
             TargetIndex = skillSetting.targetIndex;
-            Skill = Living.Skill;
+            Skill = skillSetting.Skill;
             TargetDirection = skillSetting.targetDirection;
         }
 
@@ -77,7 +81,7 @@ namespace battle
             WhenAttackAfter();
         }
 
-        protected virtual MonsterManager GetTarget()
+        protected MonsterManager GetTarget()
         {
             return BattleGridManager.Instance.GetTarget(Skill.SkillTargetType, TargetIndex);
         }
@@ -86,7 +90,7 @@ namespace battle
         {
         }
 
-        protected virtual void AppendBuff(Monster monster, string buffCharacter)
+        protected void AppendBuff(Monster monster, string buffCharacter)
         {
             var buff = BuffFactory.CreateBuff(buffCharacter);
             monster.BuffManager.AddBuff(buff);

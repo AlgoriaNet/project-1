@@ -8,6 +8,7 @@ namespace entity
         Ice,
         Wind,
         Physics,
+        Darkly,
         Cure,
         Burn
     }

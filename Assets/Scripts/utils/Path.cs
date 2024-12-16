@@ -9,6 +9,7 @@ namespace utils
         public static readonly string SkillPrefab = "Skills/Skill_{0}";
         public static readonly string MonsterPrefab = "Monsters/M_{0}";
         public static readonly string MonsterSprite = "Monsters/AnimationImg/{0}/{0}_2";
+        public static readonly string LoadingImage = "Loading/Loading{0}";
         
         
         public static string GetPath(string key, params string[] args)

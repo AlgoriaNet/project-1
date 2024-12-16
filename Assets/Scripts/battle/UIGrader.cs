@@ -24,7 +24,7 @@ public class UIGrader : MonoBehaviour
         text.text = SkillLevelUpEffect?.Description;
     }
     
-    public void Choose()
+    private void Choose()
     {
         BattleManager.Instance.ChooseSkillEffect(SkillLevelUpEffect);
     }

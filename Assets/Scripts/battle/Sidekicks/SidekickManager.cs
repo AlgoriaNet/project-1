@@ -19,14 +19,13 @@ namespace battle
         [HideInInspector] public GameObject skillCdMask;
 
         private Animator _animator;
-        private GameObject _skillPrefab;
         private Sidekick _sidekick;
         private bool _isReleasing;
         private int _launchesTimes;
         private float _waitingTime;
         private float _waitLaunchesIntervalTime;
         private float _releaseSkillTime;
-        
+
         protected void Start()
         {
             _animator = GetComponentInChildren<Animator>();
@@ -49,11 +48,6 @@ namespace battle
             _launchesTimes = 0;
             _waitingTime = 0;
             _waitLaunchesIntervalTime = 0;
-
-            var skillPrefab = Resources.Load<GameObject>(Path.GetPath(Path.SkillPrefab, sidekick.Skill.Name));
-            Debug.Log($"SKill Path: {Path.GetPath(Path.SkillPrefab, sidekick.Skill.Name)}");
-            Debug.Log($"Skill Prefab: {skillPrefab}");
-            if(skillPrefab) _skillPrefab = skillPrefab;
             sidekickBack.sprite = Resources.Load<Sprite>(Path.GetPath(Path.SidekickBackSprite, sidekick.Name));
         }
 
@@ -63,26 +57,14 @@ namespace battle
             yield return null;
             for (int i = 0; i < _sidekick.Skill.ReleaseCount; i++)
             {
-                GameObject skillObject = Instantiate(_skillPrefab);
-                var skillManager = skillObject.GetComponent<SkillSetting>();
-                skillManager.Living = _sidekick;
-                skillManager.targetIndex = i;
-                if (_sidekick.Skill.IsLivingPositionRelease)
-                {
-                    skillObject.transform.position = releaseSkillPosition.position;
-                    var targetPosition = BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.SkillTargetType, i);
-                    if (_sidekick.Skill.SkillTargetType == SkillTargetType.LatestNearby)
-                    {
-                        skillManager.targetDirection = Utils.AngleOffsetDirection(
-                            targetPosition - releaseSkillPosition.position,
-                            _sidekick.Skill.MaxAngle, _sidekick.Skill.ReleaseCount, i);
-                    }
-                    else
-                        skillManager.targetDirection = (targetPosition - releaseSkillPosition.position).normalized;
-                }
-                else
-                    skillObject.transform.position =
-                        BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.SkillTargetType, i);
+                var targetPosition = BattleGridManager.Instance.GetTargetPosition(_sidekick.Skill.SkillTargetType, i);
+                var targetDirection = _sidekick.Skill.SkillTargetType == SkillTargetType.LatestNearby
+                    ? Utils.AngleOffsetDirection(targetPosition - releaseSkillPosition.position, _sidekick.Skill.MaxAngle, _sidekick.Skill.ReleaseCount, i)
+                    : (Vector2)(targetPosition - releaseSkillPosition.position).normalized;
+                
+                var position = _sidekick.Skill.IsLivingPositionRelease ? releaseSkillPosition.position : targetPosition;
+                
+                SkillFactory.Create( _sidekick.Skill.Name, _sidekick, _sidekick.Skill, i, targetDirection, position);
             }
             OnSkillReleased();
         }
@@ -122,7 +104,7 @@ namespace battle
         // ReSharper disable Unity.PerformanceAnalysis
         private void HandleSkillRelease()
         {
-            if (_isReleasing || _skillPrefab == null) return;
+            if (_isReleasing) return;
             _waitLaunchesIntervalTime += Time.deltaTime;
             if (_launchesTimes > 0 && _waitLaunchesIntervalTime < _sidekick.Skill.LaunchesInterval) return;
             _launchesTimes++;

@@ -13,13 +13,13 @@ namespace battle
             {
                 var monsterManager = other.GetComponent<MonsterManager>();
                 Attack(monsterManager);
-                if (Living.Skill.IsImpenetrability)
+                if (Skill.IsImpenetrability)
                 {
-                    SkillSetting.IsDynamic = false;
-                    Destroy(gameObject, Living.Skill.DestroyDelay);
+                    // Skill.IsDynamic = false;
+                    Destroy(gameObject, Skill.DestroyDelay);
                 }
-                fireball.SetActive(false);
-                blast.SetActive(true);
+                // fireball.SetActive(false);
+                // blast.SetActive(true);
             }
         }
     }

@@ -38,7 +38,7 @@ namespace battle
             isGenerateOver = false;
             var settingStr =
                 "[{\"monsterIds\":[\"Abyss_Warlord\",\"Bone_Imp\",\"Clockwork_Phantom\",\"Creeping_Corpse\",\"Dark_Fang\",\"Elemental_Titan\",\"Evil_Goat\",\"Fire_Fiend\",\"Flaming_Giant\",\"Flying_Dragon\",\"Goblin\",\"Grim_Reaper\",\"Havoc_Goat\",\"Mech_Goblin\",\"Mech_Spider\",\"Scrap_Crawler\",\"Shadow_Bat\",\"Spitting_Bloom\",\"Vampire\",\"Venom_Frog\",], " +
-                " \"times\": 1000,\"frequency\": 0.5},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
+                " \"times\": 1000,\"frequency\": 1},{\"monsterIds\":[2,3],\"times\": 50, \"frequency\":200},{\"monsterIds\":[1],  \"times\": 50, \"frequency\":0.15},{\"monsterIds\":[1],  \"times\": 10, \"frequency\":0.5}]";
 
             _monsterSettings = JsonConvert.DeserializeObject<List<MonsterSetting>>(settingStr);
         }
@@ -72,10 +72,10 @@ namespace battle
                     Monster entity = new Monster
                     {
                         Name = id,
-                        Hp = 1000,
+                        Hp = 200,
                         Atk = 50,
                         Speed = 50,
-                        Exp = 1,
+                        Exp = 10,
                     };
                     monsterManager.Init(entity);
                     

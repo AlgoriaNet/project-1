@@ -26,14 +26,9 @@ public class EGA_Laser : MonoBehaviour
 
     void Start ()
     {
-        //Get LineRender and ParticleSystem components from current prefab;  
         Laser = GetComponent<LineRenderer>();
         Effects = GetComponentsInChildren<ParticleSystem>();
         Hit = HitEffect.GetComponentsInChildren<ParticleSystem>();
-        //if (Laser.material.HasProperty("_SpeedMainTexUVNoiseZW")) LaserStartSpeed = Laser.material.GetVector("_SpeedMainTexUVNoiseZW");
-        //Save [1] and [3] textures speed
-        //{ DISABLED AFTER UPDATE}
-        //LaserSpeed = LaserStartSpeed;
     }
 
     void Update()
@@ -79,8 +74,6 @@ public class EGA_Laser : MonoBehaviour
                 //Texture tiling
                 Length[0] = MainTextureLength * (Vector3.Distance(transform.position, EndPos));
                 Length[2] = NoiseTextureLength * (Vector3.Distance(transform.position, EndPos));
-                //LaserSpeed[0] = (LaserStartSpeed[0] * 4) / (Vector3.Distance(transform.position, EndPos)); {DISABLED AFTER UPDATE}
-                //LaserSpeed[2] = (LaserStartSpeed[2] * 4) / (Vector3.Distance(transform.position, EndPos)); {DISABLED AFTER UPDATE}
             }
             //Insurance against the appearance of a laser in the center of coordinates!
             if (Laser.enabled == false && LaserSaver == false)
