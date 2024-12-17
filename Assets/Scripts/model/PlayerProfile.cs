@@ -11,15 +11,7 @@ namespace model
 
         public static PlayerProfile Data
         {
-            get
-            {
-                if (_data == null)
-                {
-                    _data = new PlayerProfile();
-                }
-
-                return _data;
-            }
+            get { return _data ??= new PlayerProfile(); }
         }
 
         private PlayerProfile(){}
@@ -27,7 +19,7 @@ namespace model
         public void SetPlayer(Player player)
         {
             Player = player;
-            NotifyListeners();
+            NotifyListeners("Player");
         }
     }
 }
