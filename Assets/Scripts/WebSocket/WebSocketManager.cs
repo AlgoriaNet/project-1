@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PimDeWitte.UnityMainThreadDispatcher;
 using UnityEngine;
+using UnityEngine.Events;
 using WebSocket;
 using Random = UnityEngine.Random;
 
@@ -12,11 +14,12 @@ public class WebSocketManager : MonoBehaviour
 {
     private static WebSocketManager _instance;
     //广播接收器
-    private static readonly Dictionary<string, Dictionary<string, Action<JObject>>> BroadcastAcceptors = new();
+    private static readonly Dictionary<string, Dictionary<string, UnityAction<JObject>>> BroadcastAcceptors = new();
     //请求回调
-    private static readonly Dictionary<string, Action<JObject>> RequestCallbacks = new();
+    private static readonly Dictionary<string, UnityAction<JObject>> RequestCallbacks = new();
 
     private WebSocketSharp.WebSocket _ws;
+    
     public static WebSocketManager Instance
     {
         get
@@ -58,8 +61,10 @@ public class WebSocketManager : MonoBehaviour
                     string action = data.message.action;
                     if (BroadcastAcceptors.ContainsKey(channel) && BroadcastAcceptors[channel].ContainsKey(action))
                     {
-                        Action<JObject> callback = BroadcastAcceptors[channel][action];
-                        callback?.Invoke(data.message.data);
+                        UnityAction<JObject> callback = BroadcastAcceptors[channel][action];
+                        UnityMainThreadDispatcher.Instance().Enqueue(() =>  callback?.Invoke(data.message.data));
+
+                       
                     }
                 }
                 if(data.Channel != null && data.message is { requestId: not null })
@@ -67,8 +72,8 @@ public class WebSocketManager : MonoBehaviour
                     string requestId = data.message.requestId;
                     if (RequestCallbacks.ContainsKey(requestId))
                     {
-                        Action<JObject> callback = RequestCallbacks[requestId];
-                        callback?.Invoke(data.message.data);
+                        UnityAction<JObject> callback = RequestCallbacks[requestId];
+                        UnityMainThreadDispatcher.Instance().Enqueue(() =>   callback?.Invoke(data.message.data));
                         RequestCallbacks.Remove(requestId);
                     }
                 }
@@ -114,7 +119,7 @@ public class WebSocketManager : MonoBehaviour
     }
     
     
-    public void Action(string channel, string action, object data, Action<JObject> successCallback)
+    public void Action(string channel, string action, object data, UnityAction<JObject> successCallback)
     {
         string requestId = GenerateRequestId();
         RequestCallbacks.Add(requestId, successCallback);
@@ -126,10 +131,10 @@ public class WebSocketManager : MonoBehaviour
         return Guid.NewGuid() + Random.Range(1000, 9999).ToString();
     }
 
-    public static void AddBroadcastAcceptor(string channel, string action, Action<JObject> successCallback)
+    public static void AddBroadcastAcceptor(string channel, string action, UnityAction<JObject> successCallback)
     {
         if (!BroadcastAcceptors.ContainsKey(channel))
-            BroadcastAcceptors.Add(channel, new Dictionary<string, Action<JObject>>());
+            BroadcastAcceptors.Add(channel, new Dictionary<string, UnityAction<JObject>>());
         BroadcastAcceptors[channel][action] = successCallback;
     }
     

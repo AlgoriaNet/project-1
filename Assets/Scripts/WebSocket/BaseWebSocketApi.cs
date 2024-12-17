@@ -1,6 +1,5 @@
-using System;
 using Newtonsoft.Json.Linq;
-using UnityEngine;
+using UnityEngine.Events;
 using Object = System.Object;
 
 public class BaseWebSocketApi
@@ -22,12 +21,12 @@ public class BaseWebSocketApi
         WebSocketManager.Instance.Action(Channel, action, data);
     }
     
-    public void Action(string action, Object data, Action<JObject> callback)
+    public void Action(string action, Object data, UnityAction<JObject> callback)
     {
         WebSocketManager.Instance.Action(Channel, action, data, callback);
     }
     
-    public void AddBroadcastAcceptor(string action, Action<JObject> callback)
+    public void AddBroadcastAcceptor(string action, UnityAction<JObject> callback)
     {
         WebSocketManager.AddBroadcastAcceptor(Channel, action, callback);
     }
