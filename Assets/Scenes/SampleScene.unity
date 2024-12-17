@@ -2814,6 +2814,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonGroup: {fileID: 751793544}
+  duration: 0.5
 --- !u!114 &393296752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2860,7 +2861,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 393296751}
         m_TargetAssemblyTypeName: ToggleIconGroup, Assembly-CSharp
-        m_MethodName: ToggleVisibility
+        m_MethodName: ToggleVisibilityToBottom
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3257,7 +3258,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 490087919}
         m_TargetAssemblyTypeName: ToggleIconGroup, Assembly-CSharp
-        m_MethodName: ToggleVisibility
+        m_MethodName: ToggleVisibilityToTop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3318,6 +3319,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonGroup: {fileID: 1966353966}
+  duration: 0.5
 --- !u!1 &507908590
 GameObject:
   m_ObjectHideFlags: 0
@@ -3511,12 +3513,12 @@ GameObject:
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
   m_Layer: 0
-  m_Name: Main Camera
+  m_Name: BattonCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!81 &519420029
 AudioListener:
   m_ObjectHideFlags: 0
