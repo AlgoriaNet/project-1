@@ -5,23 +5,31 @@ namespace model
 {
     public abstract class ApplicationModel
     {
-        private readonly List<UnityEvent<ApplicationModel>> _listeners = new();
+        private readonly Dictionary<string, List<UnityAction<ApplicationModel>>> _listeners = new();
+        private const string DefaultKey = "default";
         
-        public void AddListener(UnityEvent<ApplicationModel> listener)
+        public void AddListener(UnityAction<ApplicationModel> listener, string key = DefaultKey)
         {
-            _listeners.Add(listener);
+            if (!_listeners.ContainsKey(key)) 
+                _listeners.Add(key, new List<UnityAction<ApplicationModel>>());
+            _listeners[key].Add(listener);
         }
         
-        public void RemoveListener(UnityEvent<ApplicationModel> listener)
+        public void RemoveListener(UnityAction<ApplicationModel> listener, string key = DefaultKey)
         {
-            _listeners.Remove(listener);
+            if (!_listeners.TryGetValue(key, value: out var listener1))
+                return;
+            listener1.Remove(listener);
         }
 
-        protected void NotifyListeners()
+        protected void NotifyListeners(string key = DefaultKey)
         {
-            foreach (var listener in _listeners)
+            if (_listeners.TryGetValue(key, out var listeners))
             {
-                listener.Invoke(this);
+                foreach (var listener in listeners)
+                {
+                    listener.Invoke(this);
+                }
             }
         }
     }
