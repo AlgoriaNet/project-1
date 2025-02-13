@@ -19,7 +19,7 @@ public class Row1GroupDynamicSize : MonoBehaviour
     {
         // Retrieve stored values from PlayerPrefs
         string username = PlayerPrefs.GetString("Username", "DefaultName"); 
-        string userIconPath = PlayerPrefs.GetString("UserIconPath", "Ui/UserIcons/WhiteBorderIcons/00"); 
+        string userIconPath = PlayerPrefs.GetString("UserIconPath", "UILoading/CharacterImages/UserIcons/WhiteBorderIcons/00.png"); 
 
         // Update the UI
         if (topLevelNameText != null)

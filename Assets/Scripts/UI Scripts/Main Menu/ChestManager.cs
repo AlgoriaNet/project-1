@@ -13,7 +13,7 @@ public class ChestManager : MonoBehaviour
     private int[] countdownDurations = { 300, 600, 900, 1800 }; // Durations in seconds (5, 10, 15, 30 minutes)
     private int currentCountdownIndex = 0;
     private float countdownTime;
-    private bool isCountdownActive = false;
+    public bool isCountdownActive = false;
 
     void Start()
     {
@@ -27,6 +27,8 @@ public class ChestManager : MonoBehaviour
 
         // Check if the chest box should be visible
         bool isChestBoxVisible = PlayerPrefs.GetInt("ChestBoxVisible", 1) == 1; // Default to visible
+        chestBox.SetActive(isChestBoxVisible);
+
         if (!isChestBoxVisible)
         {
             chestBox.SetActive(false);
@@ -192,10 +194,39 @@ public class ChestManager : MonoBehaviour
         }
     }
 
-    private void SaveState()
+    public void SaveState()
     {
         PlayerPrefs.SetInt("CurrentCountdownIndex", currentCountdownIndex);
         PlayerPrefs.SetFloat("CountdownTime", countdownTime);
         PlayerPrefs.SetString("LastSavedTime", System.DateTime.Now.ToString());
+        PlayerPrefs.Save(); // Ensure data is written immediately
+    }
+
+
+    // Temporary for reset chestbox, remove it after test 
+    public void ResetChestBox()
+    {
+        // Reset PlayerPrefs for the chest box
+        PlayerPrefs.SetInt("CurrentCountdownIndex", 0);
+        PlayerPrefs.SetFloat("CountdownTime", countdownDurations[0]);
+        PlayerPrefs.SetString("LastSavedTime", System.DateTime.Now.ToString());
+        PlayerPrefs.SetInt("ChestBoxVisible", 1); // Ensure the chest box is visible
+        PlayerPrefs.Save(); // Write changes to disk
+
+        // Reactivate chest box
+        if (chestBox != null)
+        {
+            chestBox.SetActive(true);
+        }
+
+        // Reset state variables
+        currentCountdownIndex = 0;
+        countdownTime = countdownDurations[0];
+        isCountdownActive = true;
+
+        // 🔹 Reset the animation to its idle state
+        chestAnimator?.ResetTrigger("ChestReady");
+
+        Debug.Log("✅ ChestBox has been reset for testing.");
     }
 }
