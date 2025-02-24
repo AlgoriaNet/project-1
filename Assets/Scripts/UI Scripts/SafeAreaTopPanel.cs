@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(RectTransform))]
-public class AdjustTopPanelForSafeArea : MonoBehaviour
+public class SafeAreaTopPanel : MonoBehaviour
 {
     void Awake()
     {

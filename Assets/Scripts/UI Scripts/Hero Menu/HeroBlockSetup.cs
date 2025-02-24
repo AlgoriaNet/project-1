@@ -32,6 +32,26 @@ public class HeroBlockSetup : MonoBehaviour
     public GameObject page2;  
     public GameObject page3; 
     public GameObject page4;   
+    public GameObject ForgePage; 
+    public Button enhanceButton;
+    public Button upgradeButton;
+    public GameObject enhancePanel;
+    public GameObject upgradePanel;
+    public GameObject enhanceOrangeImage;
+    public GameObject enhanceGreyImage;
+    public GameObject upgradeOrangeImage;
+    public GameObject upgradeGreyImage;
+    public Transform forgePackContent; 
+    public GridLayoutGroup forgePackGrid;     public GameObject forgeBlock; 
+
+    public GameObject DismantlePage;
+    public Transform dismantlePackContent; 
+    public GridLayoutGroup dismantlePackGrid; 
+
+    public GameObject CongratsPage;
+    public GameObject DismantlePack;
+    public RectTransform dismantleBlock; 
+
 
     // A dictionary to store the mapping between gem image file names and their localized names
     private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
@@ -450,5 +470,204 @@ public class HeroBlockSetup : MonoBehaviour
 
         // Show Step 3 panel
         step2Panel.SetActive(true);
+    }
+
+    public void OpenForgePage()
+    {
+        ForgePage.SetActive(true);
+        CloseStep3();
+        step2Panel.SetActive(false);
+
+        LoadForgePagePack(); // Load Pack after activating Hero Step 2
+
+        // Add button listeners when ForgePage opens
+        enhanceButton.onClick.RemoveAllListeners();
+        upgradeButton.onClick.RemoveAllListeners();
+        enhanceButton.onClick.AddListener(() => ToggleEnhanceUpgrade(true));
+        upgradeButton.onClick.AddListener(() => ToggleEnhanceUpgrade(false));
+
+        // Set default state
+        ToggleEnhanceUpgrade(true);
+    }
+
+
+    // This Loading block data method will be only triggered manualy by the button on the Page_1
+    public void LoadForgePageData()
+    {
+        if (forgeBlock == null)
+        {
+            Debug.LogError("❌ ForgePage Block NOT assigned in Inspector!");
+            return;
+        }
+
+        // Reference Hero Step 3 → Page_1 → UpperGroup → Block
+        Transform heroBlock = page1.transform.Find("UpperGroup/Block");
+        if (heroBlock == null)
+        {
+            Debug.LogError("❌ Hero Step 3 Block NOT found!");
+            return;
+        }
+
+        // Copy TopText
+        TextMeshProUGUI heroTopText = heroBlock.Find("TopText")?.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
+        if (heroTopText != null && forgeTopText != null)
+        {
+            forgeTopText.text = heroTopText.text;
+        }
+
+        // Copy Image
+        Image heroImage = heroBlock.Find("Image")?.GetComponent<Image>();
+        Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
+        if (heroImage != null && forgeImage != null)
+        {
+            forgeImage.sprite = heroImage.sprite;
+            forgeImage.color = Color.white; // Ensure visibility
+        }
+
+        Debug.Log("✅ ForgePage Block Updated Successfully!");
+    }
+
+    public void LoadForgePagePack()
+    {
+        if (forgePackContent == null)
+        {
+            Debug.LogError("❌ ForgePage Pack Content NOT assigned in Inspector!");
+            return;
+        }
+
+        // Clear existing items in ForgePage Pack
+        foreach (Transform child in forgePackContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Clone each item from the existing Pack
+        foreach (Transform item in contentPanel) // contentPanel is already assigned in HeroBlockSetup
+        {
+            GameObject newItem = Instantiate(item.gameObject, forgePackContent);
+            newItem.name = item.name; // Keep the same name
+        }
+
+        // ✅ Apply dynamic grid adjustments
+        if (forgePackGrid != null)
+        {
+            forgePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            forgePackGrid.constraintCount = 5; // Match LowerGroup settings
+            forgePackGrid.cellSize = new Vector2(blockWidth, blockWidth); 
+            forgePackGrid.spacing = new Vector2(spacingX, spacingY);
+            forgePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
+            forgePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
+        }
+
+        Debug.Log("✅ ForgePage Pack Loaded Successfully!");
+    }
+
+    private void ToggleEnhanceUpgrade(bool isEnhance)
+    {
+        // Enable Enhance Panel, Disable Upgrade Panel
+        enhancePanel.SetActive(isEnhance);
+        upgradePanel.SetActive(!isEnhance);
+
+        // Handle Enhance Button visuals
+        enhanceButton.transform.Find("OrangeButton").gameObject.SetActive(isEnhance);
+        enhanceButton.transform.Find("GreyButton").gameObject.SetActive(!isEnhance);
+
+        // Handle Upgrade Button visuals
+        upgradeButton.transform.Find("OrangeButton").gameObject.SetActive(!isEnhance);
+        upgradeButton.transform.Find("GreyButton").gameObject.SetActive(isEnhance);
+    }
+
+    public void CloseForgePage()
+    {
+        ForgePage.SetActive(false);
+        step2Panel.SetActive(true);
+
+        // Clear ForgeBlock TopText and Image
+        TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
+        Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
+
+        if (forgeTopText != null) forgeTopText.text = "";
+        if (forgeImage != null)
+        {
+            forgeImage.sprite = null;
+            forgeImage.color = new Color(0, 0, 0, 0); // Fully transparent
+        }
+
+        Debug.Log("✅ ForgePage Block Cleared on Close!");
+    }
+
+    public void OpenDismantlePage()
+    {
+        DismantlePage.SetActive(true);
+        CloseStep3();
+        step2Panel.SetActive(false);
+
+        LoadDismantlePagePack();
+    }
+
+    public void LoadDismantlePagePack()
+    {
+        if (dismantlePackContent == null)
+        {
+            Debug.LogError("❌ ForgePage Pack Content NOT assigned in Inspector!");
+            return;
+        }
+
+        // Clear existing items in ForgePage Pack
+        foreach (Transform child in dismantlePackContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Clone each item from the existing Pack
+        foreach (Transform item in contentPanel) // contentPanel is already assigned in HeroBlockSetup
+        {
+            GameObject newItem = Instantiate(item.gameObject, dismantlePackContent);
+            newItem.name = item.name; // Keep the same name
+        }
+
+        // ✅ Apply dynamic grid adjustments
+        if (dismantlePackGrid != null)
+        {
+            dismantlePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            dismantlePackGrid.constraintCount = 5; // Match LowerGroup settings
+            dismantlePackGrid.cellSize = new Vector2(blockWidth, blockWidth); 
+            dismantlePackGrid.spacing = new Vector2(spacingX, spacingY);
+            dismantlePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
+            dismantlePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
+        }
+
+        Debug.Log("✅ dismantlePage Pack Loaded Successfully!");
+    }
+
+    public void OpenCongratsPage()
+    {
+        CongratsPage.SetActive(true);
+        DismantlePack.SetActive(false);
+        MoveBlockDown();
+    }
+
+    public void CloseDismantlePage()
+    {
+        DismantlePage.SetActive(false);
+        step2Panel.SetActive(true);
+
+        CongratsPage.SetActive(false);
+        DismantlePack.SetActive(true);
+
+        MoveBlockUp();
+    }
+
+    public void MoveBlockDown()
+    {
+        dismantleBlock.anchorMin = new Vector2(dismantleBlock.anchorMin.x, 0.5f);
+        dismantleBlock.anchorMax = new Vector2(dismantleBlock.anchorMax.x, 0.5f);
+    }
+
+    public void MoveBlockUp()
+    {
+        dismantleBlock.anchorMin = new Vector2(dismantleBlock.anchorMin.x, 0.75f);
+        dismantleBlock.anchorMax = new Vector2(dismantleBlock.anchorMax.x, 0.7f);
     }
 }

@@ -138,6 +138,7 @@ public class ItemLoader : MonoBehaviour
     private void OpenDismantlePage()
     {
         // Logic for Dismantle (to be implemented)
+        FindObjectOfType<HeroBlockSetup>()?.OpenDismantlePage();
         Debug.Log("Opening Dismantle Page...");
     }
 

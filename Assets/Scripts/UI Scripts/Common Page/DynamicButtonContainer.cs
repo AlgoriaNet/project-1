@@ -3,46 +3,79 @@ using UnityEngine.UI;
 
 public class DynamicButtonContainer : MonoBehaviour
 {
+    // // Set this flag in the Inspector. When true, the 6th button (Button_6) will be enabled.
+    // public bool isSixthButtonUnlocked = true;
+
+    // Assign Button_6 in the Inspector.
+    public GameObject Button_6;
+
+    // For testing purposes, set a mock user level here.
+    // In the future, you can replace this with:
+    // int userLevel = PlayerPrefs.GetInt("UserLevel", 1);
+    private int userLevel; // Local variable for testing.
+
+    void Awake()
+    {
+        // Declare and set the user level for testing. overriding the value in inspector
+        userLevel = 1;
+    }
+
     void Start()
     {
+        // Determine if the 6th button should be unlocked (e.g., level >= 20).
+        bool isSixthButtonUnlocked = userLevel >= 20;
+
         RectTransform containerRect = GetComponent<RectTransform>();
 
-        // Get the current screen width (physical resolution of the device in pixels)
+        // Get the current screen width (physical resolution in pixels)
         float screenWidth = Screen.width;
 
         // Initially set the container's width equal to the screen width
         float containerWidth = screenWidth;
-        containerRect.sizeDelta = new Vector2(0, containerWidth);  // Temporarily set the container's width in the sizeDelta
+        containerRect.sizeDelta = new Vector2(0, containerWidth);
 
-        // Retrieve the actual container width after Unity's layout adjustments
+        // Retrieve the actual container width after layout adjustments
         containerWidth = containerRect.rect.width;
 
-        // Calculate the container height as 1/5 of the container width
-        float containerHeight = containerWidth / 5;
+        // Determine the number of buttons: 5 if locked, 6 if unlocked.
+        int buttonCount = isSixthButtonUnlocked ? 6 : 5;
 
-        // Update the sizeDelta to apply the calculated height while keeping the width
+        // Calculate container height based on the button count.
+        float containerHeight = containerWidth / buttonCount;
+
+        // Update the container's height (keeping its width)
         containerRect.sizeDelta = new Vector2(containerRect.sizeDelta.x, containerHeight);
 
-        // Set the Y position of the container to half of its height to properly align it at the bottom
+        // Align the container vertically (for example, set its anchored Y position to half the height)
         containerRect.anchoredPosition = new Vector2(containerRect.anchoredPosition.x, containerHeight / 2);
 
-        // Adjust the height of each button dynamically and set the preferred height
+        // Adjust each child button's height.
         foreach (Transform child in transform)
         {
             RectTransform buttonRect = child.GetComponent<RectTransform>();
             LayoutElement layoutElement = child.GetComponent<LayoutElement>();
+
             if (buttonRect != null)
             {
-                // Ensure the button height matches the container height
+                // Set each button's height to match the container height.
                 buttonRect.sizeDelta = new Vector2(buttonRect.sizeDelta.x, containerHeight);
 
-                // Add or update the LayoutElement to respect preferred height
+                // Add or update a LayoutElement to enforce the preferred height.
                 if (layoutElement == null)
                 {
                     layoutElement = child.gameObject.AddComponent<LayoutElement>();
                 }
                 layoutElement.preferredHeight = containerHeight;
             }
+        }
+
+        // If the 6th button is unlocked, simply enable it.
+        if (isSixthButtonUnlocked)
+        {
+            Debug.Log("isSixthButtonUnlocked is true: enabling Button_6");
+            Button_6.SetActive(true);
+            // Force the layout group to rebuild to reflect the change
+            UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate(containerRect);
         }
     }
 }
