@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(RectTransform))]
-public class AdjustTopPanelForSafeArea : MonoBehaviour
+public class SafeAreaTopPanel : MonoBehaviour
 {
     void Awake()
     {
@@ -27,7 +27,7 @@ public class AdjustTopPanelForSafeArea : MonoBehaviour
         rectTransform.anchorMin = anchorMin;
         rectTransform.anchorMax = anchorMax;
 
-        Debug.Log($"Safe Area: {safeArea}");
-        Debug.Log($"Anchor Min: {anchorMin}, Anchor Max: {anchorMax}");
+        // Debug.Log($"Safe Area: {safeArea}");
+        // Debug.Log($"Anchor Min: {anchorMin}, Anchor Max: {anchorMax}");
     }
 }
