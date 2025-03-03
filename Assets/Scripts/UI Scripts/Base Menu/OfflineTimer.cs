@@ -15,25 +15,28 @@ public class OfflineTimer : MonoBehaviour
 
     private void Start()
     {
-        CalculateOfflineTime(); // Get the last offline duration
+        CalculateAccumulatedOfflineTime(); // Get accumulated offline duration
         UpdateUI(); // Apply values to UI
     }
 
-    private void CalculateOfflineTime()
+    private void CalculateAccumulatedOfflineTime()
     {
-        // Retrieve last log-off time from PlayerPrefs
         if (PlayerPrefs.HasKey("LastLogOffTime"))
         {
             string lastLogOffString = PlayerPrefs.GetString("LastLogOffTime");
             DateTime lastLogOffTime = DateTime.Parse(lastLogOffString);
             TimeSpan offlineDuration = DateTime.Now - lastLogOffTime;
+            float offlineSeconds = (float)offlineDuration.TotalSeconds;
 
-            // Convert to seconds and apply the max limit (12 hours)
-            elapsedOfflineTime = Mathf.Min((float)offlineDuration.TotalSeconds, maxOfflineSeconds);
+            // Retrieve previous accumulated time
+            float previousOfflineTime = PlayerPrefs.GetFloat("AccumulatedOfflineTime", 0f);
+
+            // Add new offline time to accumulated time
+            elapsedOfflineTime = Mathf.Min(previousOfflineTime + offlineSeconds, maxOfflineSeconds);
         }
         else
         {
-            elapsedOfflineTime = 0f; // No previous log-off, start from 0
+            elapsedOfflineTime = PlayerPrefs.GetFloat("AccumulatedOfflineTime", 0f);
         }
     }
 
@@ -45,8 +48,8 @@ public class OfflineTimer : MonoBehaviour
 
         // ✅ Corrected GreenBar width calculation
         float fillPercentage = elapsedOfflineTime / maxOfflineSeconds;
-        float maxWidth = greyBar.rect.width;  // Get the full width of GreyBar
-        float newWidth = Mathf.Clamp(fillPercentage * maxWidth, 0, maxWidth); // Ensure valid range
+        float maxWidth = greyBar.rect.width;  
+        float newWidth = Mathf.Clamp(fillPercentage * maxWidth, 0, maxWidth);
         greenBar.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, newWidth);
     }
 
@@ -54,14 +57,16 @@ public class OfflineTimer : MonoBehaviour
     {
         // Save log-off time when the player exits
         PlayerPrefs.SetString("LastLogOffTime", DateTime.Now.ToString());
+        PlayerPrefs.SetFloat("AccumulatedOfflineTime", elapsedOfflineTime);
         PlayerPrefs.Save();
     }
 
     public void ClaimRewards()
     {
-        // Reset timer after claiming
+        // Reset timer after claiming rewards
         elapsedOfflineTime = 0f;
-        PlayerPrefs.DeleteKey("LastLogOffTime"); // Remove log-off time
+        PlayerPrefs.SetFloat("AccumulatedOfflineTime", 0f); // Reset stored time
+        PlayerPrefs.DeleteKey("LastLogOffTime"); // Remove last log-off time
         UpdateUI();
     }
 }

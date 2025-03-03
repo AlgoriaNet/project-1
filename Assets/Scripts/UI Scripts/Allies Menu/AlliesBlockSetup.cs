@@ -35,6 +35,7 @@ public class AlliesBlockSetup : MonoBehaviour
 
 
     public GameObject ForgePage; 
+    public GameObject CommonPage; 
     public Button enhanceButton;
     public Button upgradeButton;
     public GameObject enhancePanel;
@@ -499,6 +500,7 @@ public class AlliesBlockSetup : MonoBehaviour
     public void OpenForgePage()
     {
         ForgePage.SetActive(true);
+        CommonPage.SetActive(false);
         CloseStep3();
         step2Panel.SetActive(false);
 
@@ -605,6 +607,7 @@ public class AlliesBlockSetup : MonoBehaviour
     public void CloseForgePage()
     {
         ForgePage.SetActive(false);
+        CommonPage.SetActive(true);
         step2Panel.SetActive(true);
 
         // Clear ForgeBlock TopText and Image

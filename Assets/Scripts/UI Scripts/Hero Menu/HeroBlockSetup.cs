@@ -33,6 +33,7 @@ public class HeroBlockSetup : MonoBehaviour
     public GameObject page3; 
     public GameObject page4;   
     public GameObject ForgePage; 
+    public GameObject CommonPage; 
     public Button enhanceButton;
     public Button upgradeButton;
     public GameObject enhancePanel;
@@ -44,6 +45,7 @@ public class HeroBlockSetup : MonoBehaviour
     public Transform forgePackContent; 
     public GridLayoutGroup forgePackGrid;     public GameObject forgeBlock; 
 
+    public GameObject commonPage;
     public GameObject DismantlePage;
     public Transform dismantlePackContent; 
     public GridLayoutGroup dismantlePackGrid; 
@@ -475,6 +477,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void OpenForgePage()
     {
         ForgePage.SetActive(true);
+        CommonPage.SetActive(false);
         CloseStep3();
         step2Panel.SetActive(false);
 
@@ -581,6 +584,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void CloseForgePage()
     {
         ForgePage.SetActive(false);
+        CommonPage.SetActive(true);
         step2Panel.SetActive(true);
 
         // Clear ForgeBlock TopText and Image
@@ -602,6 +606,7 @@ public class HeroBlockSetup : MonoBehaviour
         DismantlePage.SetActive(true);
         CloseStep3();
         step2Panel.SetActive(false);
+        commonPage.SetActive(false);
 
         LoadDismantlePagePack();
     }
@@ -655,6 +660,7 @@ public class HeroBlockSetup : MonoBehaviour
 
         CongratsPage.SetActive(false);
         DismantlePack.SetActive(true);
+        commonPage.SetActive(true);
 
         MoveBlockUp();
     }
