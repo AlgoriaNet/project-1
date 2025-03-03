@@ -13,13 +13,21 @@ using Random = UnityEngine.Random;
 public class WebSocketManager : MonoBehaviour
 {
     private static WebSocketManager _instance;
+
     //广播接收器
     private static readonly Dictionary<string, Dictionary<string, UnityAction<JObject>>> BroadcastAcceptors = new();
+
     //请求回调
     private static readonly Dictionary<string, UnityAction<JObject>> RequestCallbacks = new();
 
+    //失败回调
+    private static readonly Dictionary<string, UnityAction<JObject>> ErrorCallbacks = new();
+
+    //当失败时是否全局显示错误信息
+    private static readonly Dictionary<string, bool> showGlobalErrorMsg = new();
+
     private WebSocketSharp.WebSocket _ws;
-    
+
     public static WebSocketManager Instance
     {
         get
@@ -28,10 +36,9 @@ public class WebSocketManager : MonoBehaviour
             return _instance;
         }
     }
-    
+
     // 重连连接
     private const float ReconnectDelay = 0.5f;
-    
 
 
     public void ConnectWebSocket()
@@ -43,12 +50,11 @@ public class WebSocketManager : MonoBehaviour
         {
             Debug.Log("WebSocket Connected!");
             GamingSocketApi.Instance.Subscribe();
-            GamingSocketApi.Instance.Action("login", new { data =  "WebSocket Connected!"});
+            GamingSocketApi.Instance.Action("login", new { data = "WebSocket Connected!" });
         };
 
         _ws.OnMessage += (sender, e) =>
         {
-            
             if (e.Data != null)
             {
                 Debug.Log("Socket response:" + e.Data);
@@ -62,18 +68,41 @@ public class WebSocketManager : MonoBehaviour
                     if (BroadcastAcceptors.ContainsKey(channel) && BroadcastAcceptors[channel].ContainsKey(action))
                     {
                         UnityAction<JObject> callback = BroadcastAcceptors[channel][action];
-                        UnityMainThreadDispatcher.Instance().Enqueue(() =>  callback?.Invoke(data.message.data));
-
-                       
+                        UnityMainThreadDispatcher.Instance().Enqueue(() => callback?.Invoke(data.message.data));
                     }
                 }
-                if(data.Channel != null && data.message is { requestId: not null })
+
+                //需要回调的请求
+                if (data.Channel != null && data.message is { requestId: not null })
                 {
                     string requestId = data.message.requestId;
-                    if (RequestCallbacks.ContainsKey(requestId))
+                    //code != 200 出现错误
+                    Debug.Log(data.message.code);
+                    if (data.message.code != 200)
+                    {
+                        var msg = data.message.data["msg"]?.ToString();
+                        //全局显示错误
+                        if (showGlobalErrorMsg.ContainsKey(requestId))
+                        {
+                            UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                            {
+                                // todo
+                            });
+                            showGlobalErrorMsg.Remove(requestId);
+                        }
+
+                        if (ErrorCallbacks.ContainsKey(requestId))
+                        {
+                            UnityAction<JObject> callback = ErrorCallbacks[requestId];
+                            UnityMainThreadDispatcher.Instance().Enqueue(() => callback?.Invoke(data.message.data));
+                            ErrorCallbacks.Remove(requestId);
+                        }
+                    }
+                    //code == 200 请求成功
+                    else if (RequestCallbacks.ContainsKey(requestId))
                     {
                         UnityAction<JObject> callback = RequestCallbacks[requestId];
-                        UnityMainThreadDispatcher.Instance().Enqueue(() =>   callback?.Invoke(data.message.data));
+                        UnityMainThreadDispatcher.Instance().Enqueue(() => callback?.Invoke(data.message.data));
                         RequestCallbacks.Remove(requestId);
                     }
                 }
@@ -82,33 +111,30 @@ public class WebSocketManager : MonoBehaviour
 
         _ws.OnError += (sender, e) => { Debug.LogError("WebSocket Error: " + e.Message); };
 
-        _ws.OnClose += (sender, e) =>
-        {
-            StartCoroutine(Reconnect());
-        };
+        _ws.OnClose += (sender, e) => { StartCoroutine(Reconnect()); };
 
         // 连接到 WebSocket 服务
         _ws.Connect();
     }
-    
+
 
     public void Subscribe(string channel)
     {
         var subscriptionMessage = new
         {
             command = "subscribe",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1}),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
         _ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
     }
 
-    
+
     public void Action(string channel, string action, object data, string requestId = null)
     {
         string json = JsonConvert.SerializeObject(data);
         string sign = EncryptionUtil.Encrypt(json, requestId);
-        
+
         var sendMessage = new
         {
             command = "message",
@@ -117,15 +143,18 @@ public class WebSocketManager : MonoBehaviour
         };
         _ws.Send(JsonConvert.SerializeObject(sendMessage));
     }
-    
-    
-    public void Action(string channel, string action, object data, UnityAction<JObject> successCallback)
+
+
+    public void Action(string channel, string action, object data, UnityAction<JObject> successCallback,
+        UnityAction<JObject> errorCallback = null, bool showGlobalError = true)
     {
         string requestId = GenerateRequestId();
         RequestCallbacks.Add(requestId, successCallback);
+        ErrorCallbacks.Add(requestId, errorCallback);
+        showGlobalErrorMsg.Add(requestId, showGlobalError);
         Action(channel, action, data, requestId);
     }
-    
+
     private string GenerateRequestId()
     {
         return Guid.NewGuid() + Random.Range(1000, 9999).ToString();
@@ -137,12 +166,12 @@ public class WebSocketManager : MonoBehaviour
             BroadcastAcceptors.Add(channel, new Dictionary<string, UnityAction<JObject>>());
         BroadcastAcceptors[channel][action] = successCallback;
     }
-    
+
     void OnDestroy()
     {
         if (_ws != null && _ws.IsAlive) _ws.Close();
     }
-    
+
     private IEnumerator Reconnect()
     {
         BeforeReconnect();

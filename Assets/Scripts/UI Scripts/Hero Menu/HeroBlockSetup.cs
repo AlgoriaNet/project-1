@@ -1,7 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic; // This is required for using Dictionary
+using System.Collections.Generic;
+using System.Diagnostics;
+using model;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // This is required for using Dictionary
 using TMPro;
+using Debug = UnityEngine.Debug;
 
 public class HeroBlockSetup : MonoBehaviour
 {
@@ -33,6 +38,7 @@ public class HeroBlockSetup : MonoBehaviour
     public GameObject page3; 
     public GameObject page4;   
     public GameObject ForgePage; 
+    public GameObject CommonPage; 
     public Button enhanceButton;
     public Button upgradeButton;
     public GameObject enhancePanel;
@@ -44,6 +50,7 @@ public class HeroBlockSetup : MonoBehaviour
     public Transform forgePackContent; 
     public GridLayoutGroup forgePackGrid;     public GameObject forgeBlock; 
 
+    public GameObject commonPage;
     public GameObject DismantlePage;
     public Transform dismantlePackContent; 
     public GridLayoutGroup dismantlePackGrid; 
@@ -69,15 +76,24 @@ public class HeroBlockSetup : MonoBehaviour
     {
         // Initially update the grid
         UpdateTotalBlocks(); // Fetch and update the grid layout based on TotalItemsCount.
+        PlayerProfile.Data.AddListener(UpdateUI, "Bag");
     }
 
+    private void UpdateUI(ApplicationModel model)
+    {
+        UpdateTotalBlocks();
+    }
+    
     public void UpdateTotalBlocks()
     {
-        // Get the updated total item count from PlayerPrefs (it will change depending on selected item type)
-        int totalItems = PlayerPrefs.GetInt("TotalItemsCount", 10); // Default to 10 if not set
-
-        // Set totalBlocks to exactly the number of available items
-        totalBlocks = totalItems;
+        if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
+        {
+            totalBlocks = PlayerProfile.Data.GetEquipmentsInPack().Count;
+        }
+        else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
+        {
+            totalBlocks = PlayerProfile.Data.GetGemstonesInPack().Count;
+        }
 
         // Update the grid layout dynamically to match the number of blocks
         UpdateGridLayout();
@@ -138,33 +154,37 @@ public class HeroBlockSetup : MonoBehaviour
             {
                 blockButton = newBlock.AddComponent<Button>();
             }
+            
+            if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
+            {
+                List<Equipment> equipments = PlayerProfile.Data.GetEquipmentsInPack();
+                Equipment equipment = equipments[i];
+                itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
+                blockButton.onClick.AddListener(() => 
+                {
+                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
+                });
+                
+            }
+            else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
+            {
+                var gemstones = PlayerProfile.Data.GetGemstonesInPack();
+                Gemstone gemstone = gemstones[i];
+                itemLoader.LoadGemItems(newBlock.transform, gemstone);
+                blockButton.onClick.AddListener(() => 
+                {
+                    GemDetailWithInlaid.Instance.Init(gemstone, null); 
+                });
+            }
+
+            
 
             // OnClick listener
             blockButton.onClick.AddListener(() => 
             {
-                // Get the Image component from the BlockItem's child (Image)
-                Image blockImage = newBlock.transform.Find("Image").GetComponent<Image>();
-                if (blockImage != null && blockImage.sprite != null)
-                {
-                    string imageFileName = blockImage.sprite.name; // Get the image file name
-                }
-
-                // Get the Qnty (quantity) text
-                Transform qntyTransform = newBlock.transform.Find("Qnty");
-                if (qntyTransform != null)
-                {
-                    TextMeshProUGUI qntyText = qntyTransform.GetComponent<TextMeshProUGUI>();
-                }
-
-                // Get the Part (image for the part, if exists)
-                Transform partTransform = newBlock.transform.Find("Part");
-                if (partTransform != null)
-                {
-                    Image partImage = partTransform.GetComponent<Image>();
-                }
-
+                
                 // Call OpenStep3 with the clicked block
-                OpenStep3(newBlock);
+                // OpenStep3(newBlock);
             });
         }
     }
@@ -475,6 +495,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void OpenForgePage()
     {
         ForgePage.SetActive(true);
+        CommonPage.SetActive(false);
         CloseStep3();
         step2Panel.SetActive(false);
 
@@ -581,6 +602,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void CloseForgePage()
     {
         ForgePage.SetActive(false);
+        CommonPage.SetActive(true);
         step2Panel.SetActive(true);
 
         // Clear ForgeBlock TopText and Image
@@ -602,6 +624,7 @@ public class HeroBlockSetup : MonoBehaviour
         DismantlePage.SetActive(true);
         CloseStep3();
         step2Panel.SetActive(false);
+        commonPage.SetActive(false);
 
         LoadDismantlePagePack();
     }
@@ -655,6 +678,7 @@ public class HeroBlockSetup : MonoBehaviour
 
         CongratsPage.SetActive(false);
         DismantlePack.SetActive(true);
+        commonPage.SetActive(true);
 
         MoveBlockUp();
     }

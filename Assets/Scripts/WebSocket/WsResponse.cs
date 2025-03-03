@@ -11,7 +11,6 @@ namespace WebSocket
             public int code { get; set; }
             public JObject data { get; set; }
             public string sign { get; set; }
-
         }
         public string type { get; set; }
         public Content message { get; set; }

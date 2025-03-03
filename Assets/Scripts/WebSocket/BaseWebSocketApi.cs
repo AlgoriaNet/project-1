@@ -21,9 +21,9 @@ public class BaseWebSocketApi
         WebSocketManager.Instance.Action(Channel, action, data);
     }
     
-    public void Action(string action, Object data, UnityAction<JObject> callback)
+    public void Action(string action, Object data, UnityAction<JObject> callback, UnityAction<JObject> error = null, bool showGlobalError = true)
     {
-        WebSocketManager.Instance.Action(Channel, action, data, callback);
+        WebSocketManager.Instance.Action(Channel, action, data, callback, error, showGlobalError);
     }
     
     public void AddBroadcastAcceptor(string action, UnityAction<JObject> callback)

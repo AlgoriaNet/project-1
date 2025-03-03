@@ -16,8 +16,15 @@ namespace UI_Controller
         }
 
         //临时的获取玩家信息,  正常流程是在登录成功后获取
-        private void Start() => _playerApi.Action("profile", new { }, SetProfileFromServer);
+        private void Start()
+        {
+            Debug.Log("GetProfile");
+            _playerApi.Action("profile", new { }, SetProfileFromServer);
+        }
 
-        private void SetProfileFromServer(JObject obj) => PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+        private void SetProfileFromServer(JObject obj)
+        {
+            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+        }
     }
 }

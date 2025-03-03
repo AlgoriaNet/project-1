@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace model
@@ -11,5 +12,7 @@ namespace model
         public int GoldCoin;
         public int Diamond;
         public int Stamina;
+        public List<Equipment> Equipments;
+        public List<Gemstone> Gemstones; 
     }
 }

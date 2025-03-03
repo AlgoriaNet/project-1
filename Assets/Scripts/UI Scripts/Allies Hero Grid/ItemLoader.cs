@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using System.Collections;  // For IEnumerator and coroutines
+using System.Collections;
+using model; // For IEnumerator and coroutines
 using TMPro;
 
 public class ItemLoader : MonoBehaviour
@@ -14,6 +15,15 @@ public class ItemLoader : MonoBehaviour
         { ItemType.Equipment, 13 },
         { ItemType.Gem, 8 },
         { ItemType.Other, 5 }
+    };
+    public static Dictionary<int, Color> quantityColor = new Dictionary<int, Color>
+    {
+        {1, Color.white},
+        {2, Color.green},
+        {3, Color.blue},
+        {4, Color.magenta},
+        {5, Color.yellow},
+        {6, Color.red},
     };
 
     public string resourcesPath = "ItemImages";
@@ -34,20 +44,12 @@ public class ItemLoader : MonoBehaviour
         menuController = FindObjectOfType<MenuController>();
     }
 
-    void Start()
-    {
-        NotifyItemCount();
-        StartCoroutine(PopulateItemsDelayed());
-    }
-
     public void SwitchItemType(ItemType itemType)
     {
         Debug.Log($"SwitchItemType called with {itemType} (Before: {currentItemType})");
         currentItemType = itemType;
         Debug.Log($"Updated currentItemType: {currentItemType}");
         
-        NotifyItemCount();
-
         // Dynamically update action button based on selected item type
         UpdateActionButton(itemType);
 
@@ -65,9 +67,6 @@ public class ItemLoader : MonoBehaviour
         {
             FindObjectOfType<HeroBlockSetup>()?.UpdateTotalBlocks();
         }
-
-        // Wait until the grid update is complete, then reload the items
-        StartCoroutine(PopulateItemsDelayed());
     }
 
     private void UpdateActionButton(ItemType itemType)
@@ -166,15 +165,7 @@ public class ItemLoader : MonoBehaviour
         yield return null; // Wait one frame to ensure all UI elements are initialized
         PopulateItems();
     }
-
-    private void NotifyItemCount()
-    {
-        int itemCount = itemCounts[currentItemType];
-        PlayerPrefs.SetInt("TotalItemsCount", itemCount); // Save item count
-        PlayerPrefs.Save(); 
-        ItemCountChanged?.Invoke(itemCount); // Notify listeners
-        Debug.Log($"ItemCount for {currentItemType}: {itemCount}");
-    }
+    
 
     public void PopulateItems()
     {
@@ -300,7 +291,7 @@ public class ItemLoader : MonoBehaviour
     {
         string itemName = "";
         int quantity = Random.Range(1, 10); // Quantity 1-9
-
+    
         if (currentItemType == ItemType.Equipment)
         {
             string[] equipmentNames = { "Helm", "Shoulder", "Chest", "Pants", "Gloves", "Boots" };
@@ -316,7 +307,80 @@ public class ItemLoader : MonoBehaviour
         {
             itemName = "OtherItem"; // Define a different name for "Other"
         }
-
+    
         return (itemName, quantity);
     }
+    
+    
+    public void LoadEquipmentItems(Transform block, Equipment equipment)
+    {
+
+        var itemName = equipment.Name;
+        var quantity = equipment.Quality;
+        resourcesPath = "UILoading/Equipment";
+
+        // Assign sprite to the Image based on resourcesPath
+        Sprite itemSprite = Resources.Load<Sprite>($"{resourcesPath}/{itemName}");
+        if (itemSprite != null)
+        {
+            Image blockImage = block.Find("Image").GetComponent<Image>();
+            blockImage.sprite = itemSprite;
+            blockImage.color = Color.white; // Ensure the color is not transparent
+            block.GetComponent<Image>().color = quantityColor.GetValueOrDefault(quantity, Color.white); 
+        }
+        else
+        {
+            Debug.LogWarning($"Image not found for: {itemName}");
+        }
+
+        // Assign quantity to the Qnty child
+        Transform qntyTransform = block.Find("Qnty");
+        if (qntyTransform != null)
+        {
+            TextMeshProUGUI qntyText = qntyTransform.GetComponent<TextMeshProUGUI>();
+            qntyText.text = null;
+        }
+    }
+
+    public void LoadGemItems(Transform block, Gemstone gemstone)
+    {
+        var itemName = $"Gem_{gemstone.Level:D2}";
+        resourcesPath = "UILoading/Gem/Stone";
+        Sprite itemSprite = Resources.Load<Sprite>($"{resourcesPath}/{itemName}");
+        if (itemSprite != null)
+        {
+            Image blockImage = block.Find("Image").GetComponent<Image>();
+            blockImage.sprite = itemSprite;
+            blockImage.color = Color.white; // Ensure the color is not transparent
+            Image background = block.GetComponent<Image>();
+            background.color = Color.white; 
+        }
+        else
+        {
+            Debug.LogWarning($"Image not found for: {itemName}");
+        }
+        Sprite partSprite = Resources.Load<Sprite>($"UILoading/Gem/Part/{gemstone.Part}");
+        if (partSprite != null)
+        {
+            Image partImage = block.Find("Part").GetComponent<Image>();
+            partImage.sprite = partSprite;
+            // partImage.color = quantityColor.GetValueOrDefault(quantity, Color.white); 
+            partImage.color = Color.white; 
+        }
+        else
+        {
+            Debug.LogWarning($"Part image not found for: {gemstone.Part}");
+        }
+        // Assign quantity to the Qnty child
+        Transform qntyTransform = block.Find("Qnty");
+        if (qntyTransform != null)
+        {
+            TextMeshProUGUI qntyText = qntyTransform.GetComponent<TextMeshProUGUI>();
+            if (qntyText != null)
+            {
+                qntyText.text = null;
+            }
+        }
+    }
+    
 }

@@ -13,8 +13,6 @@ public class LevelSetup : MonoBehaviour
         public string LevelName; // e.g., "Introduction"
     }
 
-    public RectTransform mainMenu; // Assign the Main Menu RectTransform in Inspector
-    public RectTransform levelGroup; // Assign Level Group in Inspector
     public RectTransform levelImage; // Assign Level Image in Inspector
     public Button leftArrow; // Assign Left Arrow in Inspector
     public Button rightArrow; // Assign Right Arrow in Inspector
@@ -29,10 +27,6 @@ public class LevelSetup : MonoBehaviour
 
     void Start()
     {
-        float mainMenuWidth = mainMenu.rect.width;
-        float dimension = mainMenuWidth / 2;
-        levelGroup.sizeDelta = new Vector2(dimension, dimension);
-
         // Load Levels from CSV
         LoadLevelsFromCSV();
 

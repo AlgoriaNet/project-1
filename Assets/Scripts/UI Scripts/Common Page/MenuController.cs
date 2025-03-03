@@ -12,6 +12,8 @@ public class MenuController : MonoBehaviour
     public GameObject step1Panel;
     public GameObject step2Panel;
     public GameObject lowerGroup;
+    public GameObject topPanel; // This is the topPanel in Common Page
+
     private int currentMenuIndex = -1; // Default to -1 (no menu active)
 
     private Button activeButton; // Track the currently active button
@@ -89,6 +91,16 @@ public class MenuController : MonoBehaviour
             {
                 backgroundImage.enabled = true; // Enable the background
             }
+        }
+
+        // Disable topPanel when Menu_5 is opened (assuming index 4 is Menu_5)
+        if (activeMenuIndex == 4)
+        {
+            if (topPanel != null) topPanel.SetActive(false);
+        }
+        else
+        {
+            if (topPanel != null) topPanel.SetActive(true);
         }
     }
 
