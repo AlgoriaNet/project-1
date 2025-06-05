@@ -1,17 +1,26 @@
 using System.Collections.Generic;
 using System.Numerics;
+using Newtonsoft.Json;
 
 namespace model
 {
     public class Player : ApplicationModel
     {
-        public BigInteger Id;
-        public string Name;
-        public int Level;
-        public int Exp;
-        public int GoldCoin;
-        public int Diamond;
-        public int Stamina;
+        [JsonProperty("id")]
+        public BigInteger Id { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("level")]
+        public int Level { get; set; }
+        [JsonProperty("exp")]
+        public int Exp { get; set; }
+        [JsonProperty("gold_coin")]
+        public int GoldCoin { get; set; }
+        [JsonProperty("diamond")]
+        public int Diamond { get; set; }
+        [JsonProperty("stamina")]
+        public int Stamina { get; set; }
+        
         public List<Equipment> Equipments;
         public List<Gemstone> Gemstones; 
     }

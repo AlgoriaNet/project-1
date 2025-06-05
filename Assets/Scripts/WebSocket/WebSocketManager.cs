@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PimDeWitte.UnityMainThreadDispatcher;
@@ -123,7 +124,7 @@ public class WebSocketManager : MonoBehaviour
         var subscriptionMessage = new
         {
             command = "subscribe",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
         _ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
@@ -138,7 +139,7 @@ public class WebSocketManager : MonoBehaviour
         var sendMessage = new
         {
             command = "message",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
             data = JsonConvert.SerializeObject(new { requestId, action, json, sign })
         };
         _ws.Send(JsonConvert.SerializeObject(sendMessage));
