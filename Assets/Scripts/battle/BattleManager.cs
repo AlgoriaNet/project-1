@@ -53,8 +53,8 @@ public class BattleManager : MonoBehaviour
         };
         State = new BattleState
         {
-            Hp = 200,
-            MaxHp = 200,
+            Hp = 20000,
+            MaxHp = 20000,
             UpgradeRequiredExperience = new List<int>(),
             MaxBattleLevel = 20,
             BattleLevel = 1,

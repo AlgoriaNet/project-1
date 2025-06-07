@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "688130730794",
+    "project_id": "hero2025",
+    "storage_bucket": "hero2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:688130730794:android:e8b71e9763226d0b28cc53",
+        "android_client_info": {
+          "package_name": "com.algoria.hero"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "688130730794-bc1oer9ekcg49r99kq3080ogvg760qh3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.algoria.hero",
+            "certificate_hash": "a449938b9ac59996338cd25536244cf5891c6a33"
+          }
+        },
+        {
+          "client_id": "688130730794-9sqgaj4qikbt2hfcs8qmtu1hat7qe9gj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9Bz9YIX4_sLHUu-9KsDUmwt_5tllCPrA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "688130730794-9sqgaj4qikbt2hfcs8qmtu1hat7qe9gj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

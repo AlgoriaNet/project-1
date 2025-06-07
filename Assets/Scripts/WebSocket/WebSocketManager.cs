@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PimDeWitte.UnityMainThreadDispatcher;
@@ -40,7 +39,6 @@ public class WebSocketManager : MonoBehaviour
 
     // 重连连接
     private const float ReconnectDelay = 0.5f;
-
 
     public void ConnectWebSocket()
     {
@@ -118,18 +116,16 @@ public class WebSocketManager : MonoBehaviour
         _ws.Connect();
     }
 
-
     public void Subscribe(string channel)
     {
         var subscriptionMessage = new
         {
             command = "subscribe",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
         _ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
     }
-
 
     public void Action(string channel, string action, object data, string requestId = null)
     {
@@ -139,7 +135,7 @@ public class WebSocketManager : MonoBehaviour
         var sendMessage = new
         {
             command = "message",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = 1 }),
             data = JsonConvert.SerializeObject(new { requestId, action, json, sign })
         };
         _ws.Send(JsonConvert.SerializeObject(sendMessage));

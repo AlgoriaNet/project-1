@@ -14,6 +14,9 @@ public class Row1GroupDynamicSize : MonoBehaviour
 
     public Image userIconImage;          // Image component for user icon
     public TextMeshProUGUI topLevelNameText; // TextMeshPro for username
+    public TextMeshProUGUI expText;
+    public TextMeshProUGUI diamondText;
+    public TextMeshProUGUI goldCoinText;
 
     void Start()
     {
@@ -41,10 +44,25 @@ public class Row1GroupDynamicSize : MonoBehaviour
             }
         }
 
+        int exp = model.PlayerProfile.Data.Player.Exp;
+        int gold = model.PlayerProfile.Data.Player.GoldCoin;
+        int diamond = model.PlayerProfile.Data.Player.Diamond;
+
+        if (expText != null) expText.text = exp.ToString();
+        if (diamondText != null) diamondText.text = diamond.ToString();
+        if (goldCoinText != null) goldCoinText.text = gold.ToString();    
+
         // Dynamically adjust the layout
         AdjustLayout();
     }
 
+    public void RefreshCurrencyDisplay()
+    {
+        int gold = model.PlayerProfile.Data.Player.GoldCoin;
+        int diamond = model.PlayerProfile.Data.Player.Diamond;
+        if (goldCoinText != null) goldCoinText.text = gold.ToString();
+        if (diamondText != null) diamondText.text = diamond.ToString();
+    }
 
     private void AdjustLayout()
     {

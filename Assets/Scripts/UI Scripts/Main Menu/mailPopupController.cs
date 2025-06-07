@@ -22,7 +22,6 @@ public class mailPopupController : MonoBehaviour
     public Button deleteButton;
     private GameObject currentOpenMailItem;
 
-    public GameObject mailIconDot; // Assign the Dot child of the mail icon (on main menu) in the Inspector
 
     void Start()
     {
@@ -31,7 +30,6 @@ public class mailPopupController : MonoBehaviour
         originalBoard2Size = board2.sizeDelta;
 
         LoadMailItems(); // Load stored mails when popup opens
-        UpdateMailIconDot(); // Update Dot state on start
 
         deleteReadButton.onClick.AddListener(DeleteReadMails);
         deleteButton.onClick.AddListener(DeleteCurrentMail);
@@ -50,13 +48,11 @@ public class mailPopupController : MonoBehaviour
     {
         mailPopup.SetActive(true);
         AdjustBoardSize();
-        UpdateMailIconDot(); // Update Dot state when opening popup
     }
 
     public void ClosemailPopup()
     {
         mailPopup.SetActive(false);
-        UpdateMailIconDot(); // Update Dot state when closing popup to reflect on main menu
     }
 
     private void AdjustBoardSize()
@@ -157,8 +153,6 @@ public class mailPopupController : MonoBehaviour
 
         // Adjust layout (force update)
         LayoutRebuilder.ForceRebuildLayoutImmediate(contentTransform.GetComponent<RectTransform>());
-
-        UpdateMailIconDot(); // Update Dot state after creating a mail item
     }
 
     private void FetchMailsFromServer()
@@ -203,8 +197,6 @@ public class mailPopupController : MonoBehaviour
         mailList.RemoveAll(mail => string.IsNullOrWhiteSpace(mail));
         PlayerPrefs.SetString("StoredMails", string.Join("|", mailList));
         PlayerPrefs.Save();
-
-        UpdateMailIconDot(); // Update Dot state after fetching mails
     }
 
     private void OpenMail(string mailTitle, GameObject mailItem, GameObject dotIndicator)
@@ -222,8 +214,6 @@ public class mailPopupController : MonoBehaviour
     
         // Track the currently opened mail item
         currentOpenMailItem = mailItem;
-
-        UpdateMailIconDot(); // Update Dot state after marking a mail as read
     }
 
     public void CloseMail()
@@ -247,8 +237,6 @@ public class mailPopupController : MonoBehaviour
             currentOpenMailItem = null; 
 
             CloseMail();
-
-            UpdateMailIconDot(); // Update Dot state after deleting a mail
         }
     }
 
@@ -276,8 +264,6 @@ public class mailPopupController : MonoBehaviour
         // Save remaining mails back to PlayerPrefs
         PlayerPrefs.SetString("StoredMails", string.Join("|", updatedMails));
         PlayerPrefs.Save();
-
-        UpdateMailIconDot(); // Update Dot state after deleting read mails
     }
 
     private void RemoveMailFromStorage(string mailTitle)
@@ -302,24 +288,5 @@ public class mailPopupController : MonoBehaviour
             PlayerPrefs.SetString("DeletedMails", string.Join("|", deletedMailList));
             PlayerPrefs.Save();
         }
-    }
-
-    public void UpdateMailIconDot()
-    {
-        if (mailIconDot == null) return;
-
-        bool hasUnreadMails = false;
-        for (int i = 0; i < contentTransform.childCount; i++)
-        {
-            Transform mailItem = contentTransform.GetChild(i);
-            GameObject dotIndicator = mailItem.Find("DotIndicator")?.gameObject;
-            if (dotIndicator != null && dotIndicator.activeSelf)
-            {
-                hasUnreadMails = true;
-                break;
-            }
-        }
-
-        mailIconDot.SetActive(hasUnreadMails);
     }
 }

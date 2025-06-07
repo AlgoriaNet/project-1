@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Newtonsoft.Json;
+
 
 public class UserPopupController : MonoBehaviour
 {
@@ -22,6 +24,10 @@ public class UserPopupController : MonoBehaviour
 
     public Button saveButton; // Assign the Save button in the Inspector
     public IconsGridSetup iconsGridSetup; // Reference to IconsGridSetup script
+    public TextMeshProUGUI uidValueText; // Assign this in Inspector to the Value Text object
+    public TextMeshProUGUI usernameValueText; // For displaying username
+    public TextMeshProUGUI levelValueText; // For displaying level
+    public TextMeshProUGUI powerValueText; // For displaying power (or stamina as your coworker used)
 
 
     void Start()
@@ -47,6 +53,28 @@ public class UserPopupController : MonoBehaviour
 
         popupUserIcon.GetComponent<Button>().onClick.AddListener(SwitchToStep2);
         saveButton.onClick.AddListener(SaveAndClosePanels); 
+
+        // Initialize the popup UI by retrieving data from PlayerPrefs
+        InitializeUserInfo();
+    }
+
+    private void InitializeUserInfo()
+    {
+        // Retrieve player_id (UID)
+        string playerId = PlayerPrefs.GetString("player_id", "Unknown");
+        if (uidValueText != null) uidValueText.text = playerId;
+
+        // Retrieve username
+        string username = PlayerPrefs.GetString("Username", "Unknown");
+        if (usernameValueText != null) usernameValueText.text = username;
+
+        // Retrieve level
+        int level = PlayerPrefs.GetInt("Level", 1); // Default to level 1 if not found
+        if (levelValueText != null) levelValueText.text = level.ToString();
+
+        // Retrieve power (or stamina as the coworker used)
+        int power = PlayerPrefs.GetInt("Stamina", 0); // Default to 0 if not found
+        if (powerValueText != null) powerValueText.text = $"{power} / 100"; // Assuming max power is 100
     }
 
     void Update()
@@ -119,15 +147,43 @@ public class UserPopupController : MonoBehaviour
         {
             // Save the new username to PlayerPrefs
             PlayerPrefs.SetString("Username", newName);
+            PlayerPrefs.Save();  // Don't forget to save the changes
 
             // Update the username in the top panel
             topPanelUsername.text = newName;
 
+            // Send the new username to the server
+            UpdateUsernameOnServer(newName);
+
             Debug.Log($"Username updated to: {newName}");
         }
+    }
 
-        // Hide the input field
-        nameInputField.gameObject.SetActive(false);
+    private void UpdateUsernameOnServer(string newName)
+    {
+        string playerId = PlayerPrefs.GetString("player_id", "Unknown");
+
+        // Make sure player_id exists before trying to send the update
+        if (!string.IsNullOrEmpty(playerId))
+        {
+            var updatePayload = new
+            {
+                action = "updateUsername",
+                player_id = playerId,
+                new_username = newName
+            };
+
+            // Replace with your WebSocket or API call to send the data to the server
+            string json = JsonConvert.SerializeObject(updatePayload);
+            Debug.Log("Sending updated username to server: " + json);
+
+            // Example WebSocket API call:
+            GamingSocketApi.Instance.Action("updateUsername", updatePayload);
+        }
+        else
+        {
+            Debug.LogError("player_id is missing. Cannot update username on the server.");
+        }
     }
 
     private void SwitchToStep2()
@@ -136,12 +192,12 @@ public class UserPopupController : MonoBehaviour
         {
             step1Panel.SetActive(false); // Disable Step 1 panel
         }
-        
+
         if (step2Panel != null)
         {
             step2Panel.SetActive(true); // Enable Step 2 panel
         }
-        
+
         // Add the reshuffle and grid setup logic here
         IconsGridSetup iconsGridSetup = step2Panel.GetComponentInChildren<IconsGridSetup>();
         if (iconsGridSetup != null)

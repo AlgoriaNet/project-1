@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id,@string/default_android_client_id,@string/default_web_client_id">
+  <string name="gcm_defaultSenderId" translatable="false">688130730794</string>
+  <string name="google_storage_bucket" translatable="false">hero2025.firebasestorage.app</string>
+  <string name="project_id" translatable="false">hero2025</string>
+  <string name="google_api_key" translatable="false">AIzaSyC9Bz9YIX4_sLHUu-9KsDUmwt_5tllCPrA</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyC9Bz9YIX4_sLHUu-9KsDUmwt_5tllCPrA</string>
+  <string name="google_app_id" translatable="false">1:688130730794:android:e8b71e9763226d0b28cc53</string>
+  <string name="default_android_client_id" translatable="false">688130730794-bc1oer9ekcg49r99kq3080ogvg760qh3.apps.googleusercontent.com</string>
+  <string name="default_web_client_id" translatable="false">688130730794-9sqgaj4qikbt2hfcs8qmtu1hat7qe9gj.apps.googleusercontent.com</string>
+</resources>
