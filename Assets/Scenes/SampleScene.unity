@@ -16303,6 +16303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9844c716fc3eb476d8e50363a30ab8b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mailPopupController: {fileID: 0}
 --- !u!1 &254598606
 GameObject:
   m_ObjectHideFlags: 0
@@ -43916,6 +43917,7 @@ MonoBehaviour:
   step2Panel: {fileID: 1757188685}
   deleteReadButton: {fileID: 559805833}
   deleteButton: {fileID: 1331296254}
+  mailIconDot: {fileID: 0}
 --- !u!1 &678046793
 GameObject:
   m_ObjectHideFlags: 0
@@ -64296,6 +64298,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f07310fd3416746f18dcd6046db0a260, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  upArrow: {fileID: 0}
+  buttonGroup: {fileID: 0}
+  referenceButton: {fileID: 0}
 --- !u!222 &984429435
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -66666,7 +66671,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1.8009644, y: 0}
+  m_AnchoredPosition: {x: 1.8010254, y: 0}
   m_SizeDelta: {x: 580, y: 580}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1025437483
@@ -66910,6 +66915,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e5b28d2a4a814763b92dd1e336a8259, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  topPanel: {fileID: 0}
+  userIcon: {fileID: 0}
+  nameText: {fileID: 0}
+  indexGroup: {fileID: 0}
+  index1: {fileID: 0}
+  index2: {fileID: 0}
+  index3: {fileID: 0}
+  userIconImage: {fileID: 0}
+  topLevelNameText: {fileID: 0}
 --- !u!114 &1031066905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109428,6 +109442,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a26930a365b9749048468ab1686a0ee6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  downArrow: {fileID: 0}
+  buttonGroup: {fileID: 0}
+  referenceButton: {fileID: 0}
 --- !u!1 &1689094699
 GameObject:
   m_ObjectHideFlags: 0
@@ -112669,6 +112686,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40df5eabf03b48ddae65e75b1a0d2c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Button_6: {fileID: 0}
 --- !u!114 &1730897762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130667,7 +130685,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.00048828125}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: -1190}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2046319350
