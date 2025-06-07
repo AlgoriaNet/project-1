@@ -3298,7 +3298,7 @@ GameObject:
   - component: {fileID: 61101464}
   - component: {fileID: 61101463}
   m_Layer: 5
-  m_Name: Ad TV
+  m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -12048,7 +12048,6 @@ GameObject:
   - component: {fileID: 181869929}
   - component: {fileID: 181869928}
   - component: {fileID: 181869927}
-  - component: {fileID: 181869930}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -12129,62 +12128,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 181869925}
   m_CullTransparentMesh: 1
---- !u!114 &181869930
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 181869925}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 181869928}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1149238614}
-        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
-        m_MethodName: ClaimFreeGold
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &182198546
 GameObject:
   m_ObjectHideFlags: 0
@@ -16282,11 +16225,17 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 507304423}
-  - {fileID: 1842421696}
-  - {fileID: 1722797986}
-  - {fileID: 1935322097}
+  - {fileID: 1783928856}
+  - {fileID: 1688290258}
+  - {fileID: 984429433}
+  - {fileID: 1201489709}
+  - {fileID: 1700408564}
+  - {fileID: 451279769}
+  - {fileID: 2142433063}
   - {fileID: 825037354}
+  - {fileID: 1722797986}
+  - {fileID: 1842421696}
+  - {fileID: 1935322097}
   m_Father: {fileID: 774164165}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -16354,14 +16303,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9844c716fc3eb476d8e50363a30ab8b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  usernameText: {fileID: 2049935608}
-  levelText: {fileID: 113035484}
-  expText: {fileID: 1938412382}
-  goldCoinText: {fileID: 1207731434}
-  diamondText: {fileID: 176264143}
-  staminaText: {fileID: 213189386}
-  unpackCountsText: {fileID: 0}
-  playerIdText: {fileID: 927115311}
 --- !u!1 &254598606
 GameObject:
   m_ObjectHideFlags: 0
@@ -25282,6 +25223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonGroup: {fileID: 751793544}
+  duration: 0.5
 --- !u!114 &393296752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27257,11 +27199,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 422525506}
   m_CullTransparentMesh: 1
---- !u!1 &428918283 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7728478334771690394, guid: ec1801596e2b643aeb2d1dd5cb44d9e2, type: 3}
-  m_PrefabInstance: {fileID: 5846006475748553244}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &431275685
 GameObject:
   m_ObjectHideFlags: 0
@@ -27439,9 +27376,8 @@ GameObject:
   - component: {fileID: 433346358}
   - component: {fileID: 433346357}
   - component: {fileID: 433346356}
-  - component: {fileID: 433346359}
   m_Layer: 5
-  m_Name: Button_3
+  m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27520,62 +27456,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 433346354}
   m_CullTransparentMesh: 1
---- !u!114 &433346359
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 433346354}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 433346357}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1149238614}
-        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
-        m_MethodName: BuyGold_5000
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &435322827
 GameObject:
   m_ObjectHideFlags: 0
@@ -28512,13 +28392,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 451279768}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1001166651}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
@@ -31058,6 +30938,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonGroup: {fileID: 1966353966}
+  duration: 0.5
 --- !u!1 &490944544
 GameObject:
   m_ObjectHideFlags: 0
@@ -31714,48 +31595,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 500550410}
   m_CullTransparentMesh: 1
---- !u!1 &507304422
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 507304423}
-  m_Layer: 5
-  m_Name: MainPanel
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &507304423
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 507304422}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1783928856}
-  - {fileID: 1688290258}
-  - {fileID: 984429433}
-  - {fileID: 1201489709}
-  - {fileID: 1700408564}
-  - {fileID: 451279769}
-  - {fileID: 2142433063}
-  m_Father: {fileID: 248083358}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &507908590
 GameObject:
   m_ObjectHideFlags: 0
@@ -37329,6 +37168,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 583805436}
+  - component: {fileID: 583805437}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -37354,8 +37194,22 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 3360, y: 1920}
+  m_SizeDelta: {x: 0, y: 1920}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &583805437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583805435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_HorizontalFit: 2
+  m_VerticalFit: 0
 --- !u!1 &583985373
 GameObject:
   m_ObjectHideFlags: 0
@@ -37623,7 +37477,7 @@ GameObject:
   - component: {fileID: 587161069}
   - component: {fileID: 587161068}
   m_Layer: 5
-  m_Name: MonthlyCardButton
+  m_Name: Button_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -40734,7 +40588,7 @@ GameObject:
   - component: {fileID: 639082421}
   - component: {fileID: 639082418}
   m_Layer: 5
-  m_Name: NoticeButton
+  m_Name: Button_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -43854,7 +43708,7 @@ MonoBehaviour:
   m_Content: {fileID: 583805436}
   m_Horizontal: 1
   m_Vertical: 0
-  m_MovementType: 2
+  m_MovementType: 1
   m_Elasticity: 0.75
   m_Inertia: 1
   m_DecelerationRate: 0.135
@@ -43921,7 +43775,7 @@ GameObject:
   - component: {fileID: 677934297}
   - component: {fileID: 677934294}
   m_Layer: 5
-  m_Name: MailButton
+  m_Name: Button_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46951,11 +46805,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 712777902}
   m_CullTransparentMesh: 1
---- !u!1 &713096663 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 425159490016466960, guid: ec1801596e2b643aeb2d1dd5cb44d9e2, type: 3}
-  m_PrefabInstance: {fileID: 5846006475748553244}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &713193691
 GameObject:
   m_ObjectHideFlags: 0
@@ -55401,7 +55250,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &859110501
 RectTransform:
   m_ObjectHideFlags: 0
@@ -64254,7 +64103,7 @@ GameObject:
   - component: {fileID: 982333318}
   - component: {fileID: 982333317}
   m_Layer: 5
-  m_Name: BuyGold_2
+  m_Name: Slot_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -64421,14 +64270,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 984429432}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 751793546}
   - {fileID: 393296750}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -64447,9 +64296,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f07310fd3416746f18dcd6046db0a260, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upArrow: {fileID: 393296750}
-  buttonGroup: {fileID: 751793546}
-  referenceButton: {fileID: 583985374}
 --- !u!222 &984429435
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -66820,7 +66666,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1.8010254, y: 0}
+  m_AnchoredPosition: {x: 1.8009644, y: 0}
   m_SizeDelta: {x: 580, y: 580}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1025437483
@@ -67064,18 +66910,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e5b28d2a4a814763b92dd1e336a8259, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  topPanel: {fileID: 1031066902}
-  userIcon: {fileID: 1199683549}
-  nameText: {fileID: 2049935607}
-  indexGroup: {fileID: 607385769}
-  index1: {fileID: 1445299549}
-  index2: {fileID: 126108081}
-  index3: {fileID: 1393714515}
-  userIconImage: {fileID: 1199683551}
-  topLevelNameText: {fileID: 2049935608}
-  expText: {fileID: 1938412382}
-  diamondText: {fileID: 1207731434}
-  goldCoinText: {fileID: 176264143}
 --- !u!114 &1031066905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67100,10 +66934,6 @@ MonoBehaviour:
   step2Panel: {fileID: 227588936}
   saveButton: {fileID: 615666527}
   iconsGridSetup: {fileID: 152188595}
-  uidValueText: {fileID: 927115311}
-  usernameValueText: {fileID: 0}
-  levelValueText: {fileID: 0}
-  powerValueText: {fileID: 0}
 --- !u!1 &1033804380
 GameObject:
   m_ObjectHideFlags: 0
@@ -69016,7 +68846,7 @@ GameObject:
   - component: {fileID: 1063807058}
   - component: {fileID: 1063807057}
   m_Layer: 5
-  m_Name: ClaimGold
+  m_Name: Slot_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -70152,10 +69982,6 @@ GameObject:
   - component: {fileID: 1081108048}
   - component: {fileID: 1081108049}
   - component: {fileID: 1081108050}
-  - component: {fileID: 1081108051}
-  - component: {fileID: 1081108054}
-  - component: {fileID: 1081108052}
-  - component: {fileID: 1081108053}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -70194,7 +70020,7 @@ MonoBehaviour:
   rewardText: {fileID: 1451508362}
   chestAnimator: {fileID: 2142433068}
   rewardPopup: {fileID: 825037353}
-  adTV: {fileID: 874628786}
+  hasMonthlyPass: 1
   chestBox: {fileID: 2142433062}
   isCountdownActive: 1
 --- !u!114 &1081108050
@@ -70212,54 +70038,6 @@ MonoBehaviour:
   greenBar: {fileID: 547032640}
   greyBar: {fileID: 2117933881}
   timingText: {fileID: 1672203775}
---- !u!114 &1081108051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1081108046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0902075cf05549bf865999aa972def8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1081108052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1081108046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86a50873134949709793973448075d71, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1081108053
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1081108046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c066f89b7dac04d948451348dce37f9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1081108054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1081108046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 319c4ec2c2bb446dba3c5ab42ccf6d75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1083014483
 GameObject:
   m_ObjectHideFlags: 0
@@ -75547,7 +75325,6 @@ GameObject:
   - component: {fileID: 1149238610}
   - component: {fileID: 1149238609}
   - component: {fileID: 1149238613}
-  - component: {fileID: 1149238614}
   m_Layer: 5
   m_Name: Store Menu
   m_TagString: Untagged
@@ -75645,23 +75422,6 @@ MonoBehaviour:
   grid: {fileID: 491410516}
   blockPrefab: {fileID: 6896550170584964954, guid: c6675acdcad4c452fbb34af542819458, type: 3}
   Grid: {fileID: 491410520}
---- !u!114 &1149238614
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1149238607}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab874c0aeba8c4187abbbba2b97f01cc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  claimButton: {fileID: 181869925}
-  adTV: {fileID: 61101461}
-  buyGold1Button: {fileID: 1936478415}
-  buyGold2Button: {fileID: 1367411780}
-  buyGold3Button: {fileID: 433346354}
 --- !u!1 &1150052050
 GameObject:
   m_ObjectHideFlags: 0
@@ -76674,7 +76434,7 @@ GameObject:
   - component: {fileID: 1162747781}
   - component: {fileID: 1162747780}
   m_Layer: 5
-  m_Name: BuyGold_3
+  m_Name: Slot_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78372,7 +78132,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1201489708}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -78381,7 +78141,7 @@ RectTransform:
   - {fileID: 2043134674}
   - {fileID: 1957205845}
   - {fileID: 893061361}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.2, y: 0.3}
   m_AnchorMax: {x: 0.8, y: 0.75}
@@ -79143,10 +78903,6 @@ MonoBehaviour:
   index2: {fileID: 1330284218}
   index3: {fileID: 138933471}
   index4: {fileID: 1005831803}
-  diamondText: {fileID: 1314092961}
-  index2Text: {fileID: 2015132770}
-  index3Text: {fileID: 1682309278}
-  index4Text: {fileID: 1630006310}
 --- !u!114 &1208021783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88952,9 +88708,8 @@ GameObject:
   - component: {fileID: 1367411784}
   - component: {fileID: 1367411783}
   - component: {fileID: 1367411782}
-  - component: {fileID: 1367411785}
   m_Layer: 5
-  m_Name: Button_2
+  m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -89033,62 +88788,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1367411780}
   m_CullTransparentMesh: 1
---- !u!114 &1367411785
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1367411780}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1367411783}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1149238614}
-        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
-        m_MethodName: BuyGold_1000
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &1369548010
 GameObject:
   m_ObjectHideFlags: 0
@@ -98704,7 +98403,7 @@ GameObject:
   - component: {fileID: 1531470759}
   - component: {fileID: 1531470758}
   m_Layer: 5
-  m_Name: FirstChargeButton
+  m_Name: Button_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -109254,7 +108953,7 @@ GameObject:
   - component: {fileID: 1687441151}
   - component: {fileID: 1687441150}
   m_Layer: 5
-  m_Name: BuyGold_1
+  m_Name: Slot_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -109695,14 +109394,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1688290257}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 490087915}
   - {fileID: 1966353967}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
@@ -109729,9 +109428,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a26930a365b9749048468ab1686a0ee6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  downArrow: {fileID: 490087915}
-  buttonGroup: {fileID: 1966353967}
-  referenceButton: {fileID: 677934293}
 --- !u!1 &1689094699
 GameObject:
   m_ObjectHideFlags: 0
@@ -110583,13 +110279,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1700408563}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1637316694}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -112973,7 +112669,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40df5eabf03b48ddae65e75b1a0d2c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Button_6: {fileID: 0}
 --- !u!114 &1730897762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116000,7 +115695,7 @@ RectTransform:
   m_Children:
   - {fileID: 1531470757}
   - {fileID: 587161067}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -118786,7 +118481,7 @@ GameObject:
   - component: {fileID: 1838774393}
   - component: {fileID: 1838774392}
   m_Layer: 5
-  m_Name: AssignmentButton
+  m_Name: Button_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -122947,7 +122642,7 @@ GameObject:
   - component: {fileID: 1932369712}
   - component: {fileID: 1932369711}
   m_Layer: 5
-  m_Name: OfferButton
+  m_Name: Button_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123319,9 +123014,8 @@ GameObject:
   - component: {fileID: 1936478419}
   - component: {fileID: 1936478418}
   - component: {fileID: 1936478417}
-  - component: {fileID: 1936478420}
   m_Layer: 5
-  m_Name: Button_1
+  m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -123400,62 +123094,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1936478415}
   m_CullTransparentMesh: 1
---- !u!114 &1936478420
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1936478415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1936478418}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1149238614}
-        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
-        m_MethodName: BuyGold_300
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &1938412380
 GameObject:
   m_ObjectHideFlags: 0
@@ -130473,8 +130111,8 @@ MonoBehaviour:
   gemPages: {fileID: 1797723624}
   page1: {fileID: 1491116452}
   page2: {fileID: 783471926}
-  page3: {fileID: 713096663}
-  page4: {fileID: 428918283}
+  page3: {fileID: 0}
+  page4: {fileID: 0}
   ForgePage: {fileID: 1848364211}
   CommonPage: {fileID: 736015918}
   enhanceButton: {fileID: 914619125}
@@ -131029,7 +130667,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.00048828125}
   m_SizeDelta: {x: 0, y: -1190}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &2046319350
@@ -136423,13 +136061,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2142433062}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1293580573}
-  m_Father: {fileID: 507304423}
+  m_Father: {fileID: 248083358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}

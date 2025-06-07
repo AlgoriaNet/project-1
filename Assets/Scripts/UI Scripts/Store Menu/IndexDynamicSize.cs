@@ -1,5 +1,4 @@
 using UnityEngine;
-using TMPro;
 
 public class IndexDynamicSize : MonoBehaviour
 {
@@ -10,24 +9,10 @@ public class IndexDynamicSize : MonoBehaviour
     public RectTransform index3;         // Index 3 RectTransform
     public RectTransform index4;         // Index 3 RectTransform
 
-    public TextMeshProUGUI diamondText;
-    public TextMeshProUGUI index2Text;
-    public TextMeshProUGUI index3Text;
-    public TextMeshProUGUI index4Text;
-
     void Start()
     {
         // Dynamically adjust the layout
         AdjustLayout();
-
-        int diamond = model.PlayerProfile.Data.Player.Diamond;
-        if (diamondText != null) diamondText.text = diamond.ToString();
-    }
-
-    public void RefreshDiamondDisplay()
-    {
-        int diamond = model.PlayerProfile.Data.Player.Diamond;
-        if (diamondText != null) diamondText.text = diamond.ToString();
     }
 
     private void AdjustLayout()
