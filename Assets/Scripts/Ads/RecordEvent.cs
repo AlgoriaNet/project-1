@@ -1,10 +1,10 @@
-using Firebase.Analytics;
+// using Firebase.Analytics;
 using UnityEngine;
 
 public class RecordEvent : MonoBehaviour
 {
     void Start()
     {
-        FirebaseAnalytics.LogEvent(FirebaseAnalytics.EventAppOpen);
+        // FirebaseAnalytics.LogEvent(FirebaseAnalytics.EventAppOpen);
     }
 }

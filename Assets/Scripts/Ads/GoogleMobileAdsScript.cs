@@ -14,6 +14,9 @@ public class GoogleMobileAdsScript : MonoBehaviour
     #elif UNITY_IOS
         private const string RewardAdUnitId = "ca-app-pub-8572986188460654/6347982548";
         private const string InterstitialAdUnitId = "ca-app-pub-8572986188460654/7238633639";
+    #else
+        private const string RewardAdUnitId = "ca-app-pub-8572986188460654/6347982548";
+        private const string InterstitialAdUnitId = "ca-app-pub-8572986188460654/7238633639";
     #endif
 
     private RewardedAd _rewardedAd;

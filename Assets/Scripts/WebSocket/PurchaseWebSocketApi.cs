@@ -1,17 +1,17 @@
 namespace WebSocket
 {
-    public class DrawWebSocketApi  : BaseWebSocketApi
+    public class PurchaseWebSocketApi  : BaseWebSocketApi
     {
-        private static DrawWebSocketApi _instance;
+        private static PurchaseWebSocketApi _instance;
 
-        public static DrawWebSocketApi Instance
+        public static PurchaseWebSocketApi Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new DrawWebSocketApi();
-                    _instance.SetChannel("DrawChannel");
+                    _instance = new PurchaseWebSocketApi();
+                    _instance.SetChannel("PurchaseChannel");
                     _instance.Subscribe();
                 }
                 return _instance;

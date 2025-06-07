@@ -22,7 +22,7 @@ namespace model
             listener1.Remove(listener);
         }
 
-        protected void NotifyListeners(string key = DefaultKey)
+        public void NotifyListeners(string key = DefaultKey)
         {
             if (_listeners.TryGetValue(key, out var listeners))
             {
