@@ -41,7 +41,6 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(this);
-        WebSocketManager.Instance.ConnectWebSocket();
         battleApi = BattleWebSocketApi.Instance;
     }
 

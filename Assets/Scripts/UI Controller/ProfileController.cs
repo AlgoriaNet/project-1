@@ -10,8 +10,6 @@ namespace UI_Controller
         PlayerWebSocketApi _playerApi;
         private void Awake()
         {
-            //临时的建立连接,  正常流程是在登录成功后建立连接
-            WebSocketManager.Instance.ConnectWebSocket();
             _playerApi = PlayerWebSocketApi.Instance;
         }
 
@@ -24,7 +22,7 @@ namespace UI_Controller
 
         private void SetProfileFromServer(JObject obj)
         {
-            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+            // PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
         }
     }
 }

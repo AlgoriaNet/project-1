@@ -199,8 +199,6 @@ public class GoldPurchase : MonoBehaviour
         PlayerPrefs.Save();
 
         PlayerProfile.Data.Player.GoldCoin = newGold;
-        PlayerProfile.Data.SetPlayer(PlayerProfile.Data.Player);
-
         Debug.Log("✅ 500 gold granted. Total: " + newGold);
         claimButton?.SetActive(false);
     }

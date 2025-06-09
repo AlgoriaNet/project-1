@@ -47,7 +47,7 @@ public class LoginUIManager : MonoBehaviour
         // 存储 Token 和 user_id
         PlayerPrefs.SetString("authToken", response.token);
         PlayerPrefs.SetInt("user_id", response.user.id);
-        WebSocketManager.Instance.ConnectWebSocket();
+        WebSocketManager.Instance.ConnectWebSocket(response.user.id);
         
 
         // 登录成功后执行其他操作
