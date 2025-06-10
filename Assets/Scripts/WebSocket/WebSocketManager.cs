@@ -27,6 +27,8 @@ public class WebSocketManager : MonoBehaviour
     //当失败时是否全局显示错误信息
     private static readonly Dictionary<string, bool> showGlobalErrorMsg = new();
 
+    private static int _playerID;
+
     private WebSocketSharp.WebSocket _ws;
 
     public static WebSocketManager Instance
@@ -42,8 +44,9 @@ public class WebSocketManager : MonoBehaviour
     private const float ReconnectDelay = 0.5f;
 
 
-    public void ConnectWebSocket()
+    public void ConnectWebSocket(int playerID)
     {
+        _playerID = playerID;
         _ws = new WebSocketSharp.WebSocket(Config.websocket);
 
         // 添加事件处理
@@ -124,7 +127,7 @@ public class WebSocketManager : MonoBehaviour
         var subscriptionMessage = new
         {
             command = "subscribe",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = _playerID }),
         };
         Debug.Log(JsonConvert.SerializeObject(subscriptionMessage));
         _ws.Send(JsonConvert.SerializeObject(subscriptionMessage));
@@ -139,7 +142,7 @@ public class WebSocketManager : MonoBehaviour
         var sendMessage = new
         {
             command = "message",
-            identifier = JsonConvert.SerializeObject(new { channel, user_id = PlayerPrefs.GetInt("PlayerId") }),
+            identifier = JsonConvert.SerializeObject(new { channel, user_id = _playerID }),
             data = JsonConvert.SerializeObject(new { requestId, action, json, sign })
         };
         _ws.Send(JsonConvert.SerializeObject(sendMessage));
@@ -182,7 +185,7 @@ public class WebSocketManager : MonoBehaviour
             yield return new WaitForSeconds(ReconnectDelay);
             try
             {
-                ConnectWebSocket();
+                ConnectWebSocket(_playerID);
                 break;
             }
             catch (Exception ex)

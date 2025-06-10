@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Spine;
 using UnityEngine;
 
 namespace model
@@ -20,7 +21,7 @@ namespace model
         public void SetPlayer(Player player)
         {
             Player = player;
-            Debug.Log("player profile:" + Player.Equipments.Count);
+            Debug.Log("Player Profile Set: " + Player.Name);
             NotifyListeners("Player");
             NotifyListeners("Bag");
             NotifyListeners("Equipments");

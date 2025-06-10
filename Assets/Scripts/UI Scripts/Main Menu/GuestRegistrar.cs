@@ -1,7 +1,7 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Net;
+using System.Threading.Tasks;
 using model;
 using Newtonsoft.Json.Linq;
 using WebSocket;
@@ -10,24 +10,15 @@ public class GuestRegistrar : MonoBehaviour
 {
     private const string RegisterUrl = "https://server.algorianet.com/api/guest_login";
     private const string PlayerIdKey = "player_id";
+    private static PlayerWebSocketApi _playerApi;
 
-    // Add this line:
-    private PlayerWebSocketApi _playerApi;
-
-    void Start()
+    async void Awake()
     {
-        if (!PlayerPrefs.HasKey(PlayerIdKey))
-        {
-            string deviceId = SystemInfo.deviceUniqueIdentifier;
-            StartCoroutine(RegisterGuest(deviceId));
-        }
-        else
-        {
-            Debug.Log("Already have player_id: " + PlayerPrefs.GetString(PlayerIdKey));
-        }
+        string deviceId = SystemInfo.deviceUniqueIdentifier;
+        await RegisterGuestAsync(deviceId);
     }
 
-    private IEnumerator RegisterGuest(string deviceId)
+    private async Task RegisterGuestAsync(string deviceId)
     {
         // Bypass SSL certificate check (for testing only)
         ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
@@ -35,35 +26,41 @@ public class GuestRegistrar : MonoBehaviour
         string jsonBody = $"{{\"device_id\":\"{deviceId}\"}}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
 
-        UnityWebRequest request = new UnityWebRequest(RegisterUrl, "POST");
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
-
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
+        using (UnityWebRequest request = new UnityWebRequest(RegisterUrl, "POST"))
         {
-            Debug.LogError("Registeration Failed: " + request.error);
-        }
-        else
-        {
-            Debug.Log("Registeration Succeed: " + request.downloadHandler.text);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
 
-            try
+            var operation = request.SendWebRequest();
+
+            while (!operation.isDone)
             {
-                var json = JsonUtility.FromJson<RegisterResponseWrapper>(request.downloadHandler.text);
-                string playerId = json.player.id.ToString();
-                PlayerPrefs.SetString(PlayerIdKey, playerId);
-                PlayerPrefs.Save();
-                WebSocketManager.Instance.ConnectWebSocket();  // Fixed - no parameter
-                _playerApi = PlayerWebSocketApi.Instance;
-                _playerApi.Action("profile", data: new { }, SetProfileFromServer);
-                Debug.Log("Saved player_id Successfully: " + playerId);
+                await Task.Yield();
             }
-            catch
+
+            if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Failed to Save play_id");
+                Debug.LogError("Registration Failed: " + request.error);
+            }
+            else
+            {
+                Debug.Log("Registration Succeed: " + request.downloadHandler.text);
+                try
+                {
+                    var json = JsonUtility.FromJson<RegisterResponseWrapper>(request.downloadHandler.text);
+                    var playerId = json.id;
+                    PlayerPrefs.SetInt(PlayerIdKey, (int)playerId);
+                    PlayerPrefs.Save();
+                    WebSocketManager.Instance.ConnectWebSocket(playerId);
+                    _playerApi = PlayerWebSocketApi.Instance;
+                    _playerApi.Action("profile", new { }, SetProfileFromServer);
+                    Debug.Log("Saved player_id Successfully: " + playerId);
+                }
+                catch
+                {
+                    Debug.LogError("Failed to Save play_id");
+                }
             }
         }
     }
@@ -74,17 +71,15 @@ public class GuestRegistrar : MonoBehaviour
         {
             Debug.LogError("Invalid response from server: Player data not found.");
         }
+        else
+        {
+            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+        }
     }
 }
 
 [System.Serializable]
 public class RegisterResponseWrapper
 {
-    public PlayerData player;
-}
-
-[System.Serializable]
-public class PlayerData
-{
-    public string id;
+    public int id;
 }

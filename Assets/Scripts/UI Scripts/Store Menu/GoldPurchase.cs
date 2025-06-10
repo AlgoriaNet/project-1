@@ -151,6 +151,5 @@ public class GoldPurchase : MonoBehaviour
             Debug.LogError($"Failed to update player profile: {e.Message}");
             // Continue execution anyway
         }
-
-    }   
+    }
 }

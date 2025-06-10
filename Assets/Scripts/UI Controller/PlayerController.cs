@@ -25,7 +25,7 @@ namespace UI_Controller
             var player = (model as PlayerProfile)?.Player;
             if (player == null) return;
            
-            Debug.Log(player);
+            Debug.Log("update top info: " + player.Name);
             playerName.text = player?.Name;
             // playerLevel.text = player?.Level.ToString();
             // playerExp.text = player?.Exp.ToString();
