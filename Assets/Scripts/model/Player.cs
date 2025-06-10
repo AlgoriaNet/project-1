@@ -20,7 +20,13 @@ namespace model
         public int Diamond { get; set; }
         [JsonProperty("stamina")]
         public int Stamina { get; set; }
-        
+
+        [JsonProperty("monthly_card_expiry")]
+        public string MonthlyCardExpiry { get; set; }
+
+        [JsonProperty("weekly_card_expiry")]
+        public string WeeklyCardExpiry { get; set; }
+    
         public List<Equipment> Equipments;
         public List<Gemstone> Gemstones; 
     }

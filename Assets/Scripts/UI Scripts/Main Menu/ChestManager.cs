@@ -1,6 +1,9 @@
 using UnityEngine;
 using System;
 using TMPro;
+using model;
+using Newtonsoft.Json.Linq;
+using WebSocket;
 
 public class ChestManager : MonoBehaviour
 {
@@ -8,71 +11,22 @@ public class ChestManager : MonoBehaviour
     public TextMeshProUGUI rewardText; // Assign the Reward Popup Text in the Inspector
     public Animator chestAnimator; // Animator to control chest animations
     public GameObject rewardPopup; // Assign the Reward Popup in the Inspector
-    public bool hasMonthlyPass = true; // Test variable: true for monthly pass, false otherwise
+    public GameObject adTV;
     public GameObject chestBox; // Assign the Chest Box GameObject in the Inspector
 
     private int[] countdownDurations = { 300, 600, 900, 1800 }; // Durations in seconds (5, 10, 15, 30 minutes)
     private int currentCountdownIndex = 0;
     private float countdownTime;
     public bool isCountdownActive = false;
-
-    // void Start()
-    // {
-    //     // ----- NEW DAILY RESET LOGIC (moved from StartGame) -----
-    //     string storedLoginDate = PlayerPrefs.GetString("LastLoginDate", "");
-    //     string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
-
-    //     if (storedLoginDate != currentDate)
-    //     {
-    //         Debug.Log("New day detected! Resetting chest progress.");
-    //         // Reset daily progress
-    //         currentCountdownIndex = 0;
-    //         countdownTime = countdownDurations[0];
-    //         isCountdownActive = true; // Optionally auto-start the countdown
-    //         chestBox.SetActive(true); // Ensure the chest box is visible
-    //         PlayerPrefs.SetInt("ChestBoxVisible", 1);
-    //         // Update the date keys in PlayerPrefs
-    //         PlayerPrefs.SetString("LastLoginDate", currentDate);
-    //         PlayerPrefs.SetString("LastSavedTime", DateTime.Now.ToString());
-    //         SaveState();
-    //     }
-    //     // ----- END DAILY RESET LOGIC -----
-        
-    //     // Continue with the existing logic:
-    //     bool isChestBoxVisible = PlayerPrefs.GetInt("ChestBoxVisible", 1) == 1;
-    //     chestBox.SetActive(isChestBoxVisible);
-        
-    //     if (!isChestBoxVisible)
-    //     {
-    //         chestBox.SetActive(false);
-    //         return;
-    //     }
-
-    //     // Load saved state
-    //     currentCountdownIndex = PlayerPrefs.GetInt("CurrentCountdownIndex", currentCountdownIndex);
-    //     countdownTime = PlayerPrefs.GetFloat("CountdownTime", countdownTime);
-
-    //     // Calculate elapsed time based on the saved LastSavedTime
-    //     float elapsedTime = (float)(DateTime.Now - DateTime.Parse(PlayerPrefs.GetString("LastSavedTime", DateTime.Now.ToString()))).TotalSeconds;
-
-    //     if (elapsedTime >= countdownTime)
-    //     {
-    //         countdownTime = 0;
-    //         isCountdownActive = false;
-    //         countdownText.text = "Click Me!";
-    //         chestAnimator?.SetTrigger("ChestReady");
-    //     }
-    //     else
-    //     {
-    //         countdownTime -= elapsedTime;
-    //         isCountdownActive = true;
-    //         chestAnimator?.ResetTrigger("ChestReady");
-    //     }
-    // }
+    private static PurchaseWebSocketApi _wsSocketApi;
 
     void Start()
     {
-        // ----- NEW DAILY RESET LOGIC -----
+        Debug.Log("ChestManager Start() has been called.");
+
+        _wsSocketApi = PurchaseWebSocketApi.Instance;
+
+        // ----- NEW DAILY RESET LOGIC (moved from StartGame) -----
         string storedLoginDate = PlayerPrefs.GetString("LastLoginDate", "");
         string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
 
@@ -82,53 +36,60 @@ public class ChestManager : MonoBehaviour
             // Reset daily progress
             currentCountdownIndex = 0;
             countdownTime = countdownDurations[0];
-            isCountdownActive = true; // Start countdown for the new day
+            isCountdownActive = true; // Optionally auto-start the countdown
             chestBox.SetActive(true); // Ensure the chest box is visible
+
+            // Update countdown display immediately
+            int minutes = Mathf.FloorToInt(countdownTime / 60);
+            int seconds = Mathf.FloorToInt(countdownTime % 60);
+            countdownText.text = $"{minutes:00}:{seconds:00}";
+
+            // ← ADD THIS: Reset animation state properly
+            chestAnimator?.ResetTrigger("ChestReady");
+            chestAnimator?.Play("Idle", 0, 0f);
+
             PlayerPrefs.SetInt("ChestBoxVisible", 1);
-
-            // Reset animator to idle state on new day to prevent premature animation
-            if (chestAnimator != null)
-            {
-                chestAnimator.ResetTrigger("ChestReady");
-                chestAnimator.Play("Idle", 0, 0f); // Force idle state
-            }
-
-            // Update the date keys in PlayerPrefs
             PlayerPrefs.SetString("LastLoginDate", currentDate);
             PlayerPrefs.SetString("LastSavedTime", DateTime.Now.ToString());
             SaveState();
         }
+        // ----- END DAILY RESET LOGIC -----
+
+        // Continue with the existing logic:
+        bool isChestBoxVisible = PlayerPrefs.GetInt("ChestBoxVisible", 1) == 1;
+        chestBox.SetActive(isChestBoxVisible);
+
+        if (!isChestBoxVisible)
+        {
+            return;
+        }
+
+        // Load saved state
+        currentCountdownIndex = PlayerPrefs.GetInt("CurrentCountdownIndex", currentCountdownIndex);
+        countdownTime = PlayerPrefs.GetFloat("CountdownTime", countdownTime);
+
+        // // Calculate elapsed time based on the saved LastSavedTime
+        // float elapsedTime = (float)(DateTime.Now - DateTime.Parse(PlayerPrefs.GetString("LastSavedTime", DateTime.Now.ToString()))).TotalSeconds;
+
+        // Calculate elapsed time based on the saved LastSavedTime
+        float elapsedTime = 0f;
+        if (DateTime.TryParse(PlayerPrefs.GetString("LastSavedTime", DateTime.Now.ToString()), out DateTime lastSavedTime))
+        {
+            elapsedTime = (float)(DateTime.Now - lastSavedTime).TotalSeconds;
+        }
+
+        if (elapsedTime >= countdownTime)
+        {
+            countdownTime = 0;
+            isCountdownActive = false;
+            countdownText.text = "Click Me!";
+            chestAnimator?.SetTrigger("ChestReady");
+        }
         else
         {
-            // Load saved state for non-new day
-            bool isChestBoxVisible = PlayerPrefs.GetInt("ChestBoxVisible", 1) == 1;
-            chestBox.SetActive(isChestBoxVisible);
-
-            if (!isChestBoxVisible)
-            {
-                chestBox.SetActive(false);
-                return;
-            }
-
-            currentCountdownIndex = PlayerPrefs.GetInt("CurrentCountdownIndex", currentCountdownIndex);
-            countdownTime = PlayerPrefs.GetFloat("CountdownTime", countdownDurations[0]); // Default to first duration if not set
-
-            // Calculate elapsed time based on the saved LastSavedTime
-            float elapsedTime = (float)(DateTime.Now - DateTime.Parse(PlayerPrefs.GetString("LastSavedTime", DateTime.Now.ToString()))).TotalSeconds;
-
-            if (elapsedTime >= countdownTime)
-            {
-                countdownTime = 0;
-                isCountdownActive = false;
-                countdownText.text = "Click Me!";
-                if (chestAnimator != null) chestAnimator.SetTrigger("ChestReady");
-            }
-            else
-            {
-                countdownTime -= elapsedTime;
-                isCountdownActive = true;
-                if (chestAnimator != null) chestAnimator.ResetTrigger("ChestReady");
-            }
+            countdownTime -= elapsedTime;
+            isCountdownActive = true;
+            chestAnimator?.ResetTrigger("ChestReady");
         }
     }
 
@@ -172,6 +133,9 @@ public class ChestManager : MonoBehaviour
     {
         if (!isCountdownActive)
         {
+            // Stop the chest ready animation immediately when clicked
+            StopAnimation();
+
             // Show the reward popup
             if (rewardPopup != null)
             {
@@ -185,7 +149,17 @@ public class ChestManager : MonoBehaviour
     {
         // Retrieve multipliers from PlayerPrefs
         string multipliersString = PlayerPrefs.GetString("RewardMultipliers", "2,3,4,5"); // Default fallback
-        int[] rewardMultipliers = System.Array.ConvertAll(multipliersString.Split(','), int.Parse);
+        // int[] rewardMultipliers = System.Array.ConvertAll(multipliersString.Split(','), int.Parse);
+
+        int[] rewardMultipliers;
+        try
+        {
+            rewardMultipliers = System.Array.ConvertAll(multipliersString.Split(','), int.Parse);
+        }
+        catch
+        {
+            rewardMultipliers = new int[] { 2, 3, 4, 5 }; // Default fallback
+        }
 
         if (rewardText != null && currentCountdownIndex >= 0 && currentCountdownIndex < rewardMultipliers.Length)
         {
@@ -196,47 +170,102 @@ public class ChestManager : MonoBehaviour
     // Method triggered by the Claim Button
     public void ClaimReward()
     {
-        if (hasMonthlyPass)
+        string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
+        bool isMonthlyCardActive = false;
+        if (DateTime.TryParse(expiryString, out DateTime expiryDate))
         {
-            Debug.Log("Reward claimed directly with monthly pass!");
-            // Placeholder for direct reward claiming logic
+            isMonthlyCardActive = DateTime.Now < expiryDate;
+        }
+
+        Debug.Log("Monthly card active: " + isMonthlyCardActive);
+
+        if (isMonthlyCardActive)
+        {
+            adTV?.SetActive(false);
+            Debug.Log("Reward claimed directly with monthly card!");
+
+            // Give reward immediately for monthly card users
+            GiveRewardAndProceed();
         }
         else
         {
+            adTV?.SetActive(true);
             Debug.Log("Show reward ad video to claim reward!");
-            // Placeholder for reward ad logic
+            if (GoogleMobileAdsScript.This.CheckRewardedAd())
+            {
+                // Pass the reward method as callback - will execute AFTER ad completion
+                GoogleMobileAdsScript.This.ShowRewardedAd("gold_reward", GiveRewardAndProceed);
+            }
+            else
+            {
+                Debug.Log("Rewarded ad not available, showing interstitial ad instead.");
+                // For interstitial ads, give reward immediately since there's no reward mechanism
+                GoogleMobileAdsScript.This.ShowInterstitialAd(GiveRewardAndProceed);
+            }
+        }
+    }
+
+    // Moved the reward logic to a separate method so it can be called as a callback
+    private void GiveRewardAndProceed()
+    {
+        // Get multiplier
+        string multipliersString = PlayerPrefs.GetString("RewardMultipliers", "2,3,4,5");
+        int[] rewardMultipliers;
+        try
+        {
+            rewardMultipliers = Array.ConvertAll(multipliersString.Split(','), int.Parse);
+        }
+        catch
+        {
+            rewardMultipliers = new int[] { 2, 3, 4, 5 }; // Default fallback
+        }
+        int rewardAmount = (currentCountdownIndex >= 0 && currentCountdownIndex < rewardMultipliers.Length)
+            ? rewardMultipliers[currentCountdownIndex]
+            : 1;
+
+        // Use API to update gold (similar to GoldPurchase.cs)
+        _wsSocketApi.Action("add_gold", new { type = rewardAmount.ToString() }, AfterChestReward);
+        Debug.Log($"Chest reward of {rewardAmount} gold claimed via API.");
+    }
+
+    // Add callback method for API response (similar to GoldPurchase.cs)
+    public void AfterChestReward(JObject _object)
+    {
+        // Handle the API response
+        int gold = _object.GetValue("gold").Value<int>();
+
+        // Update Player model only - with protection
+        try
+        {
+            PlayerProfile.Data.Player.GoldCoin = gold;
+            PlayerProfile.Data.NotifyListeners("Player");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to update player profile: {e.Message}");
+            // Continue execution anyway
         }
 
-        // Stop chest animation
-        StopAnimation();
-
-        // Refresh countdown for the next round
         if (currentCountdownIndex < countdownDurations.Length - 1)
         {
             currentCountdownIndex++;
             countdownTime = countdownDurations[currentCountdownIndex];
             isCountdownActive = true;
 
-            // Update the countdown display
             int minutes = Mathf.FloorToInt(countdownTime / 60);
             int seconds = Mathf.FloorToInt(countdownTime % 60);
             countdownText.text = $"{minutes:00}:{seconds:00}";
 
-            // Save progress
             SaveState();
         }
         else
         {
             Debug.Log("Final reward claimed. Chest box will disappear.");
-            chestBox.SetActive(false); // Hide chest box after the last reward
-            PlayerPrefs.SetInt("ChestBoxVisible", 0); // Save state as hidden
+            chestBox.SetActive(false);
+            PlayerPrefs.SetInt("ChestBoxVisible", 0);
         }
 
-        // Close the reward popup
-        if (rewardPopup != null)
-        {
-            rewardPopup.SetActive(false);
-        }
+        rewardPopup?.SetActive(false);
     }
 
     // Add a method to close the popup

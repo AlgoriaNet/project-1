@@ -3298,7 +3298,7 @@ GameObject:
   - component: {fileID: 61101464}
   - component: {fileID: 61101463}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Ad TV
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -64369,8 +64369,9 @@ GameObject:
   - component: {fileID: 982333316}
   - component: {fileID: 982333318}
   - component: {fileID: 982333317}
+  - component: {fileID: 982333319}
   m_Layer: 5
-  m_Name: Slot_3
+  m_Name: BuyGold2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -64437,6 +64438,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 982333315}
   m_CullTransparentMesh: 1
+--- !u!114 &982333319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982333315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 982333317}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1149238614}
+        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
+        m_MethodName: BuyGold_1000
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &983234650
 GameObject:
   m_ObjectHideFlags: 0
@@ -67190,6 +67247,9 @@ MonoBehaviour:
   index3: {fileID: 1393714515}
   userIconImage: {fileID: 1199683551}
   topLevelNameText: {fileID: 2049935608}
+  expText: {fileID: 0}
+  diamondText: {fileID: 0}
+  goldCoinText: {fileID: 0}
 --- !u!114 &1031066905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69141,8 +69201,9 @@ GameObject:
   - component: {fileID: 1063807056}
   - component: {fileID: 1063807058}
   - component: {fileID: 1063807057}
+  - component: {fileID: 1063807059}
   m_Layer: 5
-  m_Name: Slot_1
+  m_Name: ClaimGold
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69209,6 +69270,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1063807055}
   m_CullTransparentMesh: 1
+--- !u!114 &1063807059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1063807055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1063807057}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1149238614}
+        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
+        m_MethodName: ClaimFreeGold
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1065612861
 GameObject:
   m_ObjectHideFlags: 0
@@ -70282,6 +70399,7 @@ GameObject:
   - component: {fileID: 1081108054}
   - component: {fileID: 1081108053}
   - component: {fileID: 1081108052}
+  - component: {fileID: 1081108055}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -70320,7 +70438,7 @@ MonoBehaviour:
   rewardText: {fileID: 1451508362}
   chestAnimator: {fileID: 2142433068}
   rewardPopup: {fileID: 825037353}
-  hasMonthlyPass: 1
+  adTV: {fileID: 874628786}
   chestBox: {fileID: 2142433062}
   isCountdownActive: 1
 --- !u!114 &1081108050
@@ -70441,6 +70559,18 @@ MonoBehaviour:
   monthlyCardPage: {fileID: 2885397174583650996}
   commonPage: {fileID: 736015918}
   mainPanel: {fileID: 1417142850}
+--- !u!114 &1081108055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1081108046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c066f89b7dac04d948451348dce37f9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1083014483
 GameObject:
   m_ObjectHideFlags: 0
@@ -75728,6 +75858,7 @@ GameObject:
   - component: {fileID: 1149238610}
   - component: {fileID: 1149238609}
   - component: {fileID: 1149238613}
+  - component: {fileID: 1149238614}
   m_Layer: 5
   m_Name: Store Menu
   m_TagString: Untagged
@@ -75825,6 +75956,23 @@ MonoBehaviour:
   grid: {fileID: 491410516}
   blockPrefab: {fileID: 6896550170584964954, guid: c6675acdcad4c452fbb34af542819458, type: 3}
   Grid: {fileID: 491410520}
+--- !u!114 &1149238614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1149238607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab874c0aeba8c4187abbbba2b97f01cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  claimButton: {fileID: 181869925}
+  adTV: {fileID: 61101461}
+  buyGold1Button: {fileID: 1687441148}
+  buyGold2Button: {fileID: 982333315}
+  buyGold3Button: {fileID: 1162747778}
 --- !u!1 &1150052050
 GameObject:
   m_ObjectHideFlags: 0
@@ -76926,8 +77074,9 @@ GameObject:
   - component: {fileID: 1162747779}
   - component: {fileID: 1162747781}
   - component: {fileID: 1162747780}
+  - component: {fileID: 1162747782}
   m_Layer: 5
-  m_Name: Slot_4
+  m_Name: BuyGold3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76994,6 +77143,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1162747778}
   m_CullTransparentMesh: 1
+--- !u!114 &1162747782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1162747778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1162747780}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1149238614}
+        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
+        m_MethodName: BuyGold_5000
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1165272356
 GameObject:
   m_ObjectHideFlags: 0
@@ -79396,6 +79601,10 @@ MonoBehaviour:
   index2: {fileID: 1330284218}
   index3: {fileID: 138933471}
   index4: {fileID: 1005831803}
+  diamondText: {fileID: 0}
+  index2Text: {fileID: 0}
+  index3Text: {fileID: 0}
+  index4Text: {fileID: 0}
 --- !u!114 &1208021783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109509,8 +109718,9 @@ GameObject:
   - component: {fileID: 1687441149}
   - component: {fileID: 1687441151}
   - component: {fileID: 1687441150}
+  - component: {fileID: 1687441152}
   m_Layer: 5
-  m_Name: Slot_2
+  m_Name: BuyGold1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -109577,6 +109787,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687441148}
   m_CullTransparentMesh: 1
+--- !u!114 &1687441152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1687441148}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1687441150}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1149238614}
+        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
+        m_MethodName: BuyGold_300
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1687674371
 GameObject:
   m_ObjectHideFlags: 0

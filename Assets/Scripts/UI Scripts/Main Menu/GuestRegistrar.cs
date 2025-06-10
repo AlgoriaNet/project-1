@@ -2,13 +2,17 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Net;
+using model;
+using Newtonsoft.Json.Linq;
+using WebSocket;
 
 public class GuestRegistrar : MonoBehaviour
 {
-    // private const string RegisterUrl = "http://82.156.77.48:3000/api/guest_login";
     private const string RegisterUrl = "https://server.algorianet.com/api/guest_login";
-
     private const string PlayerIdKey = "player_id";
+
+    // Add this line:
+    private PlayerWebSocketApi _playerApi;
 
     void Start()
     {
@@ -52,12 +56,23 @@ public class GuestRegistrar : MonoBehaviour
                 string playerId = json.player.id.ToString();
                 PlayerPrefs.SetString(PlayerIdKey, playerId);
                 PlayerPrefs.Save();
+                WebSocketManager.Instance.ConnectWebSocket();  // Fixed - no parameter
+                _playerApi = PlayerWebSocketApi.Instance;
+                _playerApi.Action("profile", data: new { }, SetProfileFromServer);
                 Debug.Log("Saved player_id Successfully: " + playerId);
             }
             catch
             {
                 Debug.LogError("Failed to Save play_id");
             }
+        }
+    }
+
+    private void SetProfileFromServer(JObject obj)
+    {
+        if (obj == null || !obj.ContainsKey("Player"))
+        {
+            Debug.LogError("Invalid response from server: Player data not found.");
         }
     }
 }
@@ -73,4 +88,3 @@ public class PlayerData
 {
     public string id;
 }
-
