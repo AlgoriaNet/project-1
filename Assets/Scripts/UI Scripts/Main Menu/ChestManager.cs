@@ -170,12 +170,18 @@ public class ChestManager : MonoBehaviour
     // Method triggered by the Claim Button
     public void ClaimReward()
     {
-        string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
-        bool isMonthlyCardActive = false;
-        if (DateTime.TryParse(expiryString, out DateTime expiryDate))
-        {
-            isMonthlyCardActive = DateTime.Now < expiryDate;
-        }
+        // string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
+        // bool isMonthlyCardActive = false;
+        // if (DateTime.TryParse(expiryString, out DateTime expiryDate))
+        // {
+        //     isMonthlyCardActive = DateTime.Now < expiryDate;
+        // }
+
+        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
+                            ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
+
+        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate) 
+                                && DateTime.Now < expiryDate;
 
         Debug.Log("Monthly card active: " + isMonthlyCardActive);
 
@@ -208,6 +214,9 @@ public class ChestManager : MonoBehaviour
     // Moved the reward logic to a separate method so it can be called as a callback
     private void GiveRewardAndProceed()
     {
+        // Hide the reward popup immediately
+        rewardPopup?.SetActive(false);
+
         // Get multiplier
         string multipliersString = PlayerPrefs.GetString("RewardMultipliers", "2,3,4,5");
         int[] rewardMultipliers;
@@ -264,8 +273,6 @@ public class ChestManager : MonoBehaviour
             chestBox.SetActive(false);
             PlayerPrefs.SetInt("ChestBoxVisible", 0);
         }
-
-        rewardPopup?.SetActive(false);
     }
 
     // Add a method to close the popup

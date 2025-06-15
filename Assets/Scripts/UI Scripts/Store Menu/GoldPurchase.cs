@@ -33,12 +33,18 @@ public class GoldPurchase : MonoBehaviour
 
     public void ClaimFreeGold()
     {
-        string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
-        bool isMonthlyCardActive = false;
-        if (DateTime.TryParse(expiryString, out DateTime expiryDate))
-        {
-            isMonthlyCardActive = DateTime.Now < expiryDate;
-        }
+        // string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
+        // bool isMonthlyCardActive = false;
+        // if (DateTime.TryParse(expiryString, out DateTime expiryDate))
+        // {
+        //     isMonthlyCardActive = DateTime.Now < expiryDate;
+        // }
+
+        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
+                            ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
+
+        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate) 
+                                && DateTime.Now < expiryDate;
 
         Debug.Log("Monthly card active: " + isMonthlyCardActive);
 
@@ -105,12 +111,12 @@ public class GoldPurchase : MonoBehaviour
         }
     }
 
-    public void BuyGold_1000()
+    public void BuyGold_1200()
     {
         int diamonds = PlayerProfile.Data.Player.Diamond;
         if (diamonds >= 90)
         {
-            _wsSocketApi.Action("add_gold", new { type = "1000" }, AfterByPurchase);
+            _wsSocketApi.Action("add_gold", new { type = "1100" }, AfterByPurchase);
             Debug.Log("Bought 1000 gold with 90 diamonds.");
         }
         else
@@ -119,12 +125,12 @@ public class GoldPurchase : MonoBehaviour
         }
     }
 
-    public void BuyGold_5000()
+    public void BuyGold_4000()
     {
         int diamonds = PlayerProfile.Data.Player.Diamond; 
         if (diamonds >= 200)
         {
-            _wsSocketApi.Action("add_gold", new { type = "5000" }, AfterByPurchase);
+            _wsSocketApi.Action("add_gold", new { type = "4000" }, AfterByPurchase);
             Debug.Log("Bought 5000 gold with 200 diamonds.");
         }
         else
