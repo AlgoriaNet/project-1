@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using model;
+
 
 public class UserPopupController : MonoBehaviour
 {
@@ -37,7 +39,8 @@ public class UserPopupController : MonoBehaviour
         originalBoardSize = board.sizeDelta;
 
         // Load the username from PlayerPrefs
-        string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Default name
+        // string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Default name
+        string savedUsername = PlayerProfile.Data?.Player?.Name ?? "DefaultName";
         topPanelUsername.text = savedUsername;
 
         // Hook up button listeners
@@ -69,7 +72,8 @@ public class UserPopupController : MonoBehaviour
         // Always populate the InputField with the latest username
         if (nameInputField != null)
         {
-            string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Retrieve username from PlayerPrefs
+            // string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Retrieve username from PlayerPrefs
+            string savedUsername = PlayerProfile.Data?.Player?.Name ?? "DefaultName";
             nameInputField.text = savedUsername; // Ensure InputField has the latest value
             nameInputField.gameObject.SetActive(true); // Ensure it's visible
         }
@@ -117,11 +121,17 @@ public class UserPopupController : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(newName))
         {
-            // Save the new username to PlayerPrefs
-            PlayerPrefs.SetString("Username", newName);
+            // // Save the new username to PlayerPrefs
+            // PlayerPrefs.SetString("Username", newName);
 
-            // Update the username in the top panel
-            topPanelUsername.text = newName;
+            // // Update the username in the top panel
+            // topPanelUsername.text = newName;
+
+            if (PlayerProfile.Data?.Player != null)
+            {
+                PlayerProfile.Data.Player.Name = newName;
+                PlayerProfile.Data.NotifyListeners("Player");
+            }
 
             Debug.Log($"Username updated to: {newName}");
         }

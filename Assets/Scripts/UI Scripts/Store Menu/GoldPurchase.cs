@@ -10,8 +10,8 @@ public class GoldPurchase : MonoBehaviour
     public GameObject claimButton;
     public GameObject adTV;
     public GameObject buyGold1Button; // 10 diamonds -> 300 gold
-    public GameObject buyGold2Button; // 90 diamonds -> 1000 gold
-    public GameObject buyGold3Button; // 200 diamonds -> 5000 gold
+    public GameObject buyGold2Button; // 90 diamonds -> 1200 gold
+    public GameObject buyGold3Button; // 200 diamonds -> 4000 gold
     private static PurchaseWebSocketApi _wsSocketApi;
 
 
@@ -116,8 +116,8 @@ public class GoldPurchase : MonoBehaviour
         int diamonds = PlayerProfile.Data.Player.Diamond;
         if (diamonds >= 90)
         {
-            _wsSocketApi.Action("add_gold", new { type = "1100" }, AfterByPurchase);
-            Debug.Log("Bought 1000 gold with 90 diamonds.");
+            _wsSocketApi.Action("add_gold", new { type = "1200" }, AfterByPurchase);
+            Debug.Log("Bought 1200 gold with 90 diamonds.");
         }
         else
         {
@@ -131,7 +131,7 @@ public class GoldPurchase : MonoBehaviour
         if (diamonds >= 200)
         {
             _wsSocketApi.Action("add_gold", new { type = "4000" }, AfterByPurchase);
-            Debug.Log("Bought 5000 gold with 200 diamonds.");
+            Debug.Log("Bought 4000 gold with 200 diamonds.");
         }
         else
         {
