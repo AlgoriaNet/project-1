@@ -12,7 +12,6 @@ namespace WebSocket
                 {
                     _instance = new GemWebSocketApi();
                     _instance.SetChannel("GemstoneChannel");
-                    _instance.Subscribe();
                 }
                 return _instance;
             }

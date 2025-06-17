@@ -12,7 +12,6 @@ namespace WebSocket
                 {
                     _instance = new DrawWebSocketApi();
                     _instance.SetChannel("DrawChannel");
-                    _instance.Subscribe();
                 }
                 return _instance;
             }

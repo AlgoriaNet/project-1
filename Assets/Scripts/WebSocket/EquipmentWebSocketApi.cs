@@ -12,7 +12,6 @@ namespace WebSocket
                 {
                     _instance = new EquipmentWebSocketApi();
                     _instance.SetChannel("EquipmentChannel");
-                    _instance.Subscribe();
                 }
                 return _instance;
             }

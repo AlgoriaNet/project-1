@@ -33,11 +33,11 @@ public class GoldPurchase : MonoBehaviour
 
     public void ClaimFreeGold()
     {
-        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
-                            ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
+        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry
+                              ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
 
-        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate) 
-                                && DateTime.Now < expiryDate;
+        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate)
+                                   && DateTime.Now < expiryDate;
 
         Debug.Log("Monthly card active: " + isMonthlyCardActive);
 
@@ -66,10 +66,10 @@ public class GoldPurchase : MonoBehaviour
     {
         _wsSocketApi.Action("add_gold", new { type = "500" }, AfterByPurchase);
         claimButton?.SetActive(false);
-    
+
         // ADD THIS LINE:
         PlayerPrefs.SetString("GoldClaimDate", DateTime.Now.ToString("yyyy-MM-dd"));
-    
+
         Debug.Log("Granted 500 gold successfully.");
     }
 
@@ -81,6 +81,7 @@ public class GoldPurchase : MonoBehaviour
             Debug.LogError("PlayerProfile.Data is null!");
             return;
         }
+
         if (PlayerProfile.Data.Player == null)
         {
             Debug.LogError("PlayerProfile.Data.Player is null!");
@@ -91,10 +92,10 @@ public class GoldPurchase : MonoBehaviour
         if (diamonds >= 10)
         {
             _wsSocketApi.Action("add_gold", new { type = "300" }, AfterByPurchase);
-            
+
             buyGold1Button.SetActive(false);
             // Update the date for next session
-            PlayerPrefs.SetString("Gold10_LastPurchase", DateTime.Now.ToString("yyyy-MM-dd"));      
+            PlayerPrefs.SetString("Gold10_LastPurchase", DateTime.Now.ToString("yyyy-MM-dd"));
 
             Debug.Log("Bought 300 gold with 10 diamonds.");
         }
@@ -120,7 +121,7 @@ public class GoldPurchase : MonoBehaviour
 
     public void BuyGold_4000()
     {
-        int diamonds = PlayerProfile.Data.Player.Diamond; 
+        int diamonds = PlayerProfile.Data.Player.Diamond;
         if (diamonds >= 200)
         {
             _wsSocketApi.Action("add_gold", new { type = "4000" }, AfterByPurchase);
@@ -138,17 +139,12 @@ public class GoldPurchase : MonoBehaviour
         int diamond = _object.GetValue("diamond").Value<int>();
         int gold = _object.GetValue("gold").Value<int>();
 
+        Debug.Log($"AfterByPurchase: diamond={diamond}, gold={gold}");
+        Debug.Log(
+            $"PlayerProfile.Data.Player.Diamond={PlayerProfile.Data.Player.Diamond}, PlayerProfile.Data.Player.GoldCoin={PlayerProfile.Data.Player.GoldCoin}");
         // Update Player model only - with protection
-        try
-        {
-            PlayerProfile.Data.Player.Diamond = diamond;
-            PlayerProfile.Data.Player.GoldCoin = gold;
-            PlayerProfile.Data.NotifyListeners("Player");
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"Failed to update player profile: {e.Message}");
-            // Continue execution anyway
-        }
+        PlayerProfile.Data.Player.Diamond = diamond;
+        PlayerProfile.Data.Player.GoldCoin = gold;
+        PlayerProfile.Data.NotifyListeners("Player");
     }
 }

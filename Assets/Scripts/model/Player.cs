@@ -25,13 +25,19 @@ namespace model
         [CanBeNull]
         public string WeeklyCardExpiry { get; set; }
 
-        [JsonProperty("equipments")] public List<Equipment> Equipments;
-        [JsonProperty("gemstones")] public List<Gemstone> Gemstones;
+        [JsonProperty("equipments")] public List<Equipment> Equipments = new ();
+        [JsonProperty("gemstones")] public List<Gemstone> Gemstones = new (); 
 
         [JsonProperty("created_at")] public string CreatedAt { get; set; }
         [JsonProperty("updated_at")] public string UpdatedAt { get; set; }
 
+        //解决后端items_json为null时,  对象不会初始化的问题
+        private Dictionary<string, int> _itemsJson = new ();
+        
         [JsonProperty("items_json")]
-        public Dictionary<string, int> ItemsJson { get; set; }
+        public Dictionary<string, int> ItemsJson {
+            get => _itemsJson;
+            set => _itemsJson = value ?? new Dictionary<string, int>();
+        }
     }
 }

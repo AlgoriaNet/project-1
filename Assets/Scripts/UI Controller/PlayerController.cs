@@ -13,28 +13,29 @@ namespace UI_Controller
         [SerializeField] private TMP_Text playerGoldCoin;
         [SerializeField] private TMP_Text playerDiamond;
         [SerializeField] private TMP_Text playerStamina;
-
-        private const int MaxStamina = 100;
-
+        
         private void Start()
         {
-            PlayerProfile.Data.AddListener(UpdateTopInfo, "Player");
+            PlayerProfile.Data.AddListener(UpdatePlayerInfo, "Player");
         }
       
-        private void UpdateTopInfo(ApplicationModel model)
+        private void UpdatePlayerInfo(ApplicationModel model)
         {
-            var player = (model as PlayerProfile)?.Player;
-            if (player == null) return;
-
-            Debug.Log("update top info: " + player.Name);
-
-            if (playerName != null) playerName.text = player.Name;
-            if (playerId != null) playerId.text = player.Id.ToString();
-            if (playerLevel != null) playerLevel.text = player.Level.ToString();
-            if (playerExp != null) playerExp.text = player.Exp.ToString();
-            if (playerGoldCoin != null) playerGoldCoin.text = player.GoldCoin.ToString();
-            if (playerDiamond != null) playerDiamond.text = player.Diamond.ToString();
-            if (playerStamina != null) playerStamina.text = $"{player.Stamina}";
+            Debug.Log("update top info: " + PlayerProfile.Data.Player);
+            var player = PlayerProfile.Data.Player;
+            
+            if (playerName != null) playerName.text = player?.Name;
+            if (playerId != null) playerId.text = player?.Id.ToString();
+            if (playerLevel != null) playerLevel.text = player?.Level.ToString();
+            if (playerExp != null) playerExp.text = player?.Exp.ToString();
+            if (playerGoldCoin != null) playerGoldCoin.text = player?.GoldCoin.ToString();
+            if (playerDiamond != null) playerDiamond.text = player?.Diamond.ToString();
+            if (playerStamina != null) playerStamina.text = player?.Stamina.ToString();
+        }
+        
+        private void OnDestroy()
+        {
+            PlayerProfile.Data.RemoveListener(UpdatePlayerInfo, "Player");
         }
     }
 }

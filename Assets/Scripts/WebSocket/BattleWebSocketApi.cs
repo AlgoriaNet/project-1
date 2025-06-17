@@ -12,7 +12,6 @@ namespace WebSocket
                 {
                     _instance = new BattleWebSocketApi();
                     _instance.SetChannel("BattleChannel");
-                    _instance.Subscribe();
                 }
                 return _instance;
             }

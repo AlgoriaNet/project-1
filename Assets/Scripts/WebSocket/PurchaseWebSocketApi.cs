@@ -12,7 +12,6 @@ namespace WebSocket
                 {
                     _instance = new PurchaseWebSocketApi();
                     _instance.SetChannel("PurchaseChannel");
-                    _instance.Subscribe();
                 }
                 return _instance;
             }

@@ -20,9 +20,7 @@ public class IndexDynamicSize : MonoBehaviour
     {
         // Subscribe to player data changes for automatic updates
         PlayerProfile.Data.AddListener(UpdatePlayerValues, "Player");
-
-        // Initialize values if player data is already available
-        UpdatePlayerValues(PlayerProfile.Data);
+        
         // Dynamically adjust the layout
         AdjustLayout();
     }
@@ -38,7 +36,7 @@ public class IndexDynamicSize : MonoBehaviour
         // Update diamond value
         if (diamondText != null) 
             diamondText.text = player.Diamond.ToString();
-
+        
         if (heroKeyText != null)
             heroKeyText.text = player.ItemsJson.TryGetValue("heroKey", out int key1) ? key1.ToString() : "0";
 

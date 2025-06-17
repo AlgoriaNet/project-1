@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine.Events;
 
@@ -8,11 +9,13 @@ namespace model
         private readonly Dictionary<string, List<UnityAction<ApplicationModel>>> _listeners = new();
         private const string DefaultKey = "default";
         
-        public void AddListener(UnityAction<ApplicationModel> listener, string key = DefaultKey)
+        public void AddListener(UnityAction<ApplicationModel> listener, string key = DefaultKey, bool executeWhenInit = true)
         {
             if (!_listeners.ContainsKey(key)) 
                 _listeners.Add(key, new List<UnityAction<ApplicationModel>>());
             _listeners[key].Add(listener);
+            
+            if (executeWhenInit) listener.Invoke(this);
         }
         
         public void RemoveListener(UnityAction<ApplicationModel> listener, string key = DefaultKey)
@@ -28,7 +31,14 @@ namespace model
             {
                 foreach (var listener in listeners)
                 {
-                    listener.Invoke(this);
+                    try
+                    {
+                        listener.Invoke(this);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
                 }
             }
         }

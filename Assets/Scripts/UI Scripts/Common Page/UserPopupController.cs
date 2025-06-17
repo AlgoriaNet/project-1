@@ -38,12 +38,7 @@ public class UserPopupController : MonoBehaviour
 
         userPopupRect = userPopup.GetComponent<RectTransform>();
         originalBoardSize = board.sizeDelta;
-
-        // Load the username from PlayerPrefs
-        // string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Default name
-        string savedUsername = PlayerProfile.Data?.Player?.Name ?? "DefaultName";
-        topPanelUsername.text = savedUsername;
-
+        
         // Hook up button listeners
         closeButton.onClick.AddListener(CloseUserPopup);
         editNameButton.onClick.AddListener(OpenNameEdit);
@@ -73,9 +68,6 @@ public class UserPopupController : MonoBehaviour
         // Always populate the InputField with the latest username
         if (nameInputField != null)
         {
-            // string savedUsername = PlayerPrefs.GetString("Username", "DefaultName"); // Retrieve username from PlayerPrefs
-            string savedUsername = PlayerProfile.Data?.Player?.Name ?? "DefaultName";
-            nameInputField.text = savedUsername; // Ensure InputField has the latest value
             nameInputField.gameObject.SetActive(true); // Ensure it's visible
         }
 
@@ -120,7 +112,7 @@ public class UserPopupController : MonoBehaviour
 
     private void SaveEditedName(string newName)
     {
-        if (!string.IsNullOrEmpty(newName))
+        if (!string.IsNullOrEmpty(newName) && newName != PlayerProfile.Data?.Player?.Name)
         {
             // if (PlayerProfile.Data?.Player != null)
             // {
@@ -137,9 +129,6 @@ public class UserPopupController : MonoBehaviour
                     PlayerProfile.Data.NotifyListeners("Player");
                 }
             });
-
-            topPanelUsername.text = newName;
-            Debug.Log($"Username updated to: {newName}");
         }
     }
 

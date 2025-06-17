@@ -50,11 +50,7 @@ public class GuestRegistrar : MonoBehaviour
                 {
                     var json = JsonUtility.FromJson<RegisterResponseWrapper>(request.downloadHandler.text);
                     var playerId = json.id;
-                    PlayerPrefs.SetInt(PlayerIdKey, (int)playerId);
-                    PlayerPrefs.Save();
                     WebSocketManager.Instance.ConnectWebSocket(playerId);
-                    _playerApi = PlayerWebSocketApi.Instance;
-                    _playerApi.Action("profile", new { }, SetProfileFromServer);
                     Debug.Log("Saved player_id Successfully: " + playerId);
                 }
                 catch
@@ -62,18 +58,6 @@ public class GuestRegistrar : MonoBehaviour
                     Debug.LogError("Failed to Save play_id");
                 }
             }
-        }
-    }
-
-    private void SetProfileFromServer(JObject obj)
-    {
-        if (obj == null || !obj.ContainsKey("Player"))
-        {
-            Debug.LogError("Invalid response from server: Player data not found.");
-        }
-        else
-        {
-            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
         }
     }
 }

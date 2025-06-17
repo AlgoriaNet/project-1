@@ -14,22 +14,11 @@ public class Row1GroupDynamicSize : MonoBehaviour
     public RectTransform index3;         // Index 3 RectTransform
 
     public Image userIconImage;          // Image component for user icon
-    public TextMeshProUGUI topLevelNameText; // TextMeshPro for username
-    public TextMeshProUGUI expText;
-    public TextMeshProUGUI diamondText;
-    public TextMeshProUGUI goldCoinText;
-
-
+    
     void Start()
     {
         // Set up static UI elements (username and icon)
         InitializeStaticUI();
-        
-        // Subscribe to player data changes for dynamic updates
-        PlayerProfile.Data.AddListener(UpdatePlayerValues, "Player");
-        
-        // Initialize values if player data is already available
-        UpdatePlayerValues(PlayerProfile.Data);
         
         // Dynamically adjust the layout
         AdjustLayout();
@@ -38,14 +27,8 @@ public class Row1GroupDynamicSize : MonoBehaviour
     private void InitializeStaticUI()
     {
         // Retrieve stored values from PlayerPrefs
-        string username = PlayerPrefs.GetString("Username", "DefaultName");
         string userIconPath = PlayerPrefs.GetString("UserIconPath", "UILoading/CharacterImages/UserIcons/WhiteBorderIcons/00.png");
-
-        // Update the UI
-        if (topLevelNameText != null)
-        {
-            topLevelNameText.text = username;
-        }
+        
 
         if (userIconImage != null)
         {
@@ -61,35 +44,7 @@ public class Row1GroupDynamicSize : MonoBehaviour
             }
         }
     }
-
-    // This method will be called automatically whenever PlayerProfile data changes
-    private void UpdatePlayerValues(ApplicationModel model)
-    {
-        var playerProfile = model as PlayerProfile;
-        var player = playerProfile?.Player;
-        
-        if (player == null) return;
-
-        // Update currency and exp values
-        if (expText != null) expText.text = player.Exp.ToString();
-        if (diamondText != null) diamondText.text = player.Diamond.ToString();
-        if (goldCoinText != null) goldCoinText.text = player.GoldCoin.ToString();
-    }
-
-    // Keep this method for manual refresh if needed
-    public void RefreshCurrencyDisplay()
-    {
-        UpdatePlayerValues(PlayerProfile.Data);
-    }
-
     // Unsubscribe when the object is destroyed to prevent memory leaks
-    private void OnDestroy()
-    {
-        if (PlayerProfile.Data != null)
-        {
-            PlayerProfile.Data.RemoveListener(UpdatePlayerValues, "Player");
-        }
-    }
     
     private void AdjustLayout()
     {

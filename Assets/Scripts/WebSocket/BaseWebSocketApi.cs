@@ -15,6 +15,11 @@ public class BaseWebSocketApi
     {
         WebSocketManager.Instance.Subscribe(Channel);
     }
+    
+    public void Disconnect()
+    {
+        WebSocketManager.Instance.Disconnect(Channel);
+    }
 
     public void Action(string action, Object data)
     {

@@ -53,17 +53,37 @@ public class WebSocketManager : MonoBehaviour
         _ws.OnOpen += (sender, e) =>
         {
             Debug.Log("WebSocket Connected!");
+            Debug.Log("WebSocketApis  Subscribe");
             GamingSocketApi.Instance.Subscribe();
-            GamingSocketApi.Instance.Action("login", new { data = "WebSocket Connected!" });
+            PlayerWebSocketApi.Instance.Subscribe();
+            PurchaseWebSocketApi.Instance.Subscribe();
+            DrawWebSocketApi.Instance.Subscribe();
+            EquipmentWebSocketApi.Instance.Subscribe();
+            GemWebSocketApi.Instance.Subscribe();
+            BattleWebSocketApi.Instance.Subscribe();
+            PlayerWebSocketApi.Instance.Action("profile", new { }, SetProfileFromServer);
+        };
+        
+        _ws.OnClose += (sender, e) =>
+        {
+            GamingSocketApi.Instance.Disconnect();
+            PlayerWebSocketApi.Instance.Disconnect();
+            PurchaseWebSocketApi.Instance.Disconnect();
+            DrawWebSocketApi.Instance.Disconnect();
+            EquipmentWebSocketApi.Instance.Disconnect();
+            GemWebSocketApi.Instance.Disconnect();
+            BattleWebSocketApi.Instance.Disconnect();
+            _instance = null;
         };
 
         _ws.OnMessage += (sender, e) =>
         {
             if (e.Data != null)
             {
-                Debug.Log("Socket response:" + e.Data);
                 JObject res = JObject.Parse(e.Data);
+                //如果是心跳包
                 if (res["type"] != null) return;
+                Debug.Log("Socket response:" + e.Data);
                 WsResponse data = JsonConvert.DeserializeObject<WsResponse>(e.Data);
                 if (data.Channel != null && data.message is { action: not null })
                 {
@@ -114,8 +134,7 @@ public class WebSocketManager : MonoBehaviour
         };
 
         _ws.OnError += (sender, e) => { Debug.LogError("WebSocket Error: " + e.Message); };
-
-        _ws.OnClose += (sender, e) => { StartCoroutine(Reconnect()); };
+        
 
         // 连接到 WebSocket 服务
         _ws.Connect();
@@ -145,6 +164,7 @@ public class WebSocketManager : MonoBehaviour
             identifier = JsonConvert.SerializeObject(new { channel, user_id = _playerID }),
             data = JsonConvert.SerializeObject(new { requestId, action, json, sign })
         };
+        Debug.Log("WebSocket Send: " + JsonConvert.SerializeObject(sendMessage));
         _ws.Send(JsonConvert.SerializeObject(sendMessage));
     }
 
@@ -171,9 +191,18 @@ public class WebSocketManager : MonoBehaviour
         BroadcastAcceptors[channel][action] = successCallback;
     }
 
-    void OnDestroy()
+    public void Disconnect(String channel)
     {
-        if (_ws != null && _ws.IsAlive) _ws.Close();
+        if (_ws != null && _ws.IsAlive)
+        {
+            var disconnectMessage = new
+            {
+                command = "unsubscribe",
+                identifier = JsonConvert.SerializeObject(new { channel, user_id = _playerID }),
+            };
+            Debug.Log("WebSocket Disconnect: " + JsonConvert.SerializeObject(disconnectMessage));
+            _ws.Send(JsonConvert.SerializeObject(disconnectMessage));
+        }
     }
 
     private IEnumerator Reconnect()
@@ -204,5 +233,26 @@ public class WebSocketManager : MonoBehaviour
     private void BeforeReconnect()
     {
         Time.timeScale = 0;
+    }
+    
+    private void SetProfileFromServer(JObject obj)
+    {
+        if (obj == null || !obj.ContainsKey("Player"))
+        {
+            Debug.LogError("Invalid response from server: Player data not found.");
+        }
+        else
+        {
+            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+        }
+    }
+
+    private void OnDestroy()
+    {
+        BroadcastAcceptors.Clear();
+        RequestCallbacks.Clear();
+        ErrorCallbacks.Clear();
+        showGlobalErrorMsg.Clear();
+        if (_ws != null && _ws.IsAlive) _ws.Close();
     }
 }

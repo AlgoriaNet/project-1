@@ -13,7 +13,6 @@ namespace WebSocket
                     _instance = new PlayerWebSocketApi();
                     _instance.SetChannel("PlayerChannel");
                 }
-                _instance.Subscribe();
                 return _instance;
             }
         }   
