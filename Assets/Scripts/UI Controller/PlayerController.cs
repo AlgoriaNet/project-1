@@ -7,6 +7,7 @@ namespace UI_Controller
     public class PlayerController : MonoBehaviour
     {
         [SerializeField] private TMP_Text playerName;
+        [SerializeField] private TMP_Text playerId;
         [SerializeField] private TMP_Text playerLevel;
         [SerializeField] private TMP_Text playerExp;
         [SerializeField] private TMP_Text playerGoldCoin;
@@ -19,21 +20,7 @@ namespace UI_Controller
         {
             PlayerProfile.Data.AddListener(UpdateTopInfo, "Player");
         }
-
-        // private void UpdateTopInfo(ApplicationModel model)
-        // {
-        //     var player = (model as PlayerProfile)?.Player;
-        //     if (player == null) return;
-
-        //     Debug.Log("update top info: " + player.Name);
-        //     playerName.text = player?.Name;
-        //     // playerLevel.text = player?.Level.ToString();
-        //     // playerExp.text = player?.Exp.ToString();
-        //     playerGoldCoin.text = player?.GoldCoin.ToString();
-        //     playerDiamond.text = player?.Diamond.ToString();
-        //     playerStamina.text = $"{player?.Stamina ?? 0}";
-        // }
-        
+      
         private void UpdateTopInfo(ApplicationModel model)
         {
             var player = (model as PlayerProfile)?.Player;
@@ -42,6 +29,7 @@ namespace UI_Controller
             Debug.Log("update top info: " + player.Name);
 
             if (playerName != null) playerName.text = player.Name;
+            if (playerId != null) playerId.text = player.Id.ToString();
             if (playerLevel != null) playerLevel.text = player.Level.ToString();
             if (playerExp != null) playerExp.text = player.Exp.ToString();
             if (playerGoldCoin != null) playerGoldCoin.text = player.GoldCoin.ToString();

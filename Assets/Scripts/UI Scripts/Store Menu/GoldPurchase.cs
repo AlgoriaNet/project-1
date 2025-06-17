@@ -33,13 +33,6 @@ public class GoldPurchase : MonoBehaviour
 
     public void ClaimFreeGold()
     {
-        // string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
-        // bool isMonthlyCardActive = false;
-        // if (DateTime.TryParse(expiryString, out DateTime expiryDate))
-        // {
-        //     isMonthlyCardActive = DateTime.Now < expiryDate;
-        // }
-
         string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
                             ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
 

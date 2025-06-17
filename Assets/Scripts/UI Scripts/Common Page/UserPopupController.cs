@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using model;
+using WebSocket;
 
 
 public class UserPopupController : MonoBehaviour
@@ -121,23 +122,25 @@ public class UserPopupController : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(newName))
         {
-            // // Save the new username to PlayerPrefs
-            // PlayerPrefs.SetString("Username", newName);
+            // if (PlayerProfile.Data?.Player != null)
+            // {
+            //     PlayerProfile.Data.Player.Name = newName;
+            //     PlayerProfile.Data.NotifyListeners("Player");
+            // }
 
-            // // Update the username in the top panel
-            // topPanelUsername.text = newName;
-
-            if (PlayerProfile.Data?.Player != null)
+            PlayerWebSocketApi.Instance.Action("update_name", new { name = newName }, (response) =>
             {
-                PlayerProfile.Data.Player.Name = newName;
-                PlayerProfile.Data.NotifyListeners("Player");
-            }
+                string updatedName = response.GetValue("name")?.ToString();
+                if (!string.IsNullOrEmpty(updatedName) && PlayerProfile.Data?.Player != null)
+                {
+                    PlayerProfile.Data.Player.Name = updatedName;
+                    PlayerProfile.Data.NotifyListeners("Player");
+                }
+            });
 
+            topPanelUsername.text = newName;
             Debug.Log($"Username updated to: {newName}");
         }
-
-        // Hide the input field
-        nameInputField.gameObject.SetActive(false);
     }
 
     private void SwitchToStep2()
@@ -146,12 +149,12 @@ public class UserPopupController : MonoBehaviour
         {
             step1Panel.SetActive(false); // Disable Step 1 panel
         }
-        
+
         if (step2Panel != null)
         {
             step2Panel.SetActive(true); // Enable Step 2 panel
         }
-        
+
         // Add the reshuffle and grid setup logic here
         IconsGridSetup iconsGridSetup = step2Panel.GetComponentInChildren<IconsGridSetup>();
         if (iconsGridSetup != null)
@@ -192,10 +195,15 @@ public class UserPopupController : MonoBehaviour
         if (selectedIcon != null)
         {
             topPanelUserIcon.sprite = selectedIcon;
-            popupUserIcon.sprite = selectedIcon; 
+            popupUserIcon.sprite = selectedIcon;
             PlayerPrefs.SetString("UserIconPath", $"UILoading/CharacterImages/UserIcons/WhiteBorderIcons/{selectedIcon.name}");
             PlayerPrefs.Save();
             Debug.Log($"Saved Icon: {selectedIcon.name}");
+        }
+
+        if (!string.IsNullOrEmpty(nameInputField.text))
+        {
+            SaveEditedName(nameInputField.text);
         }
 
         // Close Step 2 and reopen Step 1
