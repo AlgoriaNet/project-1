@@ -34,14 +34,14 @@ public class MonthlyCardController : MonoBehaviour
 
     private void BuyWeeklyCard()
     {
-        // DiamondPurchase.BuyDiamonds("hero_999", 680);
+        DiamondPurchase.BuyDiamonds("hero_999", 680);
         PlayerProfile.Data.Player.WeeklyCardExpiry = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
         PlayerProfile.Data.NotifyListeners("Player");
     }
 
     private void BuyMonthlyCard()
     {
-        // DiamondPurchase.BuyDiamonds("hero_2999", 2040);
+        DiamondPurchase.BuyDiamonds("hero_2999", 2040);
         PlayerProfile.Data.Player.MonthlyCardExpiry = DateTime.Now.AddDays(30).ToString("yyyy-MM-dd");
         PlayerProfile.Data.NotifyListeners("Player");
     }

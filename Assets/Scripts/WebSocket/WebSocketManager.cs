@@ -62,6 +62,11 @@ public class WebSocketManager : MonoBehaviour
             GemWebSocketApi.Instance.Subscribe();
             BattleWebSocketApi.Instance.Subscribe();
             PlayerWebSocketApi.Instance.Action("profile", new { }, SetProfileFromServer);
+            PlayerWebSocketApi.Instance.AddBroadcastAcceptor("send_periodic_rewards",result =>
+            {
+                SetProfileFromServer(result);
+                // todo 弹奖励框
+            });
         };
         
         _ws.OnClose += (sender, e) =>

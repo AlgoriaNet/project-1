@@ -8,8 +8,7 @@ using WebSocket;
 
 public class GuestRegistrar : MonoBehaviour
 {
-    private const string RegisterUrl = "https://server.algorianet.com/api/guest_login";
-    private const string PlayerIdKey = "player_id";
+    private const string RegisterUrl = "/api/guest_login";
     private static PlayerWebSocketApi _playerApi;
 
     async void Awake()
@@ -26,7 +25,7 @@ public class GuestRegistrar : MonoBehaviour
         string jsonBody = $"{{\"device_id\":\"{deviceId}\"}}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
 
-        using (UnityWebRequest request = new UnityWebRequest(RegisterUrl, "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(Config.BaseUrl + RegisterUrl, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
