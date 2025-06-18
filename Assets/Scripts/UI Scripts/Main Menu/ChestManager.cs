@@ -147,36 +147,17 @@ public class ChestManager : MonoBehaviour
 
     public void SetRewardText()
     {
-        // Retrieve multipliers from PlayerPrefs
-        string multipliersString = PlayerPrefs.GetString("RewardMultipliers", "2,3,4,5"); // Default fallback
-        // int[] rewardMultipliers = System.Array.ConvertAll(multipliersString.Split(','), int.Parse);
+        string[] fixedGoldValues = { "100", "200", "300", "400" };
 
-        int[] rewardMultipliers;
-        try
+        if (rewardText != null && currentCountdownIndex >= 0 && currentCountdownIndex < fixedGoldValues.Length)
         {
-            rewardMultipliers = System.Array.ConvertAll(multipliersString.Split(','), int.Parse);
-        }
-        catch
-        {
-            rewardMultipliers = new int[] { 2, 3, 4, 5 }; // Default fallback
-        }
-
-        if (rewardText != null && currentCountdownIndex >= 0 && currentCountdownIndex < rewardMultipliers.Length)
-        {
-            rewardText.text = $"x{rewardMultipliers[currentCountdownIndex]}";
+            rewardText.text = $"x{fixedGoldValues[currentCountdownIndex]}";
         }
     }
 
     // Method triggered by the Claim Button
     public void ClaimReward()
     {
-        // string expiryString = PlayerPrefs.GetString("MonthlyCardExpiry", "");
-        // bool isMonthlyCardActive = false;
-        // if (DateTime.TryParse(expiryString, out DateTime expiryDate))
-        // {
-        //     isMonthlyCardActive = DateTime.Now < expiryDate;
-        // }
-
         string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
                             ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
 
@@ -211,30 +192,19 @@ public class ChestManager : MonoBehaviour
         }
     }
 
-    // Moved the reward logic to a separate method so it can be called as a callback
     private void GiveRewardAndProceed()
     {
-        // Hide the reward popup immediately
         rewardPopup?.SetActive(false);
 
-        // Get multiplier
-        string multipliersString = PlayerPrefs.GetString("RewardMultipliers", "2,3,4,5");
-        int[] rewardMultipliers;
-        try
-        {
-            rewardMultipliers = Array.ConvertAll(multipliersString.Split(','), int.Parse);
-        }
-        catch
-        {
-            rewardMultipliers = new int[] { 2, 3, 4, 5 }; // Default fallback
-        }
-        int rewardAmount = (currentCountdownIndex >= 0 && currentCountdownIndex < rewardMultipliers.Length)
-            ? rewardMultipliers[currentCountdownIndex]
-            : 1;
+        string[] goldTypes = { "100", "200", "300", "400" };
 
-        // Use API to update gold (similar to GoldPurchase.cs)
-        _wsSocketApi.Action("add_gold", new { type = rewardAmount.ToString() }, AfterChestReward);
-        Debug.Log($"Chest reward of {rewardAmount} gold claimed via API.");
+        string selectedType = (currentCountdownIndex >= 0 && currentCountdownIndex < goldTypes.Length)
+            ? goldTypes[currentCountdownIndex]
+            : "100";
+
+        _wsSocketApi.Action("add_gold", new { type = selectedType }, AfterChestReward);
+
+        Debug.Log($"Chest reward of {selectedType} gold claimed via API.");
     }
 
     // Add callback method for API response (similar to GoldPurchase.cs)

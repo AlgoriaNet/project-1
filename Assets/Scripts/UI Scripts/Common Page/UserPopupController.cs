@@ -68,6 +68,8 @@ public class UserPopupController : MonoBehaviour
         // Always populate the InputField with the latest username
         if (nameInputField != null)
         {
+            nameInputField.text = PlayerProfile.Data?.Player?.Name ?? "";
+            nameInputField.ForceLabelUpdate();
             nameInputField.gameObject.SetActive(true); // Ensure it's visible
         }
 

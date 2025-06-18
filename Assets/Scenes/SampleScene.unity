@@ -55088,7 +55088,7 @@ GameObject:
   - component: {fileID: 836765427}
   - component: {fileID: 836765426}
   m_Layer: 5
-  m_Name: Text
+  m_Name: inNameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -67531,7 +67531,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1.8010254, y: 0}
+  m_AnchoredPosition: {x: 1.8007812, y: 0}
   m_SizeDelta: {x: 580, y: 580}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1025437483
@@ -67784,10 +67784,6 @@ MonoBehaviour:
   index2: {fileID: 126108081}
   index3: {fileID: 1393714515}
   userIconImage: {fileID: 1199683551}
-  topLevelNameText: {fileID: 2049935608}
-  expText: {fileID: 0}
-  diamondText: {fileID: 0}
-  goldCoinText: {fileID: 0}
 --- !u!114 &1031066905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67819,7 +67815,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1031066901}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05d881ec6e22847bc90f43fe07a236f4, type: 3}
   m_Name: 
@@ -125545,9 +125541,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerName: {fileID: 2049935608}
-  playerId: {fileID: 927115311}
-  playerLevel: {fileID: 113035484}
-  playerExp: {fileID: 213189386}
+  playerId: {fileID: 0}
+  playerLevel: {fileID: 0}
+  playerExp: {fileID: 0}
   playerGoldCoin: {fileID: 176264143}
   playerDiamond: {fileID: 1207731434}
   playerStamina: {fileID: 1938412382}
@@ -131650,15 +131646,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2035683887}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f7b2d0e5cb5486ba6ea55b8ef861a6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   playerName: {fileID: 836765426}
-  playerId: {fileID: 0}
+  playerId: {fileID: 927115311}
   playerLevel: {fileID: 113035484}
-  playerExp: {fileID: 0}
+  playerExp: {fileID: 213189386}
   playerGoldCoin: {fileID: 0}
   playerDiamond: {fileID: 0}
   playerStamina: {fileID: 0}
@@ -133133,7 +133129,7 @@ GameObject:
   - component: {fileID: 2049935609}
   - component: {fileID: 2049935608}
   m_Layer: 5
-  m_Name: Name Text
+  m_Name: NameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -161668,7 +161664,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 236.58769, y: 26.101612}
+  m_AnchoredPosition: {x: 236.58789, y: 26.101612}
   m_SizeDelta: {x: 236.58769, y: 71.4033}
   m_Pivot: {x: 0, y: 1}
 --- !u!224 &3545608539453039568
@@ -181429,7 +181425,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 83.317505, y: -62.016006}
+  m_AnchoredPosition: {x: 83.31738, y: -62.016006}
   m_SizeDelta: {x: 124.03201, y: 124.03201}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &6515047760730419701

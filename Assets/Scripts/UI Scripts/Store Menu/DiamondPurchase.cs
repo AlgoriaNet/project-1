@@ -17,7 +17,8 @@ public class DiamondPurchase : MonoBehaviour
         ("hero_1999", 1480),
         ("hero_4999", 3780),
         ("hero_9999", 7980),
-        ("hero_2999", 2040),
+        ("card_999", 680),
+        ("card_2999", 2040),
     };
 
     private static PurchaseWebSocketApi _wsSocketApi;
