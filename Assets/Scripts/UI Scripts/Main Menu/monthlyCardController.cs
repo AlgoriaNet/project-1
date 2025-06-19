@@ -34,15 +34,57 @@ public class MonthlyCardController : MonoBehaviour
 
     private void BuyWeeklyCard()
     {
-        DiamondPurchase.BuyDiamonds("card_999", 680);
-        PlayerProfile.Data.Player.WeeklyCardExpiry = DateTime.Now.AddDays(7).ToString("yyyy-MM-dd");
-        PlayerProfile.Data.NotifyListeners("Player");
+        // Use the new IAP system instead of the old DiamondPurchase.BuyDiamonds
+        if (IAPManager.Instance != null)
+        {
+            IAPManager.Instance.BuyProduct("card_999");
+            
+            // Update expiry date - this should ideally be moved to happen after successful purchase
+            // but keeping the same logic as before for now
+            UpdateWeeklyCardExpiry();
+        }
+        else
+        {
+            Debug.LogError("IAPManager instance not found!");
+        }
     }
 
     private void BuyMonthlyCard()
     {
-        DiamondPurchase.BuyDiamonds("card_2999", 2040);
-        PlayerProfile.Data.Player.MonthlyCardExpiry = DateTime.Now.AddDays(30).ToString("yyyy-MM-dd");
+        // Use the new IAP system instead of the old DiamondPurchase.BuyDiamonds
+        if (IAPManager.Instance != null)
+        {
+            IAPManager.Instance.BuyProduct("card_2999");
+            
+            // Update expiry date - this should ideally be moved to happen after successful purchase
+            // but keeping the same logic as before for now
+            UpdateMonthlyCardExpiry();
+        }
+        else
+        {
+            Debug.LogError("IAPManager instance not found!");
+        }
+    }
+
+    private void UpdateWeeklyCardExpiry()
+    {
+        var now = DateTime.Now.Date;
+        var expiry = DateTime.TryParse(PlayerProfile.Data.Player.WeeklyCardExpiry, out var old) && old >= now
+            ? old.AddDays(7)
+            : now.AddDays(6); // inclusive
+
+        PlayerProfile.Data.Player.WeeklyCardExpiry = expiry.ToString("yyyy-MM-dd");
+        PlayerProfile.Data.NotifyListeners("Player");
+    }
+
+    private void UpdateMonthlyCardExpiry()
+    {
+        var now = DateTime.Now.Date;
+        var expiry = DateTime.TryParse(PlayerProfile.Data.Player.MonthlyCardExpiry, out var old) && old >= now
+            ? old.AddDays(30)
+            : now.AddDays(29); // inclusive
+
+        PlayerProfile.Data.Player.MonthlyCardExpiry = expiry.ToString("yyyy-MM-dd");
         PlayerProfile.Data.NotifyListeners("Player");
     }
 }
