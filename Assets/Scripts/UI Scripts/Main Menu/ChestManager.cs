@@ -24,7 +24,7 @@ public class ChestManager : MonoBehaviour
     {
         Debug.Log("ChestManager Start() has been called.");
 
-        // _wsSocketApi = PurchaseWebSocketApi.Instance;
+        _wsSocketApi = PurchaseWebSocketApi.Instance;
 
         // ----- NEW DAILY RESET LOGIC (moved from StartGame) -----
         string storedLoginDate = PlayerPrefs.GetString("LastLoginDate", "");

@@ -13,6 +13,7 @@ public class GoldPurchase : MonoBehaviour
     public GameObject buyGold2Button; // 90 diamonds -> 1200 gold
     public GameObject buyGold3Button; // 200 diamonds -> 4000 gold
     private static PurchaseWebSocketApi _wsSocketApi;
+    [SerializeField] private DiamondStore diamondStore;
 
 
     private void Start()
@@ -24,11 +25,26 @@ public class GoldPurchase : MonoBehaviour
 
         // Hide claim button if already claimed today
         string lastClaimDate = PlayerPrefs.GetString("GoldClaimDate", "");
-        claimButton?.SetActive(lastClaimDate != today);
+        // claimButton?.SetActive(lastClaimDate != today);
+        bool canClaimGold = lastClaimDate != today;
+        SetClaimButtonState(claimButton, canClaimGold);
 
         // Hide buygold1 button if already bought today
         string lastPurchaseDate = PlayerPrefs.GetString("Gold10_LastPurchase", "");
-        buyGold1Button?.SetActive(lastPurchaseDate != today);
+        // buyGold1Button?.SetActive(lastPurchaseDate != today);
+        bool canBuyGold1 = lastPurchaseDate != today;
+        SetClaimButtonState(buyGold1Button, canBuyGold1);
+    }
+
+    private void SetClaimButtonState(GameObject buttonObj, bool isEnabled)
+    {
+        var btn = buttonObj.GetComponent<Button>();
+        if (btn != null) btn.interactable = isEnabled;
+
+        var canvasGroup = buttonObj.GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = buttonObj.AddComponent<CanvasGroup>();
+
+        canvasGroup.alpha = isEnabled ? 1f : 0.7f;
     }
 
     public void ClaimFreeGold()
@@ -101,6 +117,7 @@ public class GoldPurchase : MonoBehaviour
         }
         else
         {
+            diamondStore.Open();
             Debug.Log("Not enough diamonds.");
         }
     }
@@ -115,6 +132,7 @@ public class GoldPurchase : MonoBehaviour
         }
         else
         {
+            diamondStore.Open();
             Debug.Log("Not enough diamonds.");
         }
     }
@@ -129,6 +147,7 @@ public class GoldPurchase : MonoBehaviour
         }
         else
         {
+            diamondStore.Open();
             Debug.Log("Not enough diamonds.");
         }
     }
