@@ -18,7 +18,7 @@ public class DiamondPurchase : MonoBehaviour
             int index = i;
             purchaseButtons[i].onClick.AddListener(() =>
             {
-                IAPManager.Instance.BuyProduct(productIds[index]);
+                IAPManager.Instance.PurchaseProduct(productIds[index], null);
             });
         }
     }

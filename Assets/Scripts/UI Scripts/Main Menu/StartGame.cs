@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using model;
 
 public class StartGame : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class StartGame : MonoBehaviour
 
     private const string FirstLoginDateKey = "FirstLoginDate"; // PlayerPrefs key for first login
     private const string DetectedLanguageKey = "DetectedLanguage"; // PlayerPrefs key for language
+
+    private const string PREF_MONTHLY_CARD_EXPIRY = "MonthlyCardExpiry";
+    private const string PREF_WEEKLY_CARD_EXPIRY = "WeeklyCardExpiry";
 
     void Start()
     {
@@ -58,5 +62,21 @@ public class StartGame : MonoBehaviour
         {
             mailPopupController.UpdateMailIconDot();
         }
+    }
+
+    public bool IsMonthlyCardActive()
+    {
+        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry
+                            ?? PlayerPrefs.GetString(PREF_MONTHLY_CARD_EXPIRY, "");
+        return DateTime.TryParse(expiryString, out DateTime expiryDate)
+            && DateTime.Now < expiryDate;
+    }
+
+    public bool IsWeeklyCardActive()
+    {
+        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry
+                            ?? PlayerPrefs.GetString(PREF_WEEKLY_CARD_EXPIRY, "");
+        return DateTime.TryParse(expiryString, out DateTime expiryDate)
+            && DateTime.Now < expiryDate;
     }
 }

@@ -37,7 +37,7 @@ public class MonthlyCardController : MonoBehaviour
         // Use the new IAP system instead of the old DiamondPurchase.BuyDiamonds
         if (IAPManager.Instance != null)
         {
-            IAPManager.Instance.BuyProduct("card_999");
+            IAPManager.Instance.PurchaseProduct("card_999", null);
             
             // Update expiry date - this should ideally be moved to happen after successful purchase
             // but keeping the same logic as before for now
@@ -54,7 +54,7 @@ public class MonthlyCardController : MonoBehaviour
         // Use the new IAP system instead of the old DiamondPurchase.BuyDiamonds
         if (IAPManager.Instance != null)
         {
-            IAPManager.Instance.BuyProduct("card_2999");
+            IAPManager.Instance.PurchaseProduct("card_2999", null);
             
             // Update expiry date - this should ideally be moved to happen after successful purchase
             // but keeping the same logic as before for now

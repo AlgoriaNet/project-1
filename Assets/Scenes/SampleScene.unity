@@ -12381,6 +12381,7 @@ GameObject:
   - component: {fileID: 181869929}
   - component: {fileID: 181869928}
   - component: {fileID: 181869927}
+  - component: {fileID: 181869930}
   m_Layer: 5
   m_Name: ClaimButton
   m_TagString: Untagged
@@ -12461,6 +12462,62 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 181869925}
   m_CullTransparentMesh: 1
+--- !u!114 &181869930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181869925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 181869928}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1149238614}
+        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
+        m_MethodName: ClaimFreeGold
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &182198546
 GameObject:
   m_ObjectHideFlags: 0
@@ -72734,19 +72791,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1063807057}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1149238614}
-        m_TargetAssemblyTypeName: GoldPurchase, Assembly-CSharp
-        m_MethodName: ClaimFreeGold
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &1065091439
 GameObject:
   m_ObjectHideFlags: 0
@@ -74003,6 +74048,7 @@ GameObject:
   - component: {fileID: 1081108055}
   - component: {fileID: 1081108056}
   - component: {fileID: 1081108057}
+  - component: {fileID: 1081108058}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -74202,6 +74248,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCanvas: {fileID: 774164164}
   battleObject: {fileID: 743464937}
+--- !u!114 &1081108058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1081108046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09fb12fff1330400c8288911cb6f4a73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1083014483
 GameObject:
   m_ObjectHideFlags: 0
@@ -79670,6 +79728,7 @@ MonoBehaviour:
   heroFreeButtonText: {fileID: 1869195750}
   rareFreeButtonText: {fileID: 833958836}
   epicFreeButtonText: {fileID: 855155601}
+  startGame: {fileID: 248083364}
   storeMenu: {fileID: 1149238616}
   diamondStore: {fileID: 1149238617}
 --- !u!114 &1149238614
@@ -79750,6 +79809,7 @@ MonoBehaviour:
   x10gachaDiamondText: {fileID: 1340655810}
   x1gachaKeyImage: {fileID: 2045801233}
   x10gachaKeyImage: {fileID: 1461837642}
+  startGame: {fileID: 248083364}
 --- !u!114 &1149238617
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -18,20 +18,18 @@ public class GoldPurchase : MonoBehaviour
 
     private void Start()
     {
-        // PlayerPrefs.SetInt("Diamond", 500); // 🔧 TEMP: give 500 diamonds for testing
-
         _wsSocketApi = PurchaseWebSocketApi.Instance;
         string today = DateTime.Now.ToString("yyyy-MM-dd");
 
         // Hide claim button if already claimed today
         string lastClaimDate = PlayerPrefs.GetString("GoldClaimDate", "");
-        // claimButton?.SetActive(lastClaimDate != today);
+
         bool canClaimGold = lastClaimDate != today;
         SetClaimButtonState(claimButton, canClaimGold);
 
         // Hide buygold1 button if already bought today
         string lastPurchaseDate = PlayerPrefs.GetString("Gold10_LastPurchase", "");
-        // buyGold1Button?.SetActive(lastPurchaseDate != today);
+
         bool canBuyGold1 = lastPurchaseDate != today;
         SetClaimButtonState(buyGold1Button, canBuyGold1);
     }
@@ -81,7 +79,8 @@ public class GoldPurchase : MonoBehaviour
     private void GrantGoldReward()
     {
         _wsSocketApi.Action("add_gold", new { type = "500" }, AfterByPurchase);
-        claimButton?.SetActive(false);
+
+        SetClaimButtonState(claimButton, false);
 
         // ADD THIS LINE:
         PlayerPrefs.SetString("GoldClaimDate", DateTime.Now.ToString("yyyy-MM-dd"));
@@ -109,7 +108,7 @@ public class GoldPurchase : MonoBehaviour
         {
             _wsSocketApi.Action("add_gold", new { type = "300" }, AfterByPurchase);
 
-            buyGold1Button.SetActive(false);
+            SetClaimButtonState(buyGold1Button, false);
             // Update the date for next session
             PlayerPrefs.SetString("Gold10_LastPurchase", DateTime.Now.ToString("yyyy-MM-dd"));
 
