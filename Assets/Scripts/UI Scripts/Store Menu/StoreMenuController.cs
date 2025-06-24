@@ -83,7 +83,7 @@ public class StoreMenuController : MonoBehaviour
             UpdatePanels(player);
         }
 
-        // // TODO: Remove this test code before production deployment
+        // // Test Only: Remove this test code before production deployment
         // PlayerPrefs.SetInt(PREF_HERO_FREE_CLAIM_COUNT, 0);
         // PlayerPrefs.SetInt(PREF_RARE_FREE_CLAIM_COUNT, 2);
         // PlayerPrefs.SetInt(PREF_EPIC_FREE_CLAIM_COUNT, 2);
