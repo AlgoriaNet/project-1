@@ -14,6 +14,7 @@ public class GoldPurchase : MonoBehaviour
     public GameObject buyGold3Button; // 200 diamonds -> 4000 gold
     private static PurchaseWebSocketApi _wsSocketApi;
     [SerializeField] private DiamondStore diamondStore;
+    [SerializeField] private StartGame startGame;
 
 
     private void Start()
@@ -47,13 +48,7 @@ public class GoldPurchase : MonoBehaviour
 
     public void ClaimFreeGold()
     {
-        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry
-                              ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
-
-        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate)
-                                   && DateTime.Now < expiryDate;
-
-        Debug.Log("Monthly card active: " + isMonthlyCardActive);
+        bool isMonthlyCardActive = startGame.IsMonthlyCardActive(); 
 
         if (isMonthlyCardActive)
         {
@@ -78,14 +73,13 @@ public class GoldPurchase : MonoBehaviour
 
     private void GrantGoldReward()
     {
-        _wsSocketApi.Action("add_gold", new { type = "500" }, AfterByPurchase);
+        _wsSocketApi.Action("add_ad_gold", new { type = "500" }, AfterByPurchase);
 
         SetClaimButtonState(claimButton, false);
 
-        // ADD THIS LINE:
         PlayerPrefs.SetString("GoldClaimDate", DateTime.Now.ToString("yyyy-MM-dd"));
 
-        Debug.Log("Granted 500 gold successfully.");
+        Debug.Log("Granted 500 gold successfully via rewarded ad.");
     }
 
     public void BuyGold_300()

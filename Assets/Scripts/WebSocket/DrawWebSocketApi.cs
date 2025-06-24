@@ -1,6 +1,6 @@
 namespace WebSocket
 {
-    public class DrawWebSocketApi  : BaseWebSocketApi
+    public class DrawWebSocketApi : BaseWebSocketApi
     {
         private static DrawWebSocketApi _instance;
 
@@ -15,6 +15,6 @@ namespace WebSocket
                 }
                 return _instance;
             }
-        }   
+        }
     }
 }

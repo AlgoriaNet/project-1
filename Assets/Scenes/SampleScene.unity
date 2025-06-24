@@ -74090,6 +74090,7 @@ MonoBehaviour:
   adTV: {fileID: 874628786}
   chestBox: {fileID: 2142433062}
   isCountdownActive: 1
+  startGame: {fileID: 248083364}
 --- !u!114 &1081108050
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79628,6 +79629,7 @@ GameObject:
   - component: {fileID: 1149238615}
   - component: {fileID: 1149238616}
   - component: {fileID: 1149238617}
+  - component: {fileID: 1149238618}
   m_Layer: 5
   m_Name: Store Menu
   m_TagString: Untagged
@@ -79749,6 +79751,7 @@ MonoBehaviour:
   buyGold2Button: {fileID: 1367411780}
   buyGold3Button: {fileID: 433346354}
   diamondStore: {fileID: 1149238617}
+  startGame: {fileID: 0}
 --- !u!114 &1149238615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79823,6 +79826,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   diamondStore: {fileID: 770750896}
+--- !u!114 &1149238618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1149238607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81d73d3a2b16401d951a82200c78cc0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1150052050
 GameObject:
   m_ObjectHideFlags: 0

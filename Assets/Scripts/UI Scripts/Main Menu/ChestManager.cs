@@ -19,6 +19,7 @@ public class ChestManager : MonoBehaviour
     private float countdownTime;
     public bool isCountdownActive = false;
     private static PurchaseWebSocketApi _wsSocketApi;
+    [SerializeField] private StartGame startGame;
 
     void Start()
     {
@@ -158,13 +159,7 @@ public class ChestManager : MonoBehaviour
     // Method triggered by the Claim Button
     public void ClaimReward()
     {
-        string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry 
-                            ?? PlayerPrefs.GetString("MonthlyCardExpiry", "");
-
-        bool isMonthlyCardActive = DateTime.TryParse(expiryString, out DateTime expiryDate) 
-                                && DateTime.Now < expiryDate;
-
-        Debug.Log("Monthly card active: " + isMonthlyCardActive);
+        bool isMonthlyCardActive = startGame.IsMonthlyCardActive(); 
 
         if (isMonthlyCardActive)
         {
@@ -202,7 +197,7 @@ public class ChestManager : MonoBehaviour
             ? goldTypes[currentCountdownIndex]
             : "100";
 
-        _wsSocketApi.Action("add_gold", new { type = selectedType }, AfterChestReward);
+        _wsSocketApi.Action("add_ad_gold", new { type = selectedType }, AfterChestReward);
 
         Debug.Log($"Chest reward of {selectedType} gold claimed via API.");
     }

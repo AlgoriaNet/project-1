@@ -63,7 +63,6 @@ public class StoreMenuController : MonoBehaviour
     private const string PREF_HERO_FREE_CLAIM_COUNT = "HeroFreeClaimCount";
     private const string PREF_RARE_FREE_CLAIM_COUNT = "RareFreeClaimCount";
     private const string PREF_EPIC_FREE_CLAIM_COUNT = "EpicFreeClaimCount";
-    // private const string PREF_MONTHLY_CARD_EXPIRY = "MonthlyCardExpiry";
 
     // Sprite paths - centralized
     private const string HERO_KEY_SPRITE_PATH = "UILoading/Items/heroKey";
@@ -119,14 +118,6 @@ public class StoreMenuController : MonoBehaviour
         x10KeyPanel.SetActive(keyCount >= requiredFor10);
         x10DiamondPanel.SetActive(keyCount < requiredFor10);
     }
-
-    // public bool IsMonthlyCardActive()
-    // {
-    //     string expiryString = PlayerProfile.Data?.Player?.MonthlyCardExpiry
-    //                         ?? PlayerPrefs.GetString(PREF_MONTHLY_CARD_EXPIRY, "");
-    //     return DateTime.TryParse(expiryString, out DateTime expiryDate)
-    //         && DateTime.Now < expiryDate;
-    // }
 
     public void UpdateFreeClaimStatus()
     {

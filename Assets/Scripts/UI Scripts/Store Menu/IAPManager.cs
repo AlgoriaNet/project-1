@@ -5,6 +5,7 @@ using System;
 using model;
 using UnityEngine.Purchasing.Extension;
 using WebSocket;
+using Unity.Services.Core;
 
 public class IAPManager : MonoBehaviour, IDetailedStoreListener
 {
