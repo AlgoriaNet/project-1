@@ -19740,7 +19740,7 @@ MonoBehaviour:
   leaderItemPrefab: {fileID: 3094060940603438349, guid: e84bff52439314036a467aa8f5eb36bd, type: 3}
   leaderContent: {fileID: 100934130}
   achievePage: {fileID: 1400663646}
-  achieveItemPrefab: {fileID: 3094060940603438349, guid: 78b92cab1639147318e662ca1c26b091, type: 3}
+  achieveItemPrefab: {fileID: 3094060940603438349, guid: 3d11a2c13cbe141d09b5ebd899baed35, type: 3}
   achieveContent: {fileID: 741363063}
   tavernPage: {fileID: 738919467}
   travernButton1: {fileID: 1079324883}

@@ -17,14 +17,6 @@ public class StartGame : MonoBehaviour
 
     void Start()
     {
-        // --- Start of Temporary Testing Code (Remove After Testing) ---
-        // Force firstLoginTime to 2025/2/1 for testing Day 2 to Day 7 unlocking
-        firstLoginTime = new DateTime(2025, 3, 5, 0, 0, 0); // 2025/2/1 00:00:00
-        PlayerPrefs.SetString(FirstLoginDateKey, firstLoginTime.ToString("o"));
-        PlayerPrefs.Save();
-        Debug.Log($"[TEST] Forced First Login Time: {firstLoginTime}");
-        // --- End of Temporary Testing Code (Remove After Testing) ---
-
         // Load or set the first login date
         string savedFirstLogin = PlayerPrefs.GetString(FirstLoginDateKey, string.Empty);
         if (string.IsNullOrEmpty(savedFirstLogin))

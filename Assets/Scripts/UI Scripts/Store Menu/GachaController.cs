@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using TMPro;
 using model;
 using System;
@@ -7,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using WebSocket;
 using UI_Controller;
+using System.Collections.Generic;
 
 public class GachaController : MonoBehaviour
 {
@@ -28,11 +30,9 @@ public class GachaController : MonoBehaviour
     [SerializeField] private StartGame startGame;
     [SerializeField] private StoreMenuController storeMenu;
 
-    // Constants
     private const int BLOCKS_PER_ROW = 5;
     private const int BLOCKS_PER_DRAW = 10;
 
-    // Diamond costs
     private const int HERO_X1_DIAMOND_COST = 300;
     private const int HERO_X10_DIAMOND_COST = 3000;
     private const int RARE_X1_DIAMOND_COST = 180;
@@ -40,21 +40,17 @@ public class GachaController : MonoBehaviour
     private const int EPIC_X1_DIAMOND_COST = 200;
     private const int EPIC_X10_DIAMOND_COST = 2000;
 
-    // Key requirements
     private const int KEY_REQUIRED_FOR_X1 = 1;
     private const int KEY_REQUIRED_FOR_X10 = 10;
 
-    // Free claim limits
     private const int HERO_FREE_CLAIM_LIMIT = 1;
     private const int RARE_FREE_CLAIM_LIMIT = 3;
     private const int EPIC_FREE_CLAIM_LIMIT = 3;
 
-    // PlayerPrefs keys
     private const string PREF_HERO_FREE_CLAIM_COUNT = "HeroFreeClaimCount";
     private const string PREF_RARE_FREE_CLAIM_COUNT = "RareFreeClaimCount";
     private const string PREF_EPIC_FREE_CLAIM_COUNT = "EpicFreeClaimCount";
 
-    // Resource paths
     private const string SHARD_PATH = "UILoading/CharacterImages/Shard";
     private const string GEM_STONE_PATH = "UILoading/Gem/Stone";
     private const string GEM_PART_PATH = "UILoading/Gem/Part";
@@ -104,23 +100,19 @@ public class GachaController : MonoBehaviour
 
         if (startGame.IsMonthlyCardActive())
         {
-            // Direct execution for monthly card users
             PlayerPrefs.SetInt(PREF_HERO_FREE_CLAIM_COUNT, claimCount + 1);
             DrawController.Instance.Draw("hero", "ad", 1);
-            ExecuteShardDraw();
             heroFreeButtonText.text = $"{claimCount + 1}/{HERO_FREE_CLAIM_LIMIT}";
             storeMenu?.UpdateFreeClaimStatus();
         }
         else
         {
-            // Show ad first, then execute
             if (GoogleMobileAdsScript.This.CheckRewardedAd())
             {
                 GoogleMobileAdsScript.This.ShowRewardedAd("gacha_shard", () =>
                 {
                     PlayerPrefs.SetInt(PREF_HERO_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("hero", "ad", 1);
-                    ExecuteShardDraw();
                     heroFreeButtonText.text = $"{claimCount + 1}/{HERO_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -132,7 +124,6 @@ public class GachaController : MonoBehaviour
                 {
                     PlayerPrefs.SetInt(PREF_HERO_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("hero", "ad", 1);
-                    ExecuteShardDraw();
                     heroFreeButtonText.text = $"{claimCount + 1}/{HERO_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -149,18 +140,16 @@ public class GachaController : MonoBehaviour
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("hero", "key", 1); // Use keys
+                DrawController.Instance.Draw("hero", "key", 1);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("hero", "diamond", 1); // Use diamonds
+                DrawController.Instance.Draw("hero", "diamond", 1);
             }
-
-            ExecuteShardDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
 
@@ -173,18 +162,16 @@ public class GachaController : MonoBehaviour
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("hero", "key", 10); // Use keys
+                DrawController.Instance.Draw("hero", "key", 10);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("hero", "diamond", 10); // Use diamonds
+                DrawController.Instance.Draw("hero", "diamond", 10);
             }
-
-            ExecuteShardTenDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
     #endregion
@@ -206,7 +193,6 @@ public class GachaController : MonoBehaviour
         {
             PlayerPrefs.SetInt(PREF_RARE_FREE_CLAIM_COUNT, claimCount + 1);
             DrawController.Instance.Draw("rare gem", "ad", 1);
-            ExecuteRareGemDraw();
             rareFreeButtonText.text = $"{claimCount + 1}/{RARE_FREE_CLAIM_LIMIT}";
             storeMenu?.UpdateFreeClaimStatus();
         }
@@ -218,7 +204,6 @@ public class GachaController : MonoBehaviour
                 {
                     PlayerPrefs.SetInt(PREF_RARE_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("rare gem", "ad", 1);
-                    ExecuteRareGemDraw();
                     rareFreeButtonText.text = $"{claimCount + 1}/{RARE_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -230,7 +215,6 @@ public class GachaController : MonoBehaviour
                 {
                     PlayerPrefs.SetInt(PREF_RARE_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("rare gem", "ad", 1);
-                    ExecuteRareGemDraw();
                     rareFreeButtonText.text = $"{claimCount + 1}/{RARE_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -247,45 +231,40 @@ public class GachaController : MonoBehaviour
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("rare gem", "key", 1); // Use keys
+                DrawController.Instance.Draw("rare gem", "key", 1);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("rare gem", "diamond", 1); // Use diamonds
+                DrawController.Instance.Draw("rare gem", "diamond", 1);
             }
-
-            ExecuteRareGemDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
 
     public void DrawTenRareGem()
     {
         var player = PlayerProfile.Data.Player;
-        var result = ResourceCheck(player, "rareKey", KEY_REQUIRED_FOR_X1, RARE_X1_DIAMOND_COST);
+        var result = ResourceCheck(player, "rareKey", KEY_REQUIRED_FOR_X10, RARE_X10_DIAMOND_COST);
 
         if (result.isSuccess)
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("rare gem", "key", 10); // Use keys
+                DrawController.Instance.Draw("rare gem", "key", 10);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("rare gem", "diamond", 10); // Use diamonds
+                DrawController.Instance.Draw("rare gem", "diamond", 10);
             }
-
-            ExecuteRareGemTenDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
-
     #endregion
 
     #region Epic Gacha Methods
@@ -305,7 +284,6 @@ public class GachaController : MonoBehaviour
         {
             PlayerPrefs.SetInt(PREF_EPIC_FREE_CLAIM_COUNT, claimCount + 1);
             DrawController.Instance.Draw("epic gem", "ad", 1);
-            ExecuteEpicGemDraw();
             epicFreeButtonText.text = $"{claimCount + 1}/{EPIC_FREE_CLAIM_LIMIT}";
             storeMenu?.UpdateFreeClaimStatus();
         }
@@ -317,7 +295,6 @@ public class GachaController : MonoBehaviour
                 {
                     PlayerPrefs.SetInt(PREF_EPIC_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("epic gem", "ad", 1);
-                    ExecuteEpicGemDraw();
                     epicFreeButtonText.text = $"{claimCount + 1}/{EPIC_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -329,7 +306,6 @@ public class GachaController : MonoBehaviour
                 {
                     PlayerPrefs.SetInt(PREF_EPIC_FREE_CLAIM_COUNT, claimCount + 1);
                     DrawController.Instance.Draw("epic gem", "ad", 1);
-                    ExecuteEpicGemDraw();
                     epicFreeButtonText.text = $"{claimCount + 1}/{EPIC_FREE_CLAIM_LIMIT}";
                     storeMenu?.UpdateFreeClaimStatus();
                 });
@@ -346,43 +322,38 @@ public class GachaController : MonoBehaviour
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("epic gem", "key", 1); // Use keys
+                DrawController.Instance.Draw("epic gem", "key", 1);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("epic gem", "diamond", 1); // Use diamonds
+                DrawController.Instance.Draw("epic gem", "diamond", 1);
             }
-
-            ExecuteEpicGemDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
-
 
     public void DrawTenEpicGem()
     {
         var player = PlayerProfile.Data.Player;
-        var result = ResourceCheck(player, "epicKey", KEY_REQUIRED_FOR_X1, EPIC_X1_DIAMOND_COST);
+        var result = ResourceCheck(player, "epicKey", KEY_REQUIRED_FOR_X10, EPIC_X10_DIAMOND_COST);
 
         if (result.isSuccess)
         {
             if (result.isKey)
             {
-                DrawController.Instance.Draw("epic gem", "key", 10); // Use keys
+                DrawController.Instance.Draw("epic gem", "key", 10);
             }
             else if (result.isDiamond)
             {
-                DrawController.Instance.Draw("epic gem", "diamond", 10); // Use diamonds
+                DrawController.Instance.Draw("epic gem", "diamond", 10);
             }
-
-            ExecuteEpicGemTenDraw();
         }
         else
         {
-            diamondStore.Open(); // Open diamond store when there aren't enough resources
+            diamondStore.Open();
         }
     }
     #endregion
@@ -392,58 +363,208 @@ public class GachaController : MonoBehaviour
     {
         if (!ValidateBlockReferences()) return;
 
-        var items = PlayerProfile.Data.Player.ItemsJson;
-
-        string fileName = items
-            .Keys
-            .FirstOrDefault(k => k.StartsWith("SKb_") || char.IsDigit(k[0]));
-
-        if (string.IsNullOrEmpty(fileName))
+        var lastItems = DrawController.Instance.GetLastDrawnItems();
+        if (lastItems == null || lastItems.Count == 0)
         {
-            Debug.Log("❌ No valid file name for shard or skillbook item!");
+            Debug.LogError("❌ No newly drawn items found!");
             return;
         }
+
+        var fileName = lastItems.Keys.FirstOrDefault(k => k.StartsWith("SKb_") || k.Contains("_"));
+        if (string.IsNullOrEmpty(fileName))
+        {
+            Debug.LogError("❌ No valid item key for shard or skillbook!");
+            return;
+        }
+
+        Debug.Log($"🎯 Displaying newly drawn item: {fileName}");
 
         string imagePath = fileName.StartsWith("SKb_")
             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
             : $"UILoading/CharacterImages/Shard/{fileName}";
 
         Sprite sprite = Resources.Load<Sprite>(imagePath);
-
-        if (sprite != null)
-        {
-            blockImage.sprite = sprite;
-            blockImage.gameObject.SetActive(true);
-        }
-        else
+        if (sprite == null)
         {
             Debug.LogError($"❌ Image not found at {imagePath}");
+            return;
         }
 
+        blockImage.sprite = sprite;
+        blockImage.gameObject.SetActive(true);
         blockPart.gameObject.SetActive(false);
         OpenGachaPage();
         block.SetActive(true);
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson["heroKey"], HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
+        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
         lastDraw = GachaType.Shard;
     }
+
+    // public void ExecuteShardTenDraw()
+    // {
+    //     var lastItems = DrawController.Instance.GetLastDrawnItems();
+    //     if (lastItems == null || lastItems.Count == 0)
+    //     {
+    //         Debug.LogError("❌ No newly drawn items found for ten draw!");
+    //         return;
+    //     }
+
+    //     OpenGachaPage();
+    //     grid.SetActive(true);
+    //     ClearGrid();
+
+    //     foreach (var item in lastItems)
+    //     {
+    //         string fileName = item.Key;
+    //         string imagePath = fileName.StartsWith("SKb_")
+    //             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
+    //             : $"UILoading/CharacterImages/Shard/{fileName}";
+
+    //         Sprite sprite = Resources.Load<Sprite>(imagePath);
+    //         if (sprite == null)
+    //         {
+    //             Debug.LogError($"❌ Image not found at {imagePath}");
+    //             continue;
+    //         }
+
+    //         GameObject newBlock = Instantiate(blockPrefab, grid.transform);
+    //         newBlock.name = $"Block_{fileName}";
+
+    //         Image blockImage = newBlock.transform.Find("Image")?.GetComponent<Image>();
+    //         if (blockImage != null)
+    //         {
+    //             blockImage.sprite = sprite;
+    //             blockImage.color = Color.white;
+    //         }
+
+    //         Image partImage = newBlock.transform.Find("Part")?.GetComponent<Image>();
+    //         if (partImage != null)
+    //         {
+    //             partImage.gameObject.SetActive(false);
+    //         }
+    //     }
+
+    //     AdjustGridLayout();
+
+    //     var player = PlayerProfile.Data.Player;
+    //     storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
+    //     lastDraw = GachaType.Shard;
+    // }
+
+
+
+    public void ExecuteShardTenDraw()
+    {
+        var lastItems = DrawController.Instance.GetLastDrawnItems();
+        if (lastItems == null || lastItems.Count == 0)
+        {
+            Debug.LogError("❌ No newly drawn items found for ten draw! lastItems is null or empty.");
+            return;
+        }
+
+        OpenGachaPage();
+        grid.SetActive(true);
+        ClearGrid();
+
+        var itemInstances = new List<string>(); // Corrected syntax for List<string>
+        foreach (var item in lastItems)
+        {
+            string fileName = item.Key;
+            int quantity = item.Value;
+            Debug.Log($"🎯 Received item: {fileName} with quantity {quantity}");
+            if (quantity <= 0)
+            {
+                Debug.LogWarning($"⚠ Invalid quantity {quantity} for {fileName}, skipping.");
+                continue;
+            }
+            for (int i = 0; i < quantity; i++)
+            {
+                itemInstances.Add(fileName);
+                Debug.Log($"🎯 Added instance {i + 1} of {fileName}, total instances: {itemInstances.Count}");
+            }
+        }
+
+        if (itemInstances.Count == 0)
+        {
+            Debug.LogError("❌ No item instances generated from lastItems!");
+            return;
+        }
+
+        int displayCount = Mathf.Min(itemInstances.Count, BLOCKS_PER_DRAW);
+        Debug.Log($"🎯 Total instances to display: {displayCount}");
+
+        for (int i = 0; i < displayCount; i++)
+        {
+            string fileName = itemInstances[i];
+            string imagePath = fileName.StartsWith("SKb_")
+                ? $"UILoading/CharacterImages/Skillbook/{fileName}"
+                : $"UILoading/CharacterImages/Shard/{fileName}";
+
+            Sprite sprite = Resources.Load<Sprite>(imagePath);
+            if (sprite == null)
+            {
+                Debug.LogError($"❌ Image not found at {imagePath} for {fileName}, skipping this instance.");
+                continue;
+            }
+
+            GameObject newBlock = Instantiate(blockPrefab, grid.transform);
+            if (newBlock == null)
+            {
+                Debug.LogError($"❌ Failed to instantiate blockPrefab for {fileName}");
+                continue;
+            }
+            newBlock.name = $"Block_{fileName}_{i + 1}";
+
+            Image blockImage = newBlock.transform.Find("Image")?.GetComponent<Image>();
+            if (blockImage == null)
+            {
+                Debug.LogError($"❌ Image component not found in block {newBlock.name}");
+                Destroy(newBlock);
+                continue;
+            }
+            blockImage.sprite = sprite;
+            blockImage.color = Color.white;
+
+            Image partImage = newBlock.transform.Find("Part")?.GetComponent<Image>();
+            if (partImage != null)
+            {
+                partImage.gameObject.SetActive(false);
+            }
+            else
+            {
+                Debug.LogWarning($"⚠ Part image not found in block {newBlock.name}");
+            }
+        }
+
+        Debug.Log($"🎯 Displayed {Mathf.Min(transform.childCount, BLOCKS_PER_DRAW)} items in ten draw via {displayCount} instances.");
+        if (displayCount < BLOCKS_PER_DRAW)
+        {
+            Debug.LogWarning($"⚠ Only {displayCount} instances available out of {BLOCKS_PER_DRAW} expected.");
+        }
+
+        AdjustGridLayout();
+
+        var player = PlayerProfile.Data.Player;
+        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
+        lastDraw = GachaType.Shard;
+    }
+
 
 
     public void ExecuteRareGemDraw()
     {
         if (!ValidateBlockReferences()) return;
 
-        var gems = PlayerProfile.Data.Player.Gemstones;
-        if (gems == null || gems.Count == 0)
+        var gem = DrawController.Instance.GetLastDrawnGem();
+        if (gem == null)
         {
-            Debug.LogError("❌ No gemstone data found!");
+            Debug.LogError("❌ No newly drawn gem found!");
             return;
         }
 
-        var gem = gems[gems.Count - 1];  // Last drawn gem
+        Debug.Log($"🎯 Displaying newly drawn gem: ID={gem.Id}, Level={gem.Level}, Part={gem.Part}");
 
-        // Load gem image by Level → Gem_01, Gem_02, ...
         string imageName = $"Gem_{gem.Level:00}";
         Sprite gemSprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/{imageName}");
 
@@ -457,7 +578,6 @@ public class GachaController : MonoBehaviour
             Debug.LogError($"❌ Gem image not found: {imageName}");
         }
 
-        // Load part image using Part name
         Sprite partSprite = Resources.Load<Sprite>($"UILoading/Gem/Part/{gem.Part}");
         if (partSprite != null)
         {
@@ -481,16 +601,15 @@ public class GachaController : MonoBehaviour
     {
         if (!ValidateBlockReferences()) return;
 
-        var gems = PlayerProfile.Data.Player.Gemstones;
-        if (gems == null || gems.Count == 0)
+        var gem = DrawController.Instance.GetLastDrawnGem();
+        if (gem == null)
         {
-            Debug.LogError("❌ No gemstone data found!");
+            Debug.LogError("❌ No newly drawn gem found!");
             return;
         }
 
-        var gem = gems[gems.Count - 1];  // Last drawn gem
+        Debug.Log($"🎯 Displaying newly drawn gem: ID={gem.Id}, Level={gem.Level}, Part={gem.Part}");
 
-        // Load gem image by Level → Gem_01, Gem_02, ...
         string imageName = $"Gem_{gem.Level:00}";
         Sprite gemSprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/{imageName}");
 
@@ -504,7 +623,6 @@ public class GachaController : MonoBehaviour
             Debug.LogError($"❌ Gem image not found: {imageName}");
         }
 
-        // Load part image using Part name
         Sprite partSprite = Resources.Load<Sprite>($"UILoading/Gem/Part/{gem.Part}");
         if (partSprite != null)
         {
@@ -524,14 +642,6 @@ public class GachaController : MonoBehaviour
         lastDraw = GachaType.EpicGem;
     }
 
-    public void ExecuteShardTenDraw()
-    {
-        GenerateTenShards();
-        var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson["heroKey"], HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
-        lastDraw = GachaType.Shard;
-    }
-
     public void ExecuteRareGemTenDraw()
     {
         if (PlayerProfile.Data.Player.Gemstones == null || PlayerProfile.Data.Player.Gemstones.Count < 10)
@@ -546,7 +656,6 @@ public class GachaController : MonoBehaviour
         storeMenu.UpdateGachaPanels("rareKey", player.ItemsJson["rareKey"], RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, "UILoading/Items/rareKey");
         lastDraw = GachaType.RareGem;
     }
-
 
     public void ExecuteEpicGemTenDraw()
     {
@@ -585,56 +694,17 @@ public class GachaController : MonoBehaviour
 
         if (keyCount >= keyRequired)
         {
-            // Enough keys, return success and that it uses keys
             return (true, true, false);
         }
         else if (player.Diamond >= diamondCost)
         {
-            // Not enough keys, but enough diamonds, return success and that it uses diamonds
             return (true, false, true);
         }
         else
         {
-            // Not enough keys or diamonds
             return (false, false, false);
         }
     }
-
-    private void GenerateTenShards()
-    {
-        OpenGachaPage();
-        grid.SetActive(true);
-        ClearGrid();
-
-        var items = PlayerProfile.Data.Player.ItemsJson;
-        var keys = items.Keys.Where(k => k.StartsWith("SKb_") || char.IsDigit(k[0])).TakeLast(10).ToList();
-
-        for (int i = 0; i < keys.Count; i++)
-        {
-            string fileName = keys[i];
-
-            GameObject newBlock = Instantiate(blockPrefab, grid.transform);
-            newBlock.name = $"Block_{i + 1}";
-
-            Image blockImage = newBlock.transform.Find("Image")?.GetComponent<Image>();
-            Image partImage = newBlock.transform.Find("Part")?.GetComponent<Image>();
-
-            string imagePath = fileName.StartsWith("SKb_")
-                ? $"UILoading/CharacterImages/Skillbook/{fileName}"
-                : $"UILoading/CharacterImages/Shard/{fileName}";
-
-            Sprite sprite = Resources.Load<Sprite>(imagePath);
-
-            if (blockImage != null && sprite != null)
-            {
-                blockImage.sprite = sprite;
-                blockImage.color = Color.white;
-            }
-        }
-
-        AdjustGridLayout();
-    }
-
 
     private void GenerateTenGems()
     {
@@ -642,10 +712,16 @@ public class GachaController : MonoBehaviour
         grid.SetActive(true);
         ClearGrid();
 
-        var gems = PlayerProfile.Data.Player.Gemstones;
+        var gems = DrawController.Instance.GetLastDrawnGems();
+        if (gems.Count < 10)
+        {
+            Debug.LogError("❌ Not enough gems returned from server to display 10.");
+            return;
+        }
+
         for (int i = 0; i < 10; i++)
         {
-            var gem = gems[gems.Count - 10 + i];
+            var gem = gems[i];
 
             GameObject newBlock = Instantiate(blockPrefab, grid.transform);
             newBlock.name = $"Block_{i + 1}";
@@ -679,29 +755,23 @@ public class GachaController : MonoBehaviour
         RectTransform gridRect = grid.GetComponent<RectTransform>();
         float panelWidth = gridRect.rect.width;
 
-        // Calculate block width and padding dynamically
         float blockWidth = panelWidth / (BLOCKS_PER_ROW + 1);
         float leftPadding = blockWidth * 0.25f;
         float rightPadding = blockWidth * 0.25f;
         float spacingX = blockWidth * 0.125f;
         float spacingY = blockWidth * 0.125f;
 
-        // Adjust GridLayoutGroup settings
         Grid.cellSize = new Vector2(blockWidth, blockWidth);
         Grid.spacing = new Vector2(spacingX, spacingY);
         Grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         Grid.constraintCount = BLOCKS_PER_ROW;
 
-        // Apply padding to the grid
         Grid.padding.left = Mathf.RoundToInt(leftPadding);
         Grid.padding.right = Mathf.RoundToInt(rightPadding);
         Grid.padding.top = Mathf.RoundToInt(spacingY);
         Grid.padding.bottom = Mathf.RoundToInt(spacingY);
 
-        // Calculate total rows dynamically (2 rows for 10 blocks)
         int totalRows = Mathf.Max(1, Mathf.CeilToInt((float)BLOCKS_PER_DRAW / BLOCKS_PER_ROW));
-
-        // Adjust grid size to fit the blocks without moving its position
         float contentHeight = totalRows * (blockWidth + spacingY) - spacingY;
         gridRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight);
     }
@@ -710,46 +780,64 @@ public class GachaController : MonoBehaviour
     #region Repeat Draw Methods
     public void DrawOneAgain()
     {
-        CloseGachaPage();
-        grid.SetActive(false);
-
-        switch (lastDraw)
+        IEnumerator DelayAndDraw()
         {
-            case GachaType.Shard:
-                DrawOneShard();
-                break;
-            case GachaType.RareGem:
-                DrawOneRareGem();
-                break;
-            case GachaType.EpicGem:
-                DrawOneEpicGem();
-                break;
-            default:
-                Debug.LogWarning("⚠ No previous draw detected!");
-                break;
+            CloseGachaPage();
+            grid.SetActive(false);
+
+            yield return new WaitForSeconds(0.05f);
+
+            switch (lastDraw)
+            {
+                case GachaType.Shard:
+                    DrawOneShard();
+                    break;
+                case GachaType.RareGem:
+                    DrawOneRareGem();
+                    break;
+                case GachaType.EpicGem:
+                    DrawOneEpicGem();
+                    break;
+                default:
+                    Debug.LogWarning("⚠ No previous draw detected!");
+                    break;
+            }
         }
+
+        StartCoroutine(DelayAndDraw());
     }
 
     public void DrawTenAgain()
     {
-        CloseGachaPage();
-        block.SetActive(false);
-
-        switch (lastDraw)
+        IEnumerator DelayAndDraw()
         {
-            case GachaType.Shard:
-                DrawTenShard();
-                break;
-            case GachaType.RareGem:
-                DrawTenRareGem();
-                break;
-            case GachaType.EpicGem:
-                DrawTenEpicGem();
-                break;
-            default:
-                Debug.LogWarning("⚠ No previous draw detected!");
-                break;
+            CloseGachaPage();
+            block.SetActive(false);
+
+            yield return new WaitForSeconds(0.05f);
+
+            switch (lastDraw)
+            {
+                case GachaType.Shard:
+                    DrawTenShard();
+                    break;
+                case GachaType.RareGem:
+                    DrawTenRareGem();
+                    break;
+                case GachaType.EpicGem:
+                    DrawTenEpicGem();
+                    break;
+                default:
+                    Debug.LogWarning("⚠ No previous draw detected!");
+                    break;
+            }
         }
+
+        StartCoroutine(DelayAndDraw());
     }
     #endregion
 }
+
+
+
+

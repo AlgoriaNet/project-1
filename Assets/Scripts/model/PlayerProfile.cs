@@ -20,7 +20,19 @@ namespace model
         
         public void SetPlayer(Player player)
         {
-            Player = player;
+            // Player = player;
+
+            var existingGemstones = this.Player?.Gemstones;
+            var existingEquipments = this.Player?.Equipments; // Adjust property name if different
+            this.Player = player;
+            if (existingGemstones != null)
+            {
+                this.Player.Gemstones = existingGemstones;
+            }
+            if (existingEquipments != null)
+            {
+                this.Player.Equipments = existingEquipments; // Adjust property name if different
+            }
             Debug.Log("Player Profile Set: " + Player.Name);
             NotifyListeners("Player");
             NotifyListeners("Bag");
@@ -31,7 +43,15 @@ namespace model
         public void SetGems(List<Gemstone> gems)
         {
             Debug.Log("gems:" + gems.Count);
-            Player.Gemstones = gems;
+            // Player.Gemstones = gems;
+            if (this.Player.Gemstones == null)
+            {
+                this.Player.Gemstones = new List<Gemstone>();
+            }
+            if (gems != null)
+            {
+                this.Player.Gemstones.AddRange(gems);
+            }
             Debug.Log("gems in bag:" + GetGemstonesInPack().Count);
             NotifyListeners("Gemstones");
             NotifyListeners("Bag");

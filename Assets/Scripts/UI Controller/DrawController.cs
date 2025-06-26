@@ -1,3 +1,4 @@
+// Grok Worked, but no heroKey deducted+++++++++++++++++++++++++++++++++++++++
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using WebSocket;
+using System.Linq;
 
 namespace UI_Controller
 {
@@ -13,6 +15,9 @@ namespace UI_Controller
     {
         public DrawWebSocketApi drawWebSocketApi => DrawWebSocketApi.Instance;
         public static DrawController Instance { get; private set; }
+
+        public List<Gemstone> LastDrawnGems { get; private set; } = new List<Gemstone>();
+        public Dictionary<string, int> LastDrawnItems { get; private set; } = new Dictionary<string, int>();
 
         public enum eDrawType
         {
@@ -59,14 +64,126 @@ namespace UI_Controller
                 consume_item = consumeItem,
                 count
             };
-            drawWebSocketApi.Action("draw", apiParams, OnDrawSuccess);
+            drawWebSocketApi.Action("draw", apiParams, (obj) => OnDrawSuccess(type, count, obj));
         }
 
-        private void OnDrawSuccess(JObject obj)
+        private void OnDrawSuccess(string type, int count, JObject obj)
         {
-            Debug.Log("draw:" + obj);
-            PlayerProfile.Data.SetGems(obj["all_gems"].ToObject<List<Gemstone>>());
-            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+            if (obj == null)
+            {
+                Debug.LogError("Received null response from server in OnDrawSuccess");
+                return;
+            }
+
+            if (obj["Player"] != null)
+            {
+                PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+            }
+            else
+            {
+                Debug.LogWarning("No Player data in server response");
+            }
+
+            if (type != "hero")
+            {
+                var newGems = obj["gems"]?.ToObject<List<Gemstone>>();
+                if (newGems != null && newGems.Count > 0)
+                {
+                    LastDrawnGems = newGems;
+                    for (int i = 0; i < newGems.Count; i++)
+                    {
+                        var gem = newGems[i];
+                        Debug.Log($"🆕 Newly Drawn Gem {i + 1}:");
+                        Debug.Log($"  ID={gem.Id}");
+                        Debug.Log($"  Level={gem.Level}");
+                        Debug.Log($"  Part={gem.Part}");
+                        Debug.Log($"  Name={gem.Name}");
+                    }
+                }
+
+                if (obj["all_gems"] != null)
+                {
+                    PlayerProfile.Data.SetGems(obj["all_gems"].ToObject<List<Gemstone>>());
+                }
+                else
+                {
+                    var existingGems = PlayerProfile.Data.Player.Gemstones ?? new List<Gemstone>();
+                    if (newGems != null)
+                    {
+                        existingGems.AddRange(newGems);
+                        PlayerProfile.Data.SetGems(existingGems);
+                    }
+                }
+
+                var gachaController = FindObjectOfType<GachaController>();
+                if (gachaController != null)
+                {
+                    if (count == 1)
+                    {
+                        if (type == "rare gem")
+                            gachaController.ExecuteRareGemDraw();
+                        else if (type == "epic gem")
+                            gachaController.ExecuteEpicGemDraw();
+                    }
+                    else if (count == 10)
+                    {
+                        if (type == "rare gem")
+                            gachaController.ExecuteRareGemTenDraw();
+                        else if (type == "epic gem")
+                            gachaController.ExecuteEpicGemTenDraw();
+                    }
+                }
+            }
+            else
+            {
+                var newItems = obj["items"]?.ToObject<List<Dictionary<string, int>>>();
+                if (newItems != null && newItems.Count > 0)
+                {
+                    LastDrawnItems.Clear();
+                    foreach (var itemDict in newItems)
+                    {
+                        foreach (var kvp in itemDict)
+                        {
+                            LastDrawnItems[kvp.Key] = kvp.Value;
+                            PlayerProfile.Data.Player.ItemsJson[kvp.Key] = kvp.Value;
+                            Debug.Log($"🆕 Newly Drawn Item: {kvp.Key} x{kvp.Value}");
+                        }
+                    }
+                    PlayerProfile.Data.NotifyListeners("Bag");
+                }
+
+                var gachaController = FindObjectOfType<GachaController>();
+                if (gachaController != null)
+                {
+                    if (count == 1)
+                        gachaController.ExecuteShardDraw();
+                    else if (count == 10)
+                        gachaController.ExecuteShardTenDraw();
+                }
+            }
+        }
+
+        public Gemstone GetLastDrawnGem()
+        {
+            return LastDrawnGems != null && LastDrawnGems.Count > 0 ? LastDrawnGems[0] : null;
+        }
+
+        public List<Gemstone> GetLastDrawnGems()
+        {
+            return LastDrawnGems ?? new List<Gemstone>();
+        }
+
+        public string GetLastDrawnItemKey()
+        {
+            return LastDrawnItems != null && LastDrawnItems.Count > 0 
+                ? LastDrawnItems.Keys.First() 
+                : null;
+        }
+
+        public Dictionary<string, int> GetLastDrawnItems()
+        {
+            return LastDrawnItems ?? new Dictionary<string, int>();
         }
     }
 }
+
