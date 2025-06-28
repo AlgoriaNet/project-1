@@ -66,7 +66,7 @@ namespace UI_Controller
             };
             drawWebSocketApi.Action("draw", apiParams, (obj) => OnDrawSuccess(type, count, obj));
         }
-
+      
         private void OnDrawSuccess(string type, int count, JObject obj)
         {
             if (obj == null)
@@ -136,20 +136,47 @@ namespace UI_Controller
             }
             else
             {
-                var newItems = obj["items"]?.ToObject<List<Dictionary<string, int>>>();
-                if (newItems != null && newItems.Count > 0)
+                // HERO DRAW - Handle items array properly
+                var itemsArray = obj["items"] as JArray;
+                if (itemsArray != null && itemsArray.Count > 0)
                 {
                     LastDrawnItems.Clear();
-                    foreach (var itemDict in newItems)
+                    
+                    // Store items in the exact order they appear in the array
+                    // This preserves the server's intended display order
+                    for (int i = 0; i < itemsArray.Count; i++)
                     {
-                        foreach (var kvp in itemDict)
+                        var itemObj = itemsArray[i] as JObject;
+                        if (itemObj != null)
                         {
-                            LastDrawnItems[kvp.Key] = kvp.Value;
-                            PlayerProfile.Data.Player.ItemsJson[kvp.Key] = kvp.Value;
-                            Debug.Log($"🆕 Newly Drawn Item: {kvp.Key} x{kvp.Value}");
+                            foreach (var property in itemObj.Properties())
+                            {
+                                string itemKey = property.Name;
+                                int quantity = property.Value.ToObject<int>();
+                                
+                                // Use index-based key to preserve order and handle duplicates
+                                string orderedKey = $"{i:D2}_{itemKey}_{quantity}";
+                                LastDrawnItems[orderedKey] = quantity;
+                                
+                                // Also update the player's actual inventory
+                                if (PlayerProfile.Data.Player.ItemsJson.ContainsKey(itemKey))
+                                {
+                                    PlayerProfile.Data.Player.ItemsJson[itemKey] += quantity;
+                                }
+                                else
+                                {
+                                    PlayerProfile.Data.Player.ItemsJson[itemKey] = quantity;
+                                }
+                                
+                                Debug.Log($"🆕 Newly Drawn Item [{i}]: {itemKey} x{quantity}");
+                            }
                         }
                     }
                     PlayerProfile.Data.NotifyListeners("Bag");
+                }
+                else
+                {
+                    Debug.LogError("❌ No items array found in server response or array is empty");
                 }
 
                 var gachaController = FindObjectOfType<GachaController>();

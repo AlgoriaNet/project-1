@@ -17,6 +17,7 @@ public class GachaController : MonoBehaviour
     public GameObject block;
     public Image blockImage;
     public Image blockPart;
+    public TextMeshProUGUI qntyText; // New field for Qnty
     public GameObject grid;
     public GameObject blockPrefab;
     public GridLayoutGroup Grid;
@@ -370,14 +371,26 @@ public class GachaController : MonoBehaviour
             return;
         }
 
-        var fileName = lastItems.Keys.FirstOrDefault(k => k.StartsWith("SKb_") || k.Contains("_"));
-        if (string.IsNullOrEmpty(fileName))
+        var orderedKey = lastItems.Keys.FirstOrDefault(k => k.StartsWith("SKb_") || k.Contains("_"));
+        if (string.IsNullOrEmpty(orderedKey))
         {
             Debug.LogError("❌ No valid item key for shard or skillbook!");
             return;
         }
 
-        Debug.Log($"🎯 Displaying newly drawn item: {fileName}");
+        // Extract the actual item name from the ordered key format "00_ItemName_Quantity"
+        string[] keyParts = orderedKey.Split('_');
+        if (keyParts.Length < 3)
+        {
+            Debug.LogError($"❌ Invalid item key format: {orderedKey}");
+            return;
+        }
+
+        // Reconstruct the original item name (everything except the first part which is the index and last part which is quantity)
+        string fileName = string.Join("_", keyParts.Skip(1).Take(keyParts.Length - 2));
+        int quantity = lastItems[orderedKey]; // Get the quantity of the drawn item
+        
+        Debug.Log($"🎯 Displaying newly drawn item: {fileName} with quantity {quantity}");
 
         string imagePath = fileName.StartsWith("SKb_")
             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
@@ -393,6 +406,19 @@ public class GachaController : MonoBehaviour
         blockImage.sprite = sprite;
         blockImage.gameObject.SetActive(true);
         blockPart.gameObject.SetActive(false);
+
+        // Set the Qnty text
+        TextMeshProUGUI qntyText = block.transform.Find("Qnty")?.GetComponent<TextMeshProUGUI>();
+        if (qntyText != null)
+        {
+            qntyText.text = quantity.ToString();
+            qntyText.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.LogWarning($"⚠ Qnty text component not found in block");
+        }
+
         OpenGachaPage();
         block.SetActive(true);
 
@@ -401,65 +427,12 @@ public class GachaController : MonoBehaviour
         lastDraw = GachaType.Shard;
     }
 
-    // public void ExecuteShardTenDraw()
-    // {
-    //     var lastItems = DrawController.Instance.GetLastDrawnItems();
-    //     if (lastItems == null || lastItems.Count == 0)
-    //     {
-    //         Debug.LogError("❌ No newly drawn items found for ten draw!");
-    //         return;
-    //     }
-
-    //     OpenGachaPage();
-    //     grid.SetActive(true);
-    //     ClearGrid();
-
-    //     foreach (var item in lastItems)
-    //     {
-    //         string fileName = item.Key;
-    //         string imagePath = fileName.StartsWith("SKb_")
-    //             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
-    //             : $"UILoading/CharacterImages/Shard/{fileName}";
-
-    //         Sprite sprite = Resources.Load<Sprite>(imagePath);
-    //         if (sprite == null)
-    //         {
-    //             Debug.LogError($"❌ Image not found at {imagePath}");
-    //             continue;
-    //         }
-
-    //         GameObject newBlock = Instantiate(blockPrefab, grid.transform);
-    //         newBlock.name = $"Block_{fileName}";
-
-    //         Image blockImage = newBlock.transform.Find("Image")?.GetComponent<Image>();
-    //         if (blockImage != null)
-    //         {
-    //             blockImage.sprite = sprite;
-    //             blockImage.color = Color.white;
-    //         }
-
-    //         Image partImage = newBlock.transform.Find("Part")?.GetComponent<Image>();
-    //         if (partImage != null)
-    //         {
-    //             partImage.gameObject.SetActive(false);
-    //         }
-    //     }
-
-    //     AdjustGridLayout();
-
-    //     var player = PlayerProfile.Data.Player;
-    //     storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
-    //     lastDraw = GachaType.Shard;
-    // }
-
-
-
     public void ExecuteShardTenDraw()
     {
         var lastItems = DrawController.Instance.GetLastDrawnItems();
         if (lastItems == null || lastItems.Count == 0)
         {
-            Debug.LogError("❌ No newly drawn items found for ten draw! lastItems is null or empty.");
+            Debug.LogError("❌ No newly drawn items found for ten draw!");
             return;
         }
 
@@ -467,36 +440,29 @@ public class GachaController : MonoBehaviour
         grid.SetActive(true);
         ClearGrid();
 
-        var itemInstances = new List<string>(); // Corrected syntax for List<string>
-        foreach (var item in lastItems)
+        Debug.Log($"🎯 Processing {lastItems.Count} items from server response");
+
+        // Sort by the order index we embedded in the key (00_, 01_, 02_, etc.)
+        var sortedItems = lastItems.OrderBy(kvp => kvp.Key).ToList();
+
+        int blockIndex = 0;
+        foreach (var item in sortedItems)
         {
-            string fileName = item.Key;
-            int quantity = item.Value;
-            Debug.Log($"🎯 Received item: {fileName} with quantity {quantity}");
-            if (quantity <= 0)
+            // Extract the actual item name from our ordered key format "00_ItemName_Quantity"
+            string[] keyParts = item.Key.Split('_');
+            if (keyParts.Length < 3)
             {
-                Debug.LogWarning($"⚠ Invalid quantity {quantity} for {fileName}, skipping.");
+                Debug.LogError($"❌ Invalid item key format: {item.Key}");
                 continue;
             }
-            for (int i = 0; i < quantity; i++)
-            {
-                itemInstances.Add(fileName);
-                Debug.Log($"🎯 Added instance {i + 1} of {fileName}, total instances: {itemInstances.Count}");
-            }
-        }
 
-        if (itemInstances.Count == 0)
-        {
-            Debug.LogError("❌ No item instances generated from lastItems!");
-            return;
-        }
+            // Reconstruct the original item name (everything except the first part which is the index)
+            string fileName = string.Join("_", keyParts.Skip(1).Take(keyParts.Length - 2));
+            int quantity = item.Value;
 
-        int displayCount = Mathf.Min(itemInstances.Count, BLOCKS_PER_DRAW);
-        Debug.Log($"🎯 Total instances to display: {displayCount}");
+            Debug.Log($"🎯 Creating block {blockIndex + 1}: {fileName} x{quantity}");
 
-        for (int i = 0; i < displayCount; i++)
-        {
-            string fileName = itemInstances[i];
+            // Create one block for this item (regardless of quantity, since server sent it as one entry)
             string imagePath = fileName.StartsWith("SKb_")
                 ? $"UILoading/CharacterImages/Skillbook/{fileName}"
                 : $"UILoading/CharacterImages/Shard/{fileName}";
@@ -504,7 +470,7 @@ public class GachaController : MonoBehaviour
             Sprite sprite = Resources.Load<Sprite>(imagePath);
             if (sprite == null)
             {
-                Debug.LogError($"❌ Image not found at {imagePath} for {fileName}, skipping this instance.");
+                Debug.LogError($"❌ Image not found at {imagePath} for {fileName}");
                 continue;
             }
 
@@ -514,34 +480,44 @@ public class GachaController : MonoBehaviour
                 Debug.LogError($"❌ Failed to instantiate blockPrefab for {fileName}");
                 continue;
             }
-            newBlock.name = $"Block_{fileName}_{i + 1}";
+            newBlock.name = $"Block_{blockIndex + 1}_{fileName}";
 
             Image blockImage = newBlock.transform.Find("Image")?.GetComponent<Image>();
-            if (blockImage == null)
+            if (blockImage != null)
+            {
+                blockImage.sprite = sprite;
+                blockImage.color = Color.white;
+            }
+            else
             {
                 Debug.LogError($"❌ Image component not found in block {newBlock.name}");
                 Destroy(newBlock);
                 continue;
             }
-            blockImage.sprite = sprite;
-            blockImage.color = Color.white;
 
+            // Hide Part for shards/skillbooks
             Image partImage = newBlock.transform.Find("Part")?.GetComponent<Image>();
             if (partImage != null)
             {
                 partImage.gameObject.SetActive(false);
             }
+
+            // Set the quantity text
+            TextMeshProUGUI qntyText = newBlock.transform.Find("Qnty")?.GetComponent<TextMeshProUGUI>();
+            if (qntyText != null)
+            {
+                qntyText.text = quantity.ToString();
+                qntyText.gameObject.SetActive(true);
+            }
             else
             {
-                Debug.LogWarning($"⚠ Part image not found in block {newBlock.name}");
+                Debug.LogWarning($"⚠ Qnty text component not found in block {newBlock.name}");
             }
+
+            blockIndex++;
         }
 
-        Debug.Log($"🎯 Displayed {Mathf.Min(transform.childCount, BLOCKS_PER_DRAW)} items in ten draw via {displayCount} instances.");
-        if (displayCount < BLOCKS_PER_DRAW)
-        {
-            Debug.LogWarning($"⚠ Only {displayCount} instances available out of {BLOCKS_PER_DRAW} expected.");
-        }
+        Debug.Log($"🎯 Successfully displayed {blockIndex} blocks exactly following server order.");
 
         AdjustGridLayout();
 
@@ -549,8 +525,6 @@ public class GachaController : MonoBehaviour
         storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
         lastDraw = GachaType.Shard;
     }
-
-
 
     public void ExecuteRareGemDraw()
     {
@@ -837,7 +811,3 @@ public class GachaController : MonoBehaviour
     }
     #endregion
 }
-
-
-
-
