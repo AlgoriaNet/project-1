@@ -28026,6 +28026,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2042961328}
+        m_TargetAssemblyTypeName: HeroBlockSetup, Assembly-CSharp
+        m_MethodName: OnOtherTabSelected
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &416476767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -119885,7 +119897,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40df5eabf03b48ddae65e75b1a0d2c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Button_6: {fileID: 0}
+  Button_6: {fileID: 1053041713}
 --- !u!114 &1730897762
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138720,7 +138732,6 @@ GameObject:
   - component: {fileID: 2042961328}
   - component: {fileID: 2042961329}
   - component: {fileID: 2042961330}
-  - component: {fileID: 2042961331}
   - component: {fileID: 2042961332}
   m_Layer: 5
   m_Name: Hero Menu
@@ -138851,6 +138862,9 @@ MonoBehaviour:
   CongratsPage: {fileID: 1656530108}
   DismantlePack: {fileID: 1352440962}
   dismantleBlock: {fileID: 1900089464}
+  equipmentTabButton: {fileID: 372318549}
+  gemTabButton: {fileID: 1761277943}
+  otherTabButton: {fileID: 416476766}
 --- !u!114 &2042961329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138902,18 +138916,6 @@ MonoBehaviour:
   gemMergeViewport: {fileID: 475573863}
   skillItemPrefab: {fileID: 1464681822307829844, guid: 81ead5c75d97a4428beba1c3b1fc691d, type: 3}
   skillContentPanel: {fileID: 1512667668}
---- !u!114 &2042961331
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2042961323}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 79f8027779dd4c7fb76e59df3c50009c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2042961332
 MonoBehaviour:
   m_ObjectHideFlags: 0

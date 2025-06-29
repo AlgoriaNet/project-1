@@ -694,4 +694,116 @@ public class HeroBlockSetup : MonoBehaviour
         dismantleBlock.anchorMin = new Vector2(dismantleBlock.anchorMin.x, 0.75f);
         dismantleBlock.anchorMax = new Vector2(dismantleBlock.anchorMax.x, 0.7f);
     }
+
+    // Call this when the 'Other' tab is selected to refresh the UI
+    public void OnOtherTabSelected()
+    {
+        Debug.Log("[OtherTab] Selected. Updating Others tab UI.");
+        UpdateOthersTab();
+    }
+
+    // copilot agent 2025-06-29: Update the Others tab to display all items from ItemsJson (hero only)
+    public void UpdateOthersTab()
+    {
+        var otherItemsRaw = model.PlayerProfile.Data.GetOtherItemsInPack();
+        Debug.Log($"[OtherTab] ItemsJson count: {otherItemsRaw?.Count ?? 0}");
+        if (otherItemsRaw == null || otherItemsRaw.Count == 0)
+        {
+            Debug.LogWarning("[OtherTab] ItemsJson is empty! Add test data or check server sync.");
+            return;
+        }
+
+        // 1. Exclude unwanted keys
+        var excludeKeys = new HashSet<string> { "heroKey", "rareKey", "epicKey" };
+
+        // 2. Group and sum by true item name (shard/skillbook logic)
+        var grouped = new Dictionary<string, int>(); // key: fileName, value: total qnty
+        var typeMap = new Dictionary<string, string>(); // key: fileName, value: "shard" or "skillbook"
+        foreach (var kvp in otherItemsRaw)
+        {
+            string rawKey = kvp.Key;
+            int qnty = kvp.Value;
+            if (excludeKeys.Contains(rawKey)) continue;
+
+            // GachaController logic: key format is like "20_Nyx" for shards, "SKb_SkillbookName" for skillbooks
+            string fileName;
+            string type;
+            if (rawKey.StartsWith("SKb_"))
+            {
+                fileName = rawKey;
+                type = "skillbook";
+            }
+            else
+            {
+                fileName = rawKey;
+                type = "shard";
+            }
+            if (!grouped.ContainsKey(fileName))
+            {
+                grouped[fileName] = 0;
+                typeMap[fileName] = type;
+            }
+            grouped[fileName] += qnty;
+        }
+
+        // 3. Clear existing UI
+        foreach (Transform child in contentPanel)
+            Destroy(child.gameObject);
+
+        // 4. Create blocks for each grouped item
+        foreach (var kvp in grouped)
+        {
+            string fileName = kvp.Key;
+            int totalQnty = kvp.Value;
+            string type = typeMap[fileName];
+
+            GameObject newBlock = Instantiate(blockPrefab, contentPanel);
+            newBlock.name = $"OtherItem_{fileName}";
+
+            // Set item image
+            Image image = newBlock.transform.Find("Image").GetComponent<Image>();
+            image.sprite = LoadOtherItemSprite_GachaStyle(fileName, type);
+            if (image.sprite != null)
+            {
+                image.color = Color.white;
+            }
+            else
+            {
+                image.color = Color.clear;
+                Debug.LogWarning($"[OtherTab] Sprite not found for fileName: {fileName}");
+            }
+
+            // Set quantity
+            TextMeshProUGUI qntyText = newBlock.transform.Find("Qnty").GetComponent<TextMeshProUGUI>();
+            qntyText.text = totalQnty.ToString();
+        }
+    }
+
+    // Helper: match GachaController logic for image path
+    private Sprite LoadOtherItemSprite_GachaStyle(string fileName, string type)
+    {
+        string path = type == "skillbook"
+            ? $"UILoading/CharacterImages/Skillbook/{fileName}"
+            : $"UILoading/CharacterImages/Shard/{fileName}";
+        Sprite s = Resources.Load<Sprite>(path);
+        if (s == null) Debug.LogWarning($"[OtherTab] Sprite not found at {path}");
+        return s;
+    }
+
+    // Add these references at the top of the class
+    public Button equipmentTabButton;
+    public Button gemTabButton;
+    public Button otherTabButton;
+
+    // Programmatically select the Equipment tab (index 0) and refresh UI
+    public void SelectEquipmentTab()
+    {
+        if (equipmentTabButton != null)
+        {
+            equipmentTabButton.onClick.Invoke(); // Simulate user click for full tab logic
+            Debug.Log("[HeroBlockSetup] Equipment tab selected via onClick.Invoke().");
+            return;
+        }
+        Debug.LogWarning("[HeroBlockSetup] equipmentTabButton not assigned!");
+    }
 }

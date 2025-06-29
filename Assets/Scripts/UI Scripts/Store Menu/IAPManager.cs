@@ -33,6 +33,13 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        // InitializePurchasing();
+    }
+
+    // Copilot Added: Unity生命周期方法：在游戏开始时初始化IAP
+    async void Start()
+    {
+        await Unity.Services.Core.UnityServices.InitializeAsync();
         InitializePurchasing();
     }
 

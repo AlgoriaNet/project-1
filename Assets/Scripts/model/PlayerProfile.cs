@@ -100,5 +100,21 @@ namespace model
             gemstones?.Sort((a, b) => b.Level.CompareTo(a.Level));
             return gemstones;
         }
+
+        // copilot agent 2025-06-29: Add or update an item in ItemsJson (for shards, skillbooks, etc.)
+        public void AddOrUpdateItem(string itemKey, int amount = 1)
+        {
+            if (Player.ItemsJson.ContainsKey(itemKey))
+                Player.ItemsJson[itemKey] += amount;
+            else
+                Player.ItemsJson[itemKey] = amount;
+            NotifyListeners("Bag"); // Notify UI to update Others tab
+        }
+
+        // copilot agent 2025-06-29: Get all 'other' items (shards, skillbooks, etc.)
+        public Dictionary<string, int> GetOtherItemsInPack()
+        {
+            return Player.ItemsJson;
+        }
     }
 }

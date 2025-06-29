@@ -27,7 +27,7 @@ public class Row1GroupDynamicSize : MonoBehaviour
     private void InitializeStaticUI()
     {
         // Retrieve stored values from PlayerPrefs
-        string userIconPath = PlayerPrefs.GetString("UserIconPath", "UILoading/CharacterImages/UserIcons/WhiteBorderIcons/00.png");
+        string userIconPath = PlayerPrefs.GetString("UserIconPath", "UILoading/CharacterImages/UserIcons/WhiteBorderIcons/00");
         
 
         if (userIconImage != null)

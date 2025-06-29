@@ -63,6 +63,21 @@ public class MenuController : MonoBehaviour
             if (lowerGroup != null) lowerGroup.SetActive(false);
         }
 
+        // 🔹 Always reset Hero Menu (index 1) to Equipment tab
+        if (activeMenuIndex == 1)
+        {
+            // Find the HeroBlockSetup component in the Hero Menu
+            var heroMenuGO = menus[1];
+            if (heroMenuGO != null)
+            {
+                var heroBlockSetup = heroMenuGO.GetComponent<HeroBlockSetup>();
+                if (heroBlockSetup != null)
+                {
+                    heroBlockSetup.SelectEquipmentTab();
+                }
+            }
+        }
+
         // 🔹 Menu 3 (Main Menu) - Handle animation trigger based on countdown status
         if (activeMenuIndex == 2) // Menu 3
         {
