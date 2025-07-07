@@ -21,16 +21,6 @@ namespace model
         
         public void SetPlayer(Player player)
         {
-            Debug.Log($"[PlayerProfile.SetPlayer] Setting new player data:");
-            Debug.Log($"[PlayerProfile.SetPlayer] - Old Items count: {this.Player?.ItemsJson?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - New Items count: {player?.ItemsJson?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - Old Equipment count: {this.Player?.Equipments?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - New Equipment count: {player?.Equipments?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - Old Gemstone count: {this.Player?.Gemstones?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - New Gemstone count: {player?.Gemstones?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - Old Sidekicks count: {this.Player?.Sidekicks?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] - New Sidekicks count: {player?.Sidekicks?.Count ?? 0}");
-            
             var oldPlayer = this.Player;
             
             // Preserve equipment and gemstone collections if backend doesn't provide them
@@ -39,13 +29,11 @@ namespace model
             {
                 if (player.Equipments == null || player.Equipments.Count == 0)
                 {
-                    Debug.Log("[PlayerProfile.SetPlayer] Preserving existing equipment collection");
                     player.Equipments = oldPlayer.Equipments;
                 }
                 
                 if (player.Gemstones == null || player.Gemstones.Count == 0)
                 {
-                    Debug.Log("[PlayerProfile.SetPlayer] Preserving existing gemstone collection");
                     player.Gemstones = oldPlayer.Gemstones;
                 }
             }
@@ -55,13 +43,7 @@ namespace model
             
             // Update PlayerProfile.Sidekick collection to match Player.Sidekicks
             this.Sidekick = this.Player?.Sidekicks ?? new List<Sidekick>();
-            
-            Debug.Log("Player Profile Set: " + Player?.Name);
-            Debug.Log($"[PlayerProfile.SetPlayer] Final Items count: {this.Player?.ItemsJson?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] Final Equipment count: {this.Player?.Equipments?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] Final Gemstone count: {this.Player?.Gemstones?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.SetPlayer] Final Sidekicks count: {this.Player?.Sidekicks?.Count ?? 0}");
-            
+  
             NotifyListeners("Player");
             NotifyListeners("Bag");
             NotifyListeners("Equipments");
@@ -74,7 +56,6 @@ namespace model
             if (this.Player == null)
                 return;
                 
-            Debug.Log("gems:" + gems.Count);
             // Player.Gemstones = gems;
             if (this.Player.Gemstones == null)
             {
@@ -84,7 +65,6 @@ namespace model
             {
                 this.Player.Gemstones.AddRange(gems);
             }
-            Debug.Log("gems in bag:" + GetGemstonesInPack().Count);
             NotifyListeners("Gemstones");
             NotifyListeners("Bag");
         }
@@ -199,7 +179,6 @@ namespace model
             // Return false if Player is null (not loaded yet)
             if (this.Player == null)
             {
-                Debug.Log($"[PlayerProfile.IsAllyUnlocked] Player is null, returning false for {allyName}");
                 return false;
             }
                 
@@ -207,7 +186,6 @@ namespace model
             bool hasSidekick = HasSidekick(allyName);
             if (hasSidekick)
             {
-                Debug.Log($"[PlayerProfile.IsAllyUnlocked] Found {allyName} in sidekicks, returning true");
                 return true;
             }
                 
@@ -223,12 +201,8 @@ namespace model
                     string.Equals(ally, allyName.ToLower(), System.StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(ally.ToLower(), allyName.ToLower(), System.StringComparison.OrdinalIgnoreCase)
                 );
-            }
-            
-            Debug.Log($"[PlayerProfile.IsAllyUnlocked] {allyName} - Sidekick: {hasSidekick}, SummonedAllies: {inSummonedAllies}");
-            Debug.Log($"[PlayerProfile.IsAllyUnlocked] Current sidekicks count: {Player?.Sidekicks?.Count ?? 0}");
-            Debug.Log($"[PlayerProfile.IsAllyUnlocked] Current summoned allies: [{string.Join(", ", Player?.SummonedAllies ?? new List<string>())}]");
-            
+            }            
+
             return hasSidekick || inSummonedAllies;
         }
 
@@ -245,10 +219,7 @@ namespace model
                 return;
             }
             
-            var oldStamina = this.Player.Stamina;
             this.Player.Stamina = newStamina;
-            
-            Debug.Log($"[PlayerProfile.UpdateStamina] Stamina updated: {oldStamina} → {newStamina}");
             
             // Notify UI that player data has changed
             NotifyListeners("Player");

@@ -37,6 +37,8 @@ public class AlliesGridSetup : MonoBehaviour
     
     // Store current ally info for the toggle methods
     private string currentAllyName;
+    private string currentItemType; // Store the current item type for utilize flow
+    private string currentUtilizeAllyIndex; // Store the current ally index for utilize flow
 
     void Start()
     {
@@ -349,7 +351,11 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // Delay the size adjustment to allow layout updates
-        Invoke(nameof(AdjustStep2StarGroupSize), 0.1f);
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.05f); // Reduced from 0.1f
+
+        // 🔹 CRITICAL FIX: Refresh the lower section to match the current ally
+        // This ensures shard/skillbook items are coordinated with the ally image
+        RefreshLowerSectionForCurrentAlly();
     }
 
     private void AdjustStep2StarGroupSize()
@@ -360,12 +366,8 @@ public class AlliesGridSetup : MonoBehaviour
         if (step2Grid != null && step2StarGroupRect != null)
         {
             float updatedWidth = step2StarGroupRect.rect.width;
-            Debug.Log($"🔄 DELAYED UPDATE: Step2StarGroup Width = {updatedWidth}, Old CellSize = {step2Grid.cellSize}");
-
             float starCellSize = updatedWidth * 0.2f;
             step2Grid.cellSize = new Vector2(starCellSize, starCellSize);
-
-            Debug.Log($"✅ FINAL Update: Step2StarGroup Width = {updatedWidth}, New CellSize = {step2Grid.cellSize}");
         }
     }
 
@@ -533,7 +535,7 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // Delay the size adjustment to allow layout updates
-        Invoke(nameof(AdjustStep2StarGroupSize), 0.1f);
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.05f); // Reduced from 0.1f
 
         return true;
     }
@@ -546,13 +548,27 @@ public class AlliesGridSetup : MonoBehaviour
     /// <param name="allyName">The ally name (e.g., "Gideon", "Cedric")</param>
     /// <param name="itemType">The item type ("shard" or "skillbook")</param>
     /// <returns>True if Step 2 was successfully set up, false otherwise</returns>
-    public bool OpenUtilizeStep2Simple(string allyIndex, string allyName)
+    public bool OpenUtilizeStep2Simple(string allyIndex, string allyName, string itemType)
     {
         // Basic validation
         if (step2AllyImage == null)
         {
             Debug.LogError("❌ step2AllyImage is NOT assigned in Inspector!");
             return false;
+        }
+
+        // 🔹 CRITICAL: Ensure allies grid is properly initialized before proceeding
+        // This fixes the timing issue where utilize flow is called before initialization
+        if (unlockedAllies == null || unlockedAllies.Count == 0)
+        {
+            InitializeAlliesGrid();
+            
+            // If still no unlocked allies after initialization, we can't proceed
+            if (unlockedAllies == null || unlockedAllies.Count == 0)
+            {
+                Debug.LogError($"[AlliesGridSetup] No unlocked allies available for utilize flow");
+                return false;
+            }
         }
 
         // Switch panels - same as normal Step 2 (no menu switching here)
@@ -577,6 +593,8 @@ public class AlliesGridSetup : MonoBehaviour
 
         // Store ally info for dynamic image switching
         currentAllyName = allyName;
+        currentItemType = itemType; // Store item type for button mode logic
+        currentUtilizeAllyIndex = allyIndex; // Store ally index for utilize flow
 
         // For utilize flow, disable navigation arrows since we're not in a navigation context
         leftArrowButton.onClick.RemoveAllListeners();
@@ -598,7 +616,11 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // Delay the size adjustment to allow layout updates
-        Invoke(nameof(AdjustStep2StarGroupSize), 0.1f);
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.05f); // Reduced from 0.1f
+
+        // 🔹 CRITICAL: Delay the button mode setup to ensure all initialization is complete
+        // This ensures coordination between the item type and the button/UI state
+        Invoke(nameof(SetUtilizeModeAndRefresh), 0.08f); // Reduced from 0.12f
 
         return true;
     }
@@ -645,6 +667,37 @@ public class AlliesGridSetup : MonoBehaviour
         }
         
         var currentAlly = unlockedAllies.Find(a => a.name == currentAllyName);
+        
+        // If ally not found by name alone, and we're in utilize mode, try using stored index
+        if (string.IsNullOrEmpty(currentAlly.index) && !string.IsNullOrEmpty(currentUtilizeAllyIndex))
+        {
+            // In utilize mode, we can construct the path directly without relying on unlockedAllies
+            // This handles cases where the ally might not be in the unlockedAllies list yet
+            Debug.Log($"[AlliesGridSetup] Using utilize mode fallback for ally {currentUtilizeAllyIndex}_{currentAllyName}");
+            
+            // Load SkillBook Image using stored data
+            string fallbackSkillBookPath = $"UILoading/CharacterImages/Skillbook/SKb_{currentUtilizeAllyIndex}_{currentAllyName}";
+            Sprite fallbackSkillBookSprite = Resources.Load<Sprite>(fallbackSkillBookPath);
+
+            if (fallbackSkillBookSprite != null && itemImage != null)
+            {
+                itemImage.sprite = fallbackSkillBookSprite;
+                itemImage.color = Color.white;
+            }
+            else
+            {
+                Debug.LogWarning($"❌ SkillBook image not found at path: {fallbackSkillBookPath}");
+                if (itemImage != null) itemImage.color = new Color(0, 0, 0, 0);
+            }
+
+            // Set button text to "LevelUp"
+            if (upButtonText != null)
+            {
+                upButtonText.text = "LevelUp";
+            }
+            return; // Early return since we handled it with stored data
+        }
+        
         if (string.IsNullOrEmpty(currentAlly.index))
         {
             Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
@@ -698,6 +751,37 @@ public class AlliesGridSetup : MonoBehaviour
         }
         
         var currentAlly = unlockedAllies.Find(a => a.name == currentAllyName);
+        
+        // If ally not found by name alone, and we're in utilize mode, try using stored index
+        if (string.IsNullOrEmpty(currentAlly.index) && !string.IsNullOrEmpty(currentUtilizeAllyIndex))
+        {
+            // In utilize mode, we can construct the path directly without relying on unlockedAllies
+            // This handles cases where the ally might not be in the unlockedAllies list yet
+            Debug.Log($"[AlliesGridSetup] Using utilize mode fallback for shard {currentUtilizeAllyIndex}_{currentAllyName}");
+            
+            // Load Shard Image using stored data
+            string fallbackShardPath = $"UILoading/CharacterImages/Shard/{currentUtilizeAllyIndex}_{currentAllyName}";
+            Sprite fallbackShardSprite = Resources.Load<Sprite>(fallbackShardPath);
+
+            if (fallbackShardSprite != null && itemImage != null)
+            {
+                itemImage.sprite = fallbackShardSprite;
+                itemImage.color = Color.white;
+            }
+            else
+            {
+                Debug.LogWarning($"❌ Shard image not found at path: {fallbackShardPath}");
+                if (itemImage != null) itemImage.color = new Color(0, 0, 0, 0);
+            }
+
+            // Set button text to "StarUp"
+            if (upButtonText != null)
+            {
+                upButtonText.text = "StarUp";
+            }
+            return; // Early return since we handled it with stored data
+        }
+        
         if (string.IsNullOrEmpty(currentAlly.index))
         {
             Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
@@ -724,5 +808,96 @@ public class AlliesGridSetup : MonoBehaviour
         {
             upButtonText.text = "StarUp";
         }
+    }
+
+    /// <summary>
+    /// Refreshes the lower section (shard/skillbook) to match the current ally.
+    /// This ensures coordination between ally image, items, and button text.
+    /// Called after navigation or when opening Step 2.
+    /// </summary>
+    private void RefreshLowerSectionForCurrentAlly()
+    {
+        // Find the PageButtonController to determine which mode is currently active
+        PageButtonController pageButtonController = FindObjectOfType<PageButtonController>();
+        if (pageButtonController == null)
+        {
+            // Default to LevelUp mode if PageButtonController not found
+            LevelUpLoading();
+            return;
+        }
+
+        // Check which button is currently active and refresh accordingly
+        if (pageButtonController.buttons != null && pageButtonController.buttons.Length > 0)
+        {
+            // Use reflection to get the private activeButtonIndex field
+            var activeButtonIndexField = typeof(PageButtonController).GetField("activeButtonIndex", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (activeButtonIndexField != null)
+            {
+                int activeButtonIndex = (int)activeButtonIndexField.GetValue(pageButtonController);
+                
+                if (activeButtonIndex == 0)
+                {
+                    // Button 1 (LevelUp) is active - show skillbook
+                    LevelUpLoading();
+                }
+                else if (activeButtonIndex == 1)
+                {
+                    // Button 2 (StarUp) is active - show shard
+                    StarUpLoading();
+                }
+                else
+                {
+                    // Default to LevelUp if no clear active button
+                    LevelUpLoading();
+                }
+            }
+            else
+            {
+                // Fallback: Default to LevelUp mode
+                LevelUpLoading();
+            }
+        }
+        else
+        {
+            // Default to LevelUp mode if no buttons found
+            LevelUpLoading();
+        }
+    }
+
+    /// <summary>
+    /// Sets the appropriate button mode and refreshes the lower section for utilize flow.
+    /// Called after opening Step 2 from OtherDetailBox to ensure coordination.
+    /// </summary>
+    private void SetUtilizeModeAndRefresh()
+    {
+        // Find PageButtonController to set the appropriate button mode
+        PageButtonController pageButtonController = FindObjectOfType<PageButtonController>();
+        if (pageButtonController == null)
+        {
+            // If no PageButtonController found, default to LevelUp mode
+            LevelUpLoading();
+            return;
+        }
+
+        // Determine which button to activate based on item type
+        int targetButtonIndex = 0; // Default to LevelUp (button 0)
+        
+        if (currentItemType == "shard")
+        {
+            targetButtonIndex = 1; // StarUp mode for shards (button 1)
+        }
+        else if (currentItemType == "skillbook")
+        {
+            targetButtonIndex = 0; // LevelUp mode for skillbooks (button 0)
+        }
+
+        // Simulate clicking the appropriate button to set the correct mode
+        // This ensures the button visual state and the lower section are coordinated
+        pageButtonController.ToggleButtonVisibility(targetButtonIndex);
+        
+        // The PageButtonController.ToggleButtonVisibility() will automatically call
+        // the appropriate LevelUpLoading() or StarUpLoading() method to update the lower section
     }
 }

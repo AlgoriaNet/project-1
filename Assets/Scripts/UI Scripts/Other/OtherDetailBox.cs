@@ -331,8 +331,23 @@ public class OtherDetailBox : MonoBehaviour
         if (menuController != null)
         {
             // Extract ally info from the current shard/skillbook filename BEFORE switching menus
-            string allyIndex = GetAllyIndexFromFileName(currentFileName);
-            string allyName = GetAllyDisplayNameFromFileName(currentFileName);
+            string allyIndex;
+            string allyName;
+            
+            // Special handling for skillbook format in utilize flow
+            if (currentType == "skillbook" && currentFileName.StartsWith("SKb_"))
+            {
+                // For skillbooks: SKb_05_Lyanna -> index="05", name="Lyanna"
+                string[] parts = currentFileName.Split('_');
+                allyIndex = parts.Length >= 2 ? parts[1] : "01";
+                allyName = parts.Length >= 3 ? parts[2] : "Unknown";
+            }
+            else
+            {
+                // For shards and other formats, use the existing methods
+                allyIndex = GetAllyIndexFromFileName(currentFileName);
+                allyName = GetAllyDisplayNameFromFileName(currentFileName);
+            }
             
             // Activate Allies Menu first by clicking the button
             if (menuController.buttons != null && menuController.buttons.Length > 0)
@@ -340,14 +355,24 @@ public class OtherDetailBox : MonoBehaviour
                 // Simulate clicking the Allies Menu button to ensure proper UI state
                 menuController.buttons[0].onClick.Invoke();
                 
-                // Now that Allies Menu is active, find AlliesGridSetup
-                AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
-                if (alliesGridSetup != null)
-                {
-                    // Use the simplified utilize method without additional menu switching
-                    alliesGridSetup.OpenUtilizeStep2Simple(allyIndex, allyName);
-                }
+                // 🔹 Use minimal delay to reduce visible pack UI transition
+                // This prevents timing conflicts with UI state management
+                StartCoroutine(DelayedUtilizeStep2(allyIndex, allyName, currentType));
             }
+        }
+    }
+
+    private IEnumerator DelayedUtilizeStep2(string allyIndex, string allyName, string itemType)
+    {
+        // Minimal wait time to reduce pack UI visibility
+        yield return new WaitForSeconds(0.02f); // Reduced from 0.05f to 0.02f
+        
+        // Now find AlliesGridSetup and proceed with Step 2
+        AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
+        if (alliesGridSetup != null)
+        {
+            // Pass the item type to ensure correct button mode is set (shard->StarUp, skillbook->LevelUp)
+            alliesGridSetup.OpenUtilizeStep2Simple(allyIndex, allyName, itemType);
         }
     }
 }

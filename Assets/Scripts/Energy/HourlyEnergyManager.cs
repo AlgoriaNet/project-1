@@ -26,9 +26,7 @@ public class HourlyEnergyManager : MonoBehaviour
     private bool _hasPerformedInitialCheck = false;
 
     void Start()
-    {
-        Debug.Log("[HourlyEnergyManager] Starting hourly energy system with improved data handling...");
-        
+    {  
         // Load the last claim time from PlayerPrefs
         LoadLastClaimTime();
         
@@ -39,10 +37,8 @@ public class HourlyEnergyManager : MonoBehaviour
     private IEnumerator DelayedInitialCheck()
     {
         // Wait for WebSocket and player data to be ready
-        yield return new WaitForSeconds(5f);
-        
-        Debug.Log("[HourlyEnergyManager] Attempting to initialize energy API...");
-        
+        yield return new WaitForSeconds(5f);        
+       
         // Initialize WebSocket API with safety checks
         while (_energyApi == null)
         {
@@ -51,7 +47,6 @@ public class HourlyEnergyManager : MonoBehaviour
                 _energyApi = PlayerWebSocketApi.Instance;
                 if (_energyApi != null)
                 {
-                    Debug.Log("[HourlyEnergyManager] WebSocket API initialized successfully");
                     break;
                 }
             }
@@ -66,11 +61,9 @@ public class HourlyEnergyManager : MonoBehaviour
         // Wait for player data to be available
         while (PlayerProfile.Data?.Player == null)
         {
-            Debug.Log("[HourlyEnergyManager] Waiting for player data to be loaded...");
             yield return new WaitForSeconds(1f);
         }
         
-        Debug.Log("[HourlyEnergyManager] Player data ready, performing initial energy check...");
         CheckAndClaimHourlyEnergy();
         _hasPerformedInitialCheck = true;
     }
@@ -102,11 +95,9 @@ public class HourlyEnergyManager : MonoBehaviour
             if (DateTime.TryParse(lastClaimString, out DateTime parsedTime))
             {
                 _lastClaimTime = parsedTime;
-                Debug.Log($"[HourlyEnergyManager] Loaded last claim time: {_lastClaimTime:yyyy-MM-dd HH:mm:ss}");
             }
             else
             {
-                Debug.LogWarning("[HourlyEnergyManager] Invalid last claim time format, resetting to now");
                 _lastClaimTime = DateTime.Now;
                 SaveLastClaimTime();
             }
@@ -116,7 +107,6 @@ public class HourlyEnergyManager : MonoBehaviour
             // First time running - set last claim to now (no retroactive claims)
             _lastClaimTime = DateTime.Now;
             SaveLastClaimTime();
-            Debug.Log($"[HourlyEnergyManager] First run - initialized last claim time to: {_lastClaimTime:yyyy-MM-dd HH:mm:ss}");
         }
     }
     
@@ -132,10 +122,8 @@ public class HourlyEnergyManager : MonoBehaviour
         TimeSpan timeSinceLastClaim = now - _lastClaimTime;
         
         // Calculate how many full hours have passed since last claim
-        int hoursToReclaim = (int)(timeSinceLastClaim.TotalSeconds / HOURLY_CLAIM_INTERVAL_SECONDS);
-        
-        Debug.Log($"[HourlyEnergyManager] Time check - Last claim: {_lastClaimTime:yyyy-MM-dd HH:mm:ss}, Now: {now:yyyy-MM-dd HH:mm:ss}, Hours passed: {hoursToReclaim}");
-        
+        int hoursToReclaim = (int)(timeSinceLastClaim.TotalSeconds / HOURLY_CLAIM_INTERVAL_SECONDS);        
+ 
         // Check if at least 1 hour has passed since last claim
         if (hoursToReclaim >= 1)
         {
@@ -145,14 +133,9 @@ public class HourlyEnergyManager : MonoBehaviour
             if (hoursToReclaim > MAX_CLAIMS_PER_SESSION)
             {
                 Debug.LogWarning($"[HourlyEnergyManager] {hoursToReclaim} hours missed, but capping to {MAX_CLAIMS_PER_SESSION} claims per session");
-            }
-            
-            Debug.Log($"[HourlyEnergyManager] Making {claimsToMake} hourly claim(s)...");
+            }            
+
             ClaimHourlyEnergy(claimsToMake);
-        }
-        else
-        {
-            Debug.Log($"[HourlyEnergyManager] No claims needed - only {timeSinceLastClaim.TotalMinutes:F1} minutes since last claim");
         }
     }
     
@@ -177,9 +160,7 @@ public class HourlyEnergyManager : MonoBehaviour
         {
             Debug.LogWarning($"[HourlyEnergyManager] WebSocket not ready: {ex.Message}");
             return;
-        }
-        
-        Debug.Log($"[HourlyEnergyManager] Claiming {hoursToClaim} hour(s) of energy...");
+        }       
         
         // Use coroutine to space out multiple claims slightly
         StartCoroutine(SendHourlyClaimsCoroutine(hoursToClaim));
@@ -192,7 +173,6 @@ public class HourlyEnergyManager : MonoBehaviour
             // Use DG's exact API specification - only {type: "hourly"}
             var apiParams = new { type = "hourly" };
             
-            Debug.Log($"[HourlyEnergyManager] Sending claim {i + 1}/{hoursToClaim}");
             _energyApi.Action("hourly_claim", apiParams, OnHourlyClaimResponse, OnHourlyClaimError);
             
             // Small delay between claims to avoid overwhelming the server
@@ -204,9 +184,7 @@ public class HourlyEnergyManager : MonoBehaviour
     }
     
     private void OnHourlyClaimResponse(JObject response)
-    {
-        Debug.Log($"[HourlyEnergyManager] Response: {response}");
-        
+    {       
         try
         {
             // Check if we have player data (indicates success)
@@ -221,17 +199,10 @@ public class HourlyEnergyManager : MonoBehaviour
                 
                 var newStamina = PlayerProfile.Data.Player.Stamina;
                 var staminaGained = newStamina - oldStamina;
-                Debug.Log($"[HourlyEnergyManager] Stamina: {oldStamina} → {newStamina} (+{staminaGained})");
-                
+
                 // Update last claim time to now (for each successful claim)
                 _lastClaimTime = DateTime.Now;
                 SaveLastClaimTime();
-                
-                // Log amount claimed if available in response
-                if (response["amount_added"] != null)
-                {
-                    Debug.Log($"[HourlyEnergyManager] Backend reported {response["amount_added"]} stamina added");
-                }
             }
             else
             {
@@ -255,8 +226,6 @@ public class HourlyEnergyManager : MonoBehaviour
     /// </summary>
     public void ManualHourlyClaim()
     {
-        Debug.Log("[HourlyEnergyManager] Manual hourly claim triggered");
-        
         if (_energyApi == null)
         {
             Debug.LogWarning("[HourlyEnergyManager] Cannot make manual claim - WebSocket API not ready");
@@ -275,22 +244,12 @@ public class HourlyEnergyManager : MonoBehaviour
         TimeSpan timeSinceLastClaim = now - _lastClaimTime;
         int hoursToReclaim = (int)(timeSinceLastClaim.TotalSeconds / HOURLY_CLAIM_INTERVAL_SECONDS);
         
-        Debug.Log($"[HourlyEnergyManager] DEBUG STATUS:");
-        Debug.Log($"  Last Claim: {_lastClaimTime:yyyy-MM-dd HH:mm:ss}");
-        Debug.Log($"  Current Time: {now:yyyy-MM-dd HH:mm:ss}");
-        Debug.Log($"  Hours Since: {timeSinceLastClaim.TotalHours:F2}");
-        Debug.Log($"  Claims Available: {hoursToReclaim}");
-        Debug.Log($"  Current Stamina: {PlayerProfile.Data?.Player?.Stamina ?? -1}");
-        Debug.Log($"  WebSocket API Ready: {(_energyApi != null ? "Yes" : "No")}");
-        
         try
         {
             bool wsManagerReady = WebSocketManager.Instance != null;
-            Debug.Log($"  WebSocketManager Ready: {wsManagerReady}");
         }
-        catch (System.Exception ex)
+        catch (System.Exception)
         {
-            Debug.Log($"  WebSocketManager Ready: No ({ex.Message})");
         }
         
         // Force a check
@@ -304,6 +263,5 @@ public class HourlyEnergyManager : MonoBehaviour
     {
         _lastClaimTime = DateTime.Now;
         SaveLastClaimTime();
-        Debug.Log($"[HourlyEnergyManager] Reset last claim time to: {_lastClaimTime:yyyy-MM-dd HH:mm:ss}");
     }
 }
