@@ -86,6 +86,11 @@ public class LineupController : MonoBehaviour
                 unlockedAllies.Add((index, characterNames[i]));
             }
         }
+        Debug.Log($"[LineupController] Unlocked Allies Count: {unlockedAllies.Count}");
+        foreach (var ally in unlockedAllies)
+        {
+            Debug.Log($"[LineupController] Unlocked Ally: {ally.index} - {ally.name}");
+        }
     }
 
     private void AdjustGridForFivePerRow()
@@ -538,24 +543,21 @@ public class LineupController : MonoBehaviour
     private List<string> GetUnlockedAllyIndices(string[] characterNames)
     {
         List<string> unlockedIndices = new List<string>();
-        
         for (int i = 0; i < characterNames.Length; i++)
         {
             string index = (i + 1).ToString("D2");
             string allyName = characterNames[i];
-            
-            if (IsAllyUnlocked(allyName))
+            string fullKey = $"{index}_{allyName}";
+            // Try both fullKey (e.g. 10_Cedric) and allyName (Cedric)
+            if (IsAllyUnlocked(fullKey) || IsAllyUnlocked(allyName))
             {
                 unlockedIndices.Add(index);
             }
         }
-        
-        // No fallback test data - rely purely on backend data
         if (unlockedIndices.Count == 0)
         {
             Debug.Log("[LineupController] No allies unlocked from backend yet. Waiting for actual summons.");
         }
-        
         return unlockedIndices;
     }
 }

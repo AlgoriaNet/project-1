@@ -160,17 +160,18 @@ namespace model
 
         public bool HasSidekick(string sidekickName)
         {
-            return this.Player?.Sidekicks?.Any(s => s.Name?.Equals(sidekickName, System.StringComparison.OrdinalIgnoreCase) == true) ?? false;
-        }
-
-        public Sidekick GetSidekick(string sidekickName)
-        {
-            return this.Player?.Sidekicks?.FirstOrDefault(s => s.Name?.Equals(sidekickName, System.StringComparison.OrdinalIgnoreCase) == true);
-        }
-
-        public Sidekick GetSidekickById(int sidekickId)
-        {
-            return this.Player?.Sidekicks?.FirstOrDefault(s => s.Id == sidekickId);
+            if (this.Player?.Sidekicks == null)
+            {
+                UnityEngine.Debug.Log($"[PlayerProfile.HasSidekick] No Sidekicks loaded. sidekickName: {sidekickName}");
+                return false;
+            }
+            foreach (var s in this.Player.Sidekicks)
+            {
+                UnityEngine.Debug.Log($"[PlayerProfile.HasSidekick] Checking sidekick: '{s.Name}' vs '{sidekickName}' (case-insensitive)");
+            }
+            bool found = this.Player.Sidekicks.Any(s => s.Name?.Equals(sidekickName, System.StringComparison.OrdinalIgnoreCase) == true);
+            UnityEngine.Debug.Log($"[PlayerProfile.HasSidekick] Result for '{sidekickName}': {found}");
+            return found;
         }
 
         // Backward compatibility: Check if an ally is unlocked (for existing UI logic)
@@ -179,30 +180,33 @@ namespace model
             // Return false if Player is null (not loaded yet)
             if (this.Player == null)
             {
+                UnityEngine.Debug.Log($"[PlayerProfile.IsAllyUnlocked] Player is null. allyName: {allyName}");
                 return false;
             }
-                
+            UnityEngine.Debug.Log($"[PlayerProfile.IsAllyUnlocked] Checking allyName: {allyName}");
             // First check the new sidekick system
             bool hasSidekick = HasSidekick(allyName);
             if (hasSidekick)
             {
+                UnityEngine.Debug.Log($"[PlayerProfile.IsAllyUnlocked] Found in Sidekicks: {allyName}");
                 return true;
             }
-                
             // Fall back to legacy SummonedAllies if needed
+            if (Player?.SummonedAllies != null)
+            {
+                UnityEngine.Debug.Log($"[PlayerProfile.IsAllyUnlocked] SummonedAllies: [{string.Join(", ", Player.SummonedAllies)}]");
+            }
             bool inSummonedAllies = Player?.SummonedAllies?.Contains(allyName.ToLower()) ?? false;
-            
             // **NEW**: Also check if it's in summoned allies with different casing patterns
             if (!inSummonedAllies && Player?.SummonedAllies != null)
             {
-                // Try case-insensitive comparison and different formats
                 inSummonedAllies = Player.SummonedAllies.Any(ally => 
                     string.Equals(ally, allyName, System.StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(ally, allyName.ToLower(), System.StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(ally.ToLower(), allyName.ToLower(), System.StringComparison.OrdinalIgnoreCase)
                 );
-            }            
-
+            }
+            UnityEngine.Debug.Log($"[PlayerProfile.IsAllyUnlocked] Result for '{allyName}': hasSidekick={hasSidekick}, inSummonedAllies={inSummonedAllies}");
             return hasSidekick || inSummonedAllies;
         }
 
