@@ -65,9 +65,9 @@ public class StoreMenuController : MonoBehaviour
     private const string PREF_EPIC_FREE_CLAIM_COUNT = "EpicFreeClaimCount";
 
     // Sprite paths - centralized
-    private const string HERO_KEY_SPRITE_PATH = "UILoading/Items/heroKey";
-    private const string RARE_KEY_SPRITE_PATH = "UILoading/Items/rareKey";
-    private const string EPIC_KEY_SPRITE_PATH = "UILoading/Items/epicKey";
+    private const string HERO_KEY_SPRITE_PATH = "UILoading/Keys/heroKey";
+    private const string RARE_KEY_SPRITE_PATH = "UILoading/Keys/rareKey";
+    private const string EPIC_KEY_SPRITE_PATH = "UILoading/Keys/epicKey";
 
     [SerializeField] private StartGame startGame;
 

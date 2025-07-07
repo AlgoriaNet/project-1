@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using WebSocket;
+using model;
+using Newtonsoft.Json.Linq;
 
 public class BaseMenuController : MonoBehaviour
 {
@@ -39,9 +42,13 @@ public class BaseMenuController : MonoBehaviour
     private const string saluteAttemptsKey = "SaluteAttempts";
     private const int maxAttempts = 3;
     private int remainingAttempts;
+    
+    // WebSocket API for energy/stamina claims (using PlayerWebSocketApi for now)
+    private PlayerWebSocketApi _energyApi;
 
     private void Start()
     {
+        _energyApi = PlayerWebSocketApi.Instance; // Initialize WebSocket API (using PlayerWebSocketApi for energy claims)
         CheckEnergyClaimStatus(); // Check button visibility for travern's energy claim on start
         CheckResetDaily(); // Reset if a new day
         UpdateAttempts();
@@ -341,22 +348,159 @@ public class BaseMenuController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Claims energy/stamina via WebSocket API for the specified time slot.
+    /// Frontend sends claim request and updates UI only upon backend confirmation.
+    /// </summary>
+    /// <param name="buttonIndex">1 for 12PM slot, 2 for 7PM slot</param>
     public void ClaimEnergy(int buttonIndex)
     {
+        Debug.Log($"[ClaimEnergy] Requesting energy claim - ButtonIndex: {buttonIndex}");
+        
+        // Disable button temporarily to prevent double-clicks
         if (buttonIndex == 1)
-        {
-            PlayerPrefs.SetString(lastEnergyClaimTimeKey1, DateTime.Now.ToString());
-            travernButton1.SetActive(false);
-        }
+            travernButton1.GetComponent<Button>().interactable = false;
         else if (buttonIndex == 2)
+            travernButton2.GetComponent<Button>().interactable = false;
+        
+        // Send claim request to backend via WebSocket using DG's API
+        var apiParams = new { type = "daily" };
+        
+        Debug.Log($"[ClaimEnergy] Sending request with params: {Newtonsoft.Json.JsonConvert.SerializeObject(apiParams)}");
+        
+        _energyApi.Action("daily_claim", apiParams, OnEnergyClaimResponse, OnEnergyClaimError);
+    }
+    
+    /// <summary>
+    /// Handles the response from the backend energy claim API.
+    /// Updates player data and UI only if the backend confirms the claim was successful.
+    /// </summary>
+    /// <param name="response">Backend response containing player data or error info</param>
+    private void OnEnergyClaimResponse(JObject response)
+    {
+        Debug.Log($"[ClaimEnergy] Received response: {response}");
+        
+        try
         {
-            PlayerPrefs.SetString(lastEnergyClaimTimeKey2, DateTime.Now.ToString());
-            travernButton2.SetActive(false);
+            // Check if we have player data (indicates success)
+            if (response["player"] != null)
+            {
+                Debug.Log("[ClaimEnergy] Success response received!");
+                
+                // Extract stamina from response and update only that field
+                var responsePlayer = response["player"].ToObject<Player>();
+                var oldStamina = PlayerProfile.Data.Player.Stamina;
+                
+                // Use proper partial update method instead of overwriting entire player object
+                PlayerProfile.Data.UpdateStamina(responsePlayer.Stamina);
+                
+                var newStamina = PlayerProfile.Data.Player.Stamina;
+                Debug.Log($"[ClaimEnergy] Stamina updated! Old: {oldStamina}, New: {newStamina}");
+                
+                // Calculate stamina gained
+                int staminaGained = newStamina - oldStamina;
+                
+                // Update local claim tracking and hide buttons
+                // Since we don't have buttonIndex from response, hide both buttons that might be active
+                if (travernButton1.activeInHierarchy)
+                {
+                    PlayerPrefs.SetString(lastEnergyClaimTimeKey1, DateTime.Now.ToString());
+                    travernButton1.SetActive(false);
+                }
+                if (travernButton2.activeInHierarchy)
+                {
+                    PlayerPrefs.SetString(lastEnergyClaimTimeKey2, DateTime.Now.ToString());
+                    travernButton2.SetActive(false);
+                }
+                PlayerPrefs.Save();
+                
+                // Show success feedback UI
+                ShowEnergyClaimSuccess(staminaGained);
+            }
+            else
+            {
+                // No player data means claim failed
+                string errorMessage = response["message"]?.Value<string>() ?? "Energy claim failed - no player data returned";
+                Debug.LogError($"[ClaimEnergy] Backend error: {errorMessage}");
+                
+                // Show error feedback UI
+                ShowEnergyClaimError(errorMessage);
+                
+                // Re-enable buttons since claim failed
+                if (travernButton1.GetComponent<Button>() != null && !travernButton1.GetComponent<Button>().interactable)
+                    travernButton1.GetComponent<Button>().interactable = true;
+                if (travernButton2.GetComponent<Button>() != null && !travernButton2.GetComponent<Button>().interactable)
+                    travernButton2.GetComponent<Button>().interactable = true;
+            }
         }
-        PlayerPrefs.Save();
+        catch (Exception ex)
+        {
+            Debug.LogError($"[ClaimEnergy] Exception processing response: {ex.Message}");
+            
+            // Show generic error feedback
+            ShowEnergyClaimError("Failed to process energy claim response");
+            
+            // Try to restore button state if possible
+            CheckEnergyClaimStatus();
+        }
+    }
+    
+    /// <summary>
+    /// Restores button interactable state when energy claim fails
+    /// </summary>
+    private void RestoreButtonState(int buttonIndex)
+    {
+        if (buttonIndex == 1 && travernButton1.activeInHierarchy)
+            travernButton1.GetComponent<Button>().interactable = true;
+        else if (buttonIndex == 2 && travernButton2.activeInHierarchy)
+            travernButton2.GetComponent<Button>().interactable = true;
+    }
+    
+    /// <summary>
+    /// Shows success feedback for energy claim (placeholder for UI implementation)
+    /// </summary>
+    private void ShowEnergyClaimSuccess(int staminaGained)
+    {
+        Debug.Log($"[UI] Energy claim success! +{staminaGained} Stamina gained");
+        // TODO: Implement popup or notification UI showing stamina gained
+    }
+    
+    /// <summary>
+    /// Shows error feedback for energy claim (placeholder for UI implementation)  
+    /// </summary>
+    private void ShowEnergyClaimError(string errorMessage)
+    {
+        Debug.LogWarning($"[UI] Energy claim error: {errorMessage}");
+        // TODO: Implement error popup or notification UI
+    }
+
+    /// <summary>
+    /// Handles error response from energy claim API
+    /// </summary>
+    private void OnEnergyClaimError(JObject error)
+    {
+        Debug.LogError($"[ClaimEnergy] Error response: {error}");
+        ShowEnergyClaimError("Network error occurred");
+        CheckEnergyClaimStatus(); // Restore button states
     }
     // ******************************************************************
     // TraverPage Codes end here
     // ******************************************************************
-    
+
+    /// <summary>
+    /// TEST ONLY: Check if WebSocket communication works without claiming energy
+    /// </summary>
+    public void TestEnergyConnection()
+    {
+        Debug.Log("[TEST] Testing WebSocket connection for energy system...");
+        
+        // Test with a fake action first to see if we get any response
+        _energyApi.Action("test_connection", new { test = "energy_system" }, (response) =>
+        {
+            Debug.Log($"[TEST] Connection test response: {response}");
+        }, (error) =>
+        {
+            Debug.LogError($"[TEST] Connection test error: {error}");
+        });
+    }
 }

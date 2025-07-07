@@ -7,7 +7,7 @@ public class PageButtonController : MonoBehaviour
     public Image[] buttonImages; // Assign the Image components of the button backgrounds
     private int activeButtonIndex = -1; // No button is active initially
 
-    public GameObject[] pages; // Assign the corresponding pages in Inspector
+    public AlliesGridSetup alliesGridSetup; // Reference to AlliesGridSetup
 
 
     public void ToggleButtonVisibility(int buttonIndex)
@@ -26,10 +26,17 @@ public class PageButtonController : MonoBehaviour
                 buttonImages[i].color = new Color(buttonImages[i].color.r, buttonImages[i].color.g, buttonImages[i].color.b, 0f);
             }
 
-            // 🔹 Toggle corresponding pages
-            if (i < pages.Length)
+            // Call specific LevelUp/StarUp methods when button is selected
+            if (i == buttonIndex && alliesGridSetup != null)
             {
-                pages[i].SetActive(i == buttonIndex);
+                if (buttonIndex == 0)
+                {
+                    alliesGridSetup.LevelUpLoading(); // Button 1 = LevelUp
+                }
+                else
+                {
+                    alliesGridSetup.StarUpLoading(); // Button 2 = StarUp
+                }
             }
         }
     }

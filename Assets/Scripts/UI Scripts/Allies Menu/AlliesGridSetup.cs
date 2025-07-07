@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using model;
 
 public class AlliesGridSetup : MonoBehaviour
 {
@@ -30,11 +31,43 @@ public class AlliesGridSetup : MonoBehaviour
     public Button leftArrowButton;
     public Button rightArrowButton;
 
-    public Image shardImage; // Assign the Shard Image object in Inspector
-    public Image skillBookImage; // Assign the SkillBook Image object in Inspector
+    // Step 2 LevelUp/StarUp UI components
+    public Image itemImage; // Single image that switches between shard/skillbook
+    public TextMeshProUGUI upButtonText; // Button text that changes between "LevelUp" and "StarUp"
+    
+    // Store current ally info for the toggle methods
+    private string currentAllyName;
 
     void Start()
     {
+        // Subscribe to player data changes to refresh allies when new ones are summoned
+        PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Player");
+        PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Sidekicks");
+        
+        InitializeAlliesGrid();
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up listeners
+        PlayerProfile.Data.RemoveListener(OnPlayerDataChanged, "Player");
+        PlayerProfile.Data.RemoveListener(OnPlayerDataChanged, "Sidekicks");
+    }
+    
+    private void OnPlayerDataChanged(ApplicationModel model)
+    {
+        // Refresh allies grid when player data changes (e.g., after ally summon)
+        InitializeAlliesGrid();
+    }
+    
+    private void InitializeAlliesGrid()
+    {
+        // Don't initialize if player data is not available yet
+        if (PlayerProfile.Data?.Player == null)
+        {
+            return;
+        }
+        
         // Get the content panel width
         float panelWidth = contentPanel.rect.width;
 
@@ -69,6 +102,21 @@ public class AlliesGridSetup : MonoBehaviour
         LoadAllyItems();
     }
 
+    private void ClearExistingAllyItems()
+    {
+        // Clear existing ally items to prevent duplicates when refreshing
+        foreach (Transform child in grid.transform)
+        {
+            if (child.name.StartsWith("AllyItem_"))
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        
+        // Clear the dictionary as well
+        allyItemsDict.Clear();
+    }
+
     private void LoadAllyItems()
     {
         // Character names matching the file names
@@ -78,19 +126,12 @@ public class AlliesGridSetup : MonoBehaviour
             "Lucien", "Ugra", "Eleanor", "Nyx"
         };
 
-        // Simulated unlocked icons for testing
-        unlockedIcons = new List<string> { "00", "03", "06", "08", "11", "16", "19" }; // Example unlocked items
+        // UPDATED: Get unlocked allies from backend data instead of hardcoded values
+        unlockedIcons = GetUnlockedAllyIndices(characterNames);
 
-        // Simulated star levels for unlocked allies
-        starLevels = new Dictionary<string, int>
-        {
-            { "03", 2 }, // 2-star level
-            { "06", 1 }, // 1-star level
-            { "08", 4 }, // 4-star level
-            { "11", 3 }, // 3-star level
-            { "16", 5 }, // 5-star level
-            { "19", 3 }  // 3-star level
-        };
+        // Star levels should come from backend sidekick data - no hardcoded values
+        starLevels = new Dictionary<string, int>();
+        // TODO: Populate star levels from backend sidekick data when available
 
         // Prepare lists for sorting
         List<(string index, string name, bool isUnlocked)> sortedAllies = new List<(string, string, bool)>();
@@ -124,6 +165,7 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // Instantiate ally items
+        ClearExistingAllyItems(); // Clear old items before creating new ones
         foreach (var ally in sortedAllies)
         {
             GameObject newAlly = Instantiate(allyItemPrefab, grid.transform, false);
@@ -263,39 +305,11 @@ public class AlliesGridSetup : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");
-        }
+            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");        }
 
 
-        // Assign Shard Image
-        string shardPath = $"UILoading/CharacterImages/Shard/{index}_{name}";
-        Sprite shardSprite = Resources.Load<Sprite>(shardPath);
-
-        if (shardSprite != null && shardImage != null)
-        {
-            shardImage.sprite = shardSprite;
-            shardImage.color = Color.white; // Ensure it's visible
-        }
-        else
-        {
-            Debug.LogWarning($"❌ Shard image not found at path: {shardPath}");
-            if (shardImage != null) shardImage.color = new Color(0, 0, 0, 0); // Make it invisible if not found
-        }
-
-        // Assign SkillBook Image
-        string skillBookPath = $"UILoading/CharacterImages/Skillbook/Skb_{index}_{name}";
-        Sprite skillBookSprite = Resources.Load<Sprite>(skillBookPath);
-
-        if (skillBookSprite != null && skillBookImage != null)
-        {
-            skillBookImage.sprite = skillBookSprite;
-            skillBookImage.color = Color.white; // Ensure it's visible
-        }
-        else
-        {
-            Debug.LogWarning($"❌ SkillBook image not found at path: {skillBookPath}");
-            if (skillBookImage != null) skillBookImage.color = new Color(0, 0, 0, 0); // Make it invisible if not found
-        }
+        // Store current ally info for LevelUp/StarUp toggle methods
+        currentAllyName = name;
 
         // Track the current ally index for navigation
         currentAllyIndex = unlockedAllies.FindIndex(a => a.index == index);
@@ -373,6 +387,342 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 Debug.LogWarning($"❌ AllyItem_{newIndexStr} not found in dictionary!");
             }
+        }
+    }
+
+    /// <summary>
+    /// Check if an ally is unlocked based on backend data.
+    /// This replaces the hardcoded unlockedIcons logic.
+    /// </summary>
+    /// <param name="allyName">The ally name (e.g., "Nyx", "Aurelia")</param>
+    /// <returns>True if the ally has been summoned/unlocked</returns>
+    private bool IsAllyUnlocked(string allyName)
+    {
+        // Return false if player data is not loaded yet
+        if (PlayerProfile.Data?.Player == null)
+        {
+            return false;
+        }
+        
+        // Use the new PlayerProfile method that handles both sidekick and legacy systems
+        return PlayerProfile.Data.IsAllyUnlocked(allyName);
+    }
+
+    /// <summary>
+    /// Get all unlocked ally indices for backwards compatibility with existing code.
+    /// This generates a list based on backend data instead of hardcoded values.
+    /// </summary>
+    /// <param name="characterNames">Array of character names</param>
+    /// <returns>List of indices (as strings) of unlocked allies</returns>
+    private List<string> GetUnlockedAllyIndices(string[] characterNames)
+    {
+        List<string> unlockedIndices = new List<string>();
+        
+        for (int i = 0; i < characterNames.Length; i++)
+        {
+            string index = (i + 1).ToString("D2");
+            string allyName = characterNames[i];
+            
+            // **FIX**: Check for ally using the backend format "XX_Name"
+            string backendFormat = $"{index}_{allyName}";
+            
+            if (IsAllyUnlocked(allyName) || IsAllyUnlocked(backendFormat))
+            {
+                unlockedIndices.Add(index);
+            }
+        }
+        
+        return unlockedIndices;
+    }
+
+    /// <summary>
+    /// Public method to navigate to Step 2 for a specific ally from Step 1.
+    /// This is the original method for normal ally navigation with full functionality.
+    /// </summary>
+    /// <param name="allyIndex">The ally index (e.g., "02", "10")</param>
+    /// <param name="allyName">The ally name (e.g., "Gideon", "Cedric")</param>
+    /// <returns>True if Step 2 was successfully set up, false otherwise</returns>
+    public bool NavigateToAllyStep2(string allyIndex, string allyName)
+    {
+        // Find the ally item in Step 1 for full navigation functionality
+        if (allyItemsDict.TryGetValue(allyIndex, out GameObject allyItem))
+        {
+            OpenStep2(allyItem, allyIndex, allyName);
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ AllyItem_{allyIndex} not found in dictionary for navigation!");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Simplified method to open Step 2 for utilize actions (upgrade/upstar).
+    /// Called from external scripts like OtherDetailBox when utilizing shards/skillbooks.
+    /// This method focuses purely on showing the ally in Step 2 without navigation complexity.
+    /// </summary>
+    /// <param name="allyIndex">The ally index (e.g., "02", "10")</param>
+    /// <param name="allyName">The ally name (e.g., "Gideon", "Cedric")</param>
+    /// <returns>True if Step 2 was successfully set up, false otherwise</returns>
+    public bool OpenUtilizeStep2(string allyIndex, string allyName)
+    {
+        
+        // Basic validation
+        if (step2AllyImage == null)
+        {
+            Debug.LogError("❌ step2AllyImage is NOT assigned in Inspector!");
+            return false;
+        }
+
+        // IMPORTANT: Properly activate the Allies Menu button in MenuController
+        MenuController menuController = FindObjectOfType<MenuController>();
+        if (menuController != null)
+        {
+            // Find and "click" the Allies Menu button (index 0)
+            if (menuController.buttons != null && menuController.buttons.Length > 0)
+            {
+                // Simulate clicking the Allies Menu button to ensure proper UI state
+                menuController.buttons[0].onClick.Invoke();
+            }
+        }
+
+        // Switch panels - same as normal Step 2
+        step1Panel.SetActive(false);
+        step2Panel.SetActive(true);
+        lowerGroup.SetActive(true);
+        Board.SetActive(true);
+        Pack.SetActive(false);
+
+        // Load ally illustration
+        string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{allyIndex}_{allyName}";
+        Sprite illustrationSprite = Resources.Load<Sprite>(illustrationPath);
+
+        if (illustrationSprite != null)
+        {
+            step2AllyImage.sprite = illustrationSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");
+        }
+
+        // Store ally info for dynamic image switching
+        currentAllyName = allyName;
+
+        // Note: Item image (shard/skillbook) will be set dynamically by LevelUpLoading() or StarUpLoading() methods
+        // when the user clicks the toggle buttons
+
+        // For utilize flow, disable navigation arrows since we're not in a navigation context
+        leftArrowButton.onClick.RemoveAllListeners();
+        rightArrowButton.onClick.RemoveAllListeners();
+        leftArrowButton.interactable = false;
+        rightArrowButton.interactable = false;
+
+        // Set default star levels (0 stars) for utilize flow
+        if (step2StarGroup != null)
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
+                if (step2Star != null)
+                {
+                    step2Star.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        // Delay the size adjustment to allow layout updates
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.1f);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Simplified version that doesn't handle menu switching - assumes menu is already active.
+    /// This is called after the menu has been properly activated.
+    /// </summary>
+    /// <param name="allyIndex">The ally index (e.g., "02", "10")</param>
+    /// <param name="allyName">The ally name (e.g., "Gideon", "Cedric")</param>
+    /// <param name="itemType">The item type ("shard" or "skillbook")</param>
+    /// <returns>True if Step 2 was successfully set up, false otherwise</returns>
+    public bool OpenUtilizeStep2Simple(string allyIndex, string allyName)
+    {
+        // Basic validation
+        if (step2AllyImage == null)
+        {
+            Debug.LogError("❌ step2AllyImage is NOT assigned in Inspector!");
+            return false;
+        }
+
+        // Switch panels - same as normal Step 2 (no menu switching here)
+        step1Panel.SetActive(false);
+        step2Panel.SetActive(true);
+        lowerGroup.SetActive(true);
+        Board.SetActive(true);
+        Pack.SetActive(false);
+
+        // Load ally illustration
+        string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{allyIndex}_{allyName}";
+        Sprite illustrationSprite = Resources.Load<Sprite>(illustrationPath);
+
+        if (illustrationSprite != null)
+        {
+            step2AllyImage.sprite = illustrationSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");
+        }
+
+        // Store ally info for dynamic image switching
+        currentAllyName = allyName;
+
+        // For utilize flow, disable navigation arrows since we're not in a navigation context
+        leftArrowButton.onClick.RemoveAllListeners();
+        rightArrowButton.onClick.RemoveAllListeners();
+        leftArrowButton.interactable = false;
+        rightArrowButton.interactable = false;
+
+        // Set default star levels (0 stars) for utilize flow
+        if (step2StarGroup != null)
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
+                if (step2Star != null)
+                {
+                    step2Star.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        // Delay the size adjustment to allow layout updates
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.1f);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Updates the Step 2 board content for LevelUp vs StarUp actions.
+    /// Called by PageButtonController when buttons are pressed.
+    /// </summary>
+    /// <param name="isLevelUp">True for LevelUp mode, false for StarUp mode</param>
+    public void UpdateBoardContent(bool isLevelUp)
+    {
+        if (isLevelUp)
+        {
+            LevelUpLoading();
+        }
+        else
+        {
+            StarUpLoading();
+        }
+    }
+
+    /// <summary>
+    /// Sets up the board for LevelUp mode - shows skillbook image and "LevelUp" text
+    /// </summary>
+    public void LevelUpLoading()
+    {
+        if (string.IsNullOrEmpty(currentAllyName))
+        {
+            Debug.LogWarning("[AlliesGridSetup] No current ally set for LevelUp loading");
+            return;
+        }
+
+        // Get current ally index from unlockedAllies (ally is guaranteed to be unlocked)
+        if (unlockedAllies == null || unlockedAllies.Count == 0)
+        {
+            Debug.LogWarning($"[AlliesGridSetup] unlockedAllies is null or empty. Running InitializeAlliesGrid first.");
+            InitializeAlliesGrid();
+            
+            if (unlockedAllies == null || unlockedAllies.Count == 0)
+            {
+                Debug.LogError($"[AlliesGridSetup] Still no unlocked allies after initialization. Cannot proceed with LevelUp loading.");
+                return;
+            }
+        }
+        
+        var currentAlly = unlockedAllies.Find(a => a.name == currentAllyName);
+        if (string.IsNullOrEmpty(currentAlly.index))
+        {
+            Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
+            return;
+        }
+
+        // Load SkillBook Image
+        string skillBookPath = $"UILoading/CharacterImages/Skillbook/Skb_{currentAlly.index}_{currentAllyName}";
+        Sprite skillBookSprite = Resources.Load<Sprite>(skillBookPath);
+
+        if (skillBookSprite != null && itemImage != null)
+        {
+            itemImage.sprite = skillBookSprite;
+            itemImage.color = Color.white;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ SkillBook image not found at path: {skillBookPath}");
+            if (itemImage != null) itemImage.color = new Color(0, 0, 0, 0);
+        }
+
+        // Set button text to "LevelUp"
+        if (upButtonText != null)
+        {
+            upButtonText.text = "LevelUp";
+        }
+    }
+
+    /// <summary>
+    /// Sets up the board for StarUp mode - shows shard image and "StarUp" text
+    /// </summary>
+    public void StarUpLoading()
+    {
+        if (string.IsNullOrEmpty(currentAllyName))
+        {
+            Debug.LogWarning("[AlliesGridSetup] No current ally set for StarUp loading");
+            return;
+        }
+
+        // Get current ally index from unlockedAllies (ally is guaranteed to be unlocked)
+        if (unlockedAllies == null || unlockedAllies.Count == 0)
+        {
+            Debug.LogWarning($"[AlliesGridSetup] unlockedAllies is null or empty. Running InitializeAlliesGrid first.");
+            InitializeAlliesGrid();
+            
+            if (unlockedAllies == null || unlockedAllies.Count == 0)
+            {
+                Debug.LogError($"[AlliesGridSetup] Still no unlocked allies after initialization. Cannot proceed with StarUp loading.");
+                return;
+            }
+        }
+        
+        var currentAlly = unlockedAllies.Find(a => a.name == currentAllyName);
+        if (string.IsNullOrEmpty(currentAlly.index))
+        {
+            Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
+            return;
+        }
+
+        // Load Shard Image
+        string shardPath = $"UILoading/CharacterImages/Shard/{currentAlly.index}_{currentAllyName}";
+        Sprite shardSprite = Resources.Load<Sprite>(shardPath);
+
+        if (shardSprite != null && itemImage != null)
+        {
+            itemImage.sprite = shardSprite;
+            itemImage.color = Color.white;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ Shard image not found at path: {shardPath}");
+            if (itemImage != null) itemImage.color = new Color(0, 0, 0, 0);
+        }
+
+        // Set button text to "StarUp"
+        if (upButtonText != null)
+        {
+            upButtonText.text = "StarUp";
         }
     }
 }

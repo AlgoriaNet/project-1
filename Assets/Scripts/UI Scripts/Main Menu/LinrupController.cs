@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using model;
 
 public class LineupController : MonoBehaviour
 {
@@ -32,9 +33,30 @@ public class LineupController : MonoBehaviour
 
     void Start()
     {
-        LoadAlliesData();            // Prepare unlockedAllies & starLevels
-        AdjustGridForFivePerRow();   // Compute UI sizes and set grid properties
-        LoadAllyItems();             // Instantiate and adjust each ally item
+        // Subscribe to player data changes and load allies when data is available
+        PlayerProfile.Data.AddListener(OnPlayerDataLoaded, "Player");
+        
+        // Try to load allies immediately if player data is already available
+        if (PlayerProfile.Data.Player != null)
+        {
+            LoadAlliesData();            // Prepare unlockedAllies & starLevels
+            AdjustGridForFivePerRow();   // Compute UI sizes and set grid properties
+            LoadAllyItems();             // Instantiate and adjust each ally item
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up listeners
+        PlayerProfile.Data.RemoveListener(OnPlayerDataLoaded, "Player");
+    }
+    
+    private void OnPlayerDataLoaded(ApplicationModel model)
+    {
+        // Reload allies data when player data changes (e.g., after login or ally summoning)
+        LoadAlliesData();
+        AdjustGridForFivePerRow();
+        LoadAllyItems();
     }
 
     private void LoadAlliesData()
@@ -46,15 +68,13 @@ public class LineupController : MonoBehaviour
             "Lucien", "Ugra", "Eleanor", "Nyx"
         };
 
-        // Unlocked icons from previous setup
-        List<string> unlockedIcons = new List<string> { "00", "03", "06", "08", "11", "16", "19" };
+        // UPDATED: Get unlocked allies from backend data instead of hardcoded values
+        List<string> unlockedIcons = GetUnlockedAllyIndices(characterNames);
 
         // Star levels from previous setup
-        starLevels = new Dictionary<string, int>
-        {
-            { "03", 2 }, { "06", 1 }, { "08", 4 },
-            { "11", 3 }, { "16", 5 }, { "19", 3 }
-        };
+        // Star levels should come from backend sidekick data - no hardcoded values
+        starLevels = new Dictionary<string, int>();
+        // TODO: Populate star levels from backend sidekick data when available
 
         // Filter only unlocked allies (skip those not in unlockedIcons)
         unlockedAllies = new List<(string index, string name)>();
@@ -115,6 +135,15 @@ public class LineupController : MonoBehaviour
 
     private void LoadAllyItems()
     {
+        // Clear existing ally items to prevent duplicates when reloading
+        foreach (Transform child in grid.transform)
+        {
+            if (child.name.StartsWith("AllyItem_"))
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        
         foreach (var ally in unlockedAllies)
         {
             GameObject newAlly = Instantiate(allyItemPrefab, grid.transform, false);
@@ -326,12 +355,9 @@ public class LineupController : MonoBehaviour
         }
     }
 
-    // Dummy Power Level Dictionary (higher is stronger)
-    private Dictionary<string, int> powerLevels = new Dictionary<string, int>
-    {
-        { "03", 1200 }, { "06", 1000 }, { "08", 1400 }, { "11", 1200 },
-        { "16", 900 }, { "19", 1300 }
-    };
+    // Power levels should come from backend sidekick data (ATK, DEF, etc.)
+    private Dictionary<string, int> powerLevels = new Dictionary<string, int>();
+    // TODO: Calculate power levels from backend sidekick stats when available
 
     public void AutoDeploy()
     {
@@ -484,5 +510,52 @@ public class LineupController : MonoBehaviour
         PlayerPrefs.Save();
 
         Debug.Log($"💾 Saved Lineup: {string.Join(", ", lineupData)}");
+    }
+
+    /// <summary>
+    /// Check if an ally is unlocked based on backend data.
+    /// This matches the logic in AlliesGridSetup.
+    /// </summary>
+    /// <param name="allyName">The ally name (e.g., "Nyx", "Aurelia")</param>
+    /// <returns>True if the ally has been summoned/unlocked</returns>
+    private bool IsAllyUnlocked(string allyName)
+    {
+        // Return false if player data is not loaded yet
+        if (PlayerProfile.Data?.Player == null)
+        {
+            return false;
+        }
+        
+        // Use the new PlayerProfile method that handles both sidekick and legacy systems
+        return PlayerProfile.Data.IsAllyUnlocked(allyName);
+    }
+
+    /// <summary>
+    /// Get unlocked ally indices based on backend data.
+    /// </summary>
+    /// <param name="characterNames">Array of character names</param>
+    /// <returns>List of indices (as strings) of unlocked allies</returns>
+    private List<string> GetUnlockedAllyIndices(string[] characterNames)
+    {
+        List<string> unlockedIndices = new List<string>();
+        
+        for (int i = 0; i < characterNames.Length; i++)
+        {
+            string index = (i + 1).ToString("D2");
+            string allyName = characterNames[i];
+            
+            if (IsAllyUnlocked(allyName))
+            {
+                unlockedIndices.Add(index);
+            }
+        }
+        
+        // No fallback test data - rely purely on backend data
+        if (unlockedIndices.Count == 0)
+        {
+            Debug.Log("[LineupController] No allies unlocked from backend yet. Waiting for actual summons.");
+        }
+        
+        return unlockedIndices;
     }
 }

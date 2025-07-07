@@ -2,13 +2,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic; // This is required for using Dictionary
 using TMPro;
+using model;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox;
 
 public class AlliesBlockSetup : MonoBehaviour
 {
     public GridLayoutGroup grid; // Assign the GridLayoutGroup in Inspector
     public RectTransform contentPanel; // Assign the ContentPanel RectTransform
     public GameObject blockPrefab; 
-    public GameObject Pack; 
+    public GameObject Pack;
     public Button Button_Dismantle;
     public ScrollRect scrollView; // Assign the ScrollRect in Inspector
     public int blocksPerRow = 5; // Fixed columns (5 per row)
@@ -68,25 +71,76 @@ public class AlliesBlockSetup : MonoBehaviour
         { "Gem_07", "Ultimate Gem" }
     };
 
+    // Flag to track if we need to refresh pack UI when GameObject becomes active
+    private bool needsRefreshOnEnable = false;
+
     void Start()
     {
         // Initially update the grid
         UpdateTotalBlocks(); // Fetch and update the grid layout based on TotalItemsCount.
+        
+        // Listen to specific notifications - Equipment and Gem tabs should only refresh 
+        // when equipment or gems are actually added, not for hero draws (shards)
+        PlayerProfile.Data.AddListener(UpdateUI, "Equipments");
+        PlayerProfile.Data.AddListener(UpdateUI, "Gemstones");
+        
         Debug.Log($"Page_3 active state at method start: {page3.activeSelf}");
+    }
+    
+    private void OnEnable()
+    {
+        // If we have a pending refresh, do it now that the GameObject is active
+        if (needsRefreshOnEnable)
+        {
+            Debug.Log("[AlliesBlockSetup] GameObject became active, performing deferred pack UI update");
+            needsRefreshOnEnable = false;
+            StartCoroutine(DelayedUpdateTotalBlocks());
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up listeners to prevent memory leaks
+        if (PlayerProfile.Data != null)
+        {
+            PlayerProfile.Data.RemoveListener(UpdateUI, "Equipments");
+            PlayerProfile.Data.RemoveListener(UpdateUI, "Gemstones");
+        }
+    }
 
+    private void UpdateUI(ApplicationModel model)
+    {
+        // Check if the GameObject is active before starting coroutine
+        if (gameObject.activeInHierarchy)
+        {
+            // Add a small delay to ensure player data is fully updated before refreshing pack UI
+            StartCoroutine(DelayedUpdateTotalBlocks());
+        }
+        else
+        {
+            // If the GameObject is inactive, mark that we need to update when it becomes active
+            Debug.Log("[AlliesBlockSetup] GameObject inactive, deferring pack UI update");
+            needsRefreshOnEnable = true;
+        }
+    }
+    
+    private System.Collections.IEnumerator DelayedUpdateTotalBlocks()
+    {
+        // Wait one frame to ensure all data updates are complete
+        yield return null;
+        UpdateTotalBlocks();
     }
 
     public void UpdateTotalBlocks()
     {
-        // Get the updated total item count from PlayerPrefs (it will change depending on selected item type)
-        int totalItems = PlayerPrefs.GetInt("TotalItemsCount", 10); // Default to 10 if not set
-
-        // // Dynamically calculate the total blocks (based on the number of items available and blocks per row)
-        // totalBlocks = Mathf.CeilToInt((float)totalItems / blocksPerRow) * blocksPerRow;
-
-        // Set totalBlocks to exactly the number of available items
-        totalBlocks = totalItems;
-
+        if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
+        {
+            totalBlocks = PlayerProfile.Data.GetEquipmentsInPack().Count;
+        }
+        else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
+        {
+            totalBlocks = PlayerProfile.Data.GetGemstonesInPack().Count;
+        }
 
         // Update the grid layout dynamically to match the number of blocks
         UpdateGridLayout();
@@ -150,34 +204,28 @@ public class AlliesBlockSetup : MonoBehaviour
             {
                 blockButton = newBlock.AddComponent<Button>();
             }
-
-            // OnClick listener
-            blockButton.onClick.AddListener(() => 
+            
+            if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
             {
-                // Get the Image component from the BlockItem's child (Image)
-                Image blockImage = newBlock.transform.Find("Image").GetComponent<Image>();
-                if (blockImage != null && blockImage.sprite != null)
+                List<Equipment> equipments = PlayerProfile.Data.GetEquipmentsInPack();
+                Equipment equipment = equipments[i];
+                itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
+                blockButton.onClick.AddListener(() => 
                 {
-                    string imageFileName = blockImage.sprite.name; // Get the image file name
-                }
-
-                // Get the Qnty (quantity) text
-                Transform qntyTransform = newBlock.transform.Find("Qnty");
-                if (qntyTransform != null)
+                   // Use Hero equipment comparison since they share the same pack
+                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
+                });
+            }
+            else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
+            {
+                var gemstones = PlayerProfile.Data.GetGemstonesInPack();
+                Gemstone gemstone = gemstones[i];
+                itemLoader.LoadGemItems(newBlock.transform, gemstone);
+                blockButton.onClick.AddListener(() => 
                 {
-                    TextMeshProUGUI qntyText = qntyTransform.GetComponent<TextMeshProUGUI>();
-                }
-
-                // Get the Part (image for the part, if exists)
-                Transform partTransform = newBlock.transform.Find("Part");
-                if (partTransform != null)
-                {
-                    Image partImage = partTransform.GetComponent<Image>();
-                }
-
-                // Call OpenStep3 with the clicked block
-                OpenStep3(newBlock);
-            });
+                    GemDetailWithInlaid.Instance.Init(gemstone, null); 
+                });
+            }
         }
     }
 
@@ -591,17 +639,27 @@ public class AlliesBlockSetup : MonoBehaviour
 
     private void ToggleEnhanceUpgrade(bool isEnhance)
     {
-        // Enable Enhance Panel, Disable Upgrade Panel
-        enhancePanel.SetActive(isEnhance);
-        upgradePanel.SetActive(!isEnhance);
+        Debug.Log($"[AlliesBlockSetup] ToggleEnhanceUpgrade called - isEnhance: {isEnhance}");
+        
+        // Switch between enhance and upgrade panels
+        if (enhancePanel != null && upgradePanel != null)
+        {
+            enhancePanel.SetActive(isEnhance);
+            upgradePanel.SetActive(!isEnhance);
+        }
 
-        // Handle Enhance Button visuals
-        enhanceButton.transform.Find("OrangeButton").gameObject.SetActive(isEnhance);
-        enhanceButton.transform.Find("GreyButton").gameObject.SetActive(!isEnhance);
+        // Handle toggle button visuals
+        if (enhanceButton != null)
+        {
+            enhanceButton.transform.Find("OrangeButton")?.gameObject.SetActive(isEnhance);
+            enhanceButton.transform.Find("GreyButton")?.gameObject.SetActive(!isEnhance);
+        }
 
-        // Handle Upgrade Button visuals
-        upgradeButton.transform.Find("OrangeButton").gameObject.SetActive(!isEnhance);
-        upgradeButton.transform.Find("GreyButton").gameObject.SetActive(isEnhance);
+        if (upgradeButton != null)
+        {
+            upgradeButton.transform.Find("OrangeButton")?.gameObject.SetActive(!isEnhance);
+            upgradeButton.transform.Find("GreyButton")?.gameObject.SetActive(isEnhance);
+        }
     }
 
     public void CloseForgePage()

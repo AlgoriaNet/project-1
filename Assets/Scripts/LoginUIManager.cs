@@ -15,8 +15,29 @@ public class LoginUIManager : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1.0f;
+        
+        // Clear old player data when switching to local server
+        ClearOldPlayerData();
+        
         // 绑定登录按钮点击事件
         loginButton.onClick.AddListener(() => Login());
+    }
+    
+    /// <summary>
+    /// Clear old player data when switching between servers
+    /// </summary>
+    private void ClearOldPlayerData()
+    {
+        // Clear authentication data
+        PlayerPrefs.DeleteKey("authToken");
+        PlayerPrefs.DeleteKey("user_id");
+        
+        // Clear energy claim data
+        PlayerPrefs.DeleteKey("LastEnergyClaimTime_12PM");
+        PlayerPrefs.DeleteKey("LastEnergyClaimTime_19PM");
+        
+        PlayerPrefs.Save();
+        Debug.Log("[LoginUIManager] Cleared old player data for local server");
     }
 
     public void Login() 

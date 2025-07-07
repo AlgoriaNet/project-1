@@ -27,6 +27,10 @@ namespace model
 
         [JsonProperty("equipments")] public List<Equipment> Equipments = new ();
         [JsonProperty("gemstones")] public List<Gemstone> Gemstones = new (); 
+        [JsonProperty("sidekicks")] public List<Sidekick> Sidekicks = new ();
+        
+        // DEPRECATED: Use Sidekicks collection instead
+        [JsonProperty("summoned_allies")] public List<string> SummonedAllies { get; set; } = new List<string>();
 
         [JsonProperty("created_at")] public string CreatedAt { get; set; }
         [JsonProperty("updated_at")] public string UpdatedAt { get; set; }

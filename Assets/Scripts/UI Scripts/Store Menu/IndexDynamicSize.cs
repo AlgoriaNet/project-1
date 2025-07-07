@@ -21,6 +21,12 @@ public class IndexDynamicSize : MonoBehaviour
         // Subscribe to player data changes for automatic updates
         PlayerProfile.Data.AddListener(UpdatePlayerValues, "Player");
         
+        // Initialize values immediately if player data is available
+        if (PlayerProfile.Data?.Player != null)
+        {
+            UpdatePlayerValues(PlayerProfile.Data);
+        }
+        
         // Dynamically adjust the layout
         AdjustLayout();
     }
@@ -31,7 +37,13 @@ public class IndexDynamicSize : MonoBehaviour
         var playerProfile = model as PlayerProfile;
         var player = playerProfile?.Player;
 
-        if (player == null) return;
+        if (player == null) 
+        {
+            Debug.LogWarning("[IndexDynamicSize] Player data is null, cannot update values");
+            return;
+        }
+
+        Debug.Log($"[IndexDynamicSize] Updating player values - Diamond: {player.Diamond}");
 
         // Update diamond value
         if (diamondText != null) 

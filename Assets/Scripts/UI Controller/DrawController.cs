@@ -172,7 +172,9 @@ namespace UI_Controller
                             }
                         }
                     }
-                    PlayerProfile.Data.NotifyListeners("Bag");
+                    // Use a more specific notification for hero draws since they only affect "Other" items
+                    PlayerProfile.Data.NotifyListeners("OtherItems");
+                    Debug.Log("[DrawController] Notified OtherItems listeners after hero draw");
                 }
                 else
                 {

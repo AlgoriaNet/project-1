@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System;
 using model;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // This is required for using Dictionary
@@ -72,15 +73,69 @@ public class HeroBlockSetup : MonoBehaviour
         { "Gem_07", "Ultimate Gem" }
     };
 
+    // Flag to track if we need to refresh pack UI when GameObject becomes active
+    private bool needsRefreshOnEnable = false;
+
     void Start()
     {
         // Initially update the grid
         UpdateTotalBlocks(); // Fetch and update the grid layout based on TotalItemsCount.
-        PlayerProfile.Data.AddListener(UpdateUI, "Bag");
+        
+        // Listen to specific notifications - Equipment and Gem tabs should only refresh 
+        // when equipment or gems are actually added, not for hero draws (shards)
+        PlayerProfile.Data.AddListener(UpdateUI, "Equipments");
+        PlayerProfile.Data.AddListener(UpdateUI, "Gemstones");
+        
+        // Also listen to OtherItems for the Others tab refresh
+        PlayerProfile.Data.AddListener(UpdateOthersTabOnly, "OtherItems");
+    }
+    
+    private void OnEnable()
+    {
+        // If we have a pending refresh, do it now that the GameObject is active
+        if (needsRefreshOnEnable)
+        {
+            needsRefreshOnEnable = false;
+            StartCoroutine(DelayedUpdateTotalBlocks());
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Clean up listeners to prevent memory leaks
+        if (PlayerProfile.Data != null)
+        {
+            PlayerProfile.Data.RemoveListener(UpdateUI, "Equipments");
+            PlayerProfile.Data.RemoveListener(UpdateUI, "Gemstones");
+            PlayerProfile.Data.RemoveListener(UpdateOthersTabOnly, "OtherItems");
+        }
     }
 
     private void UpdateUI(ApplicationModel model)
     {
+        // Check if the GameObject is active before starting coroutine
+        if (gameObject.activeInHierarchy)
+        {
+            // Add a small delay to ensure player data is fully updated before refreshing pack UI
+            StartCoroutine(DelayedUpdateTotalBlocks());
+        }
+        else
+        {
+            // If the GameObject is inactive, mark that we need to update when it becomes active
+            needsRefreshOnEnable = true;
+        }
+    }
+    
+    private void UpdateOthersTabOnly(ApplicationModel model)
+    {
+        // Only refresh the Others tab when OtherItems change (e.g., from hero draws)
+        UpdateOthersTab();
+    }
+    
+    private System.Collections.IEnumerator DelayedUpdateTotalBlocks()
+    {
+        // Wait one frame to ensure all data updates are complete
+        yield return null;
         UpdateTotalBlocks();
     }
     
@@ -88,11 +143,15 @@ public class HeroBlockSetup : MonoBehaviour
     {
         if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
         {
-            totalBlocks = PlayerProfile.Data.GetEquipmentsInPack().Count;
+            var equipments = PlayerProfile.Data.GetEquipmentsInPack();
+            totalBlocks = equipments?.Count ?? 0;
+            Debug.Log($"[HeroBlockSetup] Equipment count: {totalBlocks}");
         }
         else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
         {
-            totalBlocks = PlayerProfile.Data.GetGemstonesInPack().Count;
+            var gemstones = PlayerProfile.Data.GetGemstonesInPack();
+            totalBlocks = gemstones?.Count ?? 0;
+            Debug.Log($"[HeroBlockSetup] Gemstone count: {totalBlocks}");
         }
 
         // Update the grid layout dynamically to match the number of blocks
@@ -142,6 +201,8 @@ public class HeroBlockSetup : MonoBehaviour
         {
             Destroy(child.gameObject); // Clear previous blocks
         }
+        
+        Debug.Log($"[HeroBlockSetup] Creating {totalBlocks} blocks for {itemLoader.currentItemType}");
 
         for (int i = 0; i < totalBlocks; i++)
         {
@@ -158,23 +219,31 @@ public class HeroBlockSetup : MonoBehaviour
             if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
             {
                 List<Equipment> equipments = PlayerProfile.Data.GetEquipmentsInPack();
-                Equipment equipment = equipments[i];
-                itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
-                blockButton.onClick.AddListener(() => 
+                if (i < equipments.Count)
                 {
-                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
-                });
+                    Equipment equipment = equipments[i];
+                    Debug.Log($"[HeroBlockSetup] Loading equipment block {i}: {equipment?.Name}");
+                    itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
+                    blockButton.onClick.AddListener(() => 
+                    {
+                        EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
+                    });
+                }
                 
             }
             else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
             {
                 var gemstones = PlayerProfile.Data.GetGemstonesInPack();
-                Gemstone gemstone = gemstones[i];
-                itemLoader.LoadGemItems(newBlock.transform, gemstone);
-                blockButton.onClick.AddListener(() => 
+                if (i < gemstones.Count)
                 {
-                    GemDetailWithInlaid.Instance.Init(gemstone, null); 
-                });
+                    Gemstone gemstone = gemstones[i];
+                    Debug.Log($"[HeroBlockSetup] Loading gem block {i}: Gem_{gemstone?.Level:D2}");
+                    itemLoader.LoadGemItems(newBlock.transform, gemstone);
+                    blockButton.onClick.AddListener(() => 
+                    {
+                        GemDetailWithInlaid.Instance.Init(gemstone, null); 
+                    });
+                }
             }
 
             
@@ -750,13 +819,24 @@ public class HeroBlockSetup : MonoBehaviour
         foreach (Transform child in contentPanel)
             Destroy(child.gameObject);
 
-        // 4. Create blocks for each grouped item
+        Debug.Log($"[OtherTab] Creating blocks for {grouped.Count} grouped items");
+
+        // 4. Create blocks for each grouped item (skip items with quantity 0)
+        int blocksCreated = 0;
         foreach (var kvp in grouped)
         {
             string fileName = kvp.Key;
             int totalQnty = kvp.Value;
             string type = typeMap[fileName];
 
+            // Skip items with quantity 0 - they should not appear in the pack
+            if (totalQnty <= 0)
+            {
+                Debug.Log($"[OtherTab] Skipping {fileName} with quantity {totalQnty}");
+                continue;
+            }
+
+            blocksCreated++;
             GameObject newBlock = Instantiate(blockPrefab, contentPanel);
             newBlock.name = $"OtherItem_{fileName}";
 
@@ -776,7 +856,34 @@ public class HeroBlockSetup : MonoBehaviour
             // Set quantity
             TextMeshProUGUI qntyText = newBlock.transform.Find("Qnty").GetComponent<TextMeshProUGUI>();
             qntyText.text = totalQnty.ToString();
+
+            // Add click handler for Other items
+            Button blockButton = newBlock.GetComponent<Button>();
+            if (blockButton == null)
+            {
+                blockButton = newBlock.AddComponent<Button>();
+            }
+            
+            // Capture variables for the lambda
+            string capturedFileName = fileName;
+            int capturedQuantity = totalQnty;
+            string capturedType = type;
+            
+            blockButton.onClick.AddListener(() => 
+            {
+                Debug.Log($"[OtherTab] Block clicked: {capturedFileName}");
+                if (OtherDetailBox.Instance != null)
+                {
+                    OtherDetailBox.Instance.Init(capturedFileName, capturedQuantity, capturedType);
+                }
+                else
+                {
+                    Debug.LogError("[OtherTab] OtherDetailBox.Instance is null!");
+                }
+            });
         }
+        
+        Debug.Log($"[OtherTab] UpdateOthersTab complete: {blocksCreated} blocks created from {grouped.Count} total items");
     }
 
     // Helper: match GachaController logic for image path

@@ -423,7 +423,7 @@ public class GachaController : MonoBehaviour
         block.SetActive(true);
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
+        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Keys/heroKey");
         lastDraw = GachaType.Shard;
     }
 
@@ -522,7 +522,7 @@ public class GachaController : MonoBehaviour
         AdjustGridLayout();
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Items/heroKey");
+        storeMenu.UpdateGachaPanels("heroKey", player.ItemsJson.TryGetValue("heroKey", out var heroKey) ? heroKey : 0, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, "UILoading/Keys/heroKey");
         lastDraw = GachaType.Shard;
     }
 
@@ -567,7 +567,7 @@ public class GachaController : MonoBehaviour
         block.SetActive(true);
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("rareKey", player.ItemsJson["rareKey"], RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, "UILoading/Items/rareKey");
+        storeMenu.UpdateGachaPanels("rareKey", player.ItemsJson["rareKey"], RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, "UILoading/Keys/rareKey");
         lastDraw = GachaType.RareGem;
     }
 
@@ -612,7 +612,7 @@ public class GachaController : MonoBehaviour
         block.SetActive(true);
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("epicKey", player.ItemsJson["epicKey"], EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST, "UILoading/Items/epicKey");
+        storeMenu.UpdateGachaPanels("epicKey", player.ItemsJson["epicKey"], EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST, "UILoading/Keys/epicKey");
         lastDraw = GachaType.EpicGem;
     }
 
@@ -627,7 +627,7 @@ public class GachaController : MonoBehaviour
         GenerateTenGems();
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("rareKey", player.ItemsJson["rareKey"], RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, "UILoading/Items/rareKey");
+        storeMenu.UpdateGachaPanels("rareKey", player.ItemsJson["rareKey"], RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, "UILoading/Keys/rareKey");
         lastDraw = GachaType.RareGem;
     }
 
@@ -642,7 +642,7 @@ public class GachaController : MonoBehaviour
         GenerateTenGems();
 
         var player = PlayerProfile.Data.Player;
-        storeMenu.UpdateGachaPanels("epicKey", player.ItemsJson["epicKey"], EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST, "UILoading/Items/epicKey");
+        storeMenu.UpdateGachaPanels("epicKey", player.ItemsJson["epicKey"], EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST, "UILoading/Keys/epicKey");
         lastDraw = GachaType.EpicGem;
     }
     #endregion

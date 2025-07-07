@@ -78,21 +78,17 @@ public class ItemLoader : MonoBehaviour
             switch (itemType)
             {
                 case ItemType.Equipment:
+                    actionButton.gameObject.SetActive(true); // Ensure the button is active
                     actionButtonText.text = "Auto Equip";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
                     actionButton.onClick.AddListener(OpenAutoEquipPage); // Placeholder for Auto Equip action
                     break;
 
                 case ItemType.Gem:
+                    actionButton.gameObject.SetActive(true); // Ensure the button is active
                     actionButtonText.text = "Auto Embed";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
                     actionButton.onClick.AddListener(OpenAutoEmbedPage); // Placeholder for Auto Embed action
-                    break;
-
-                case ItemType.Other:
-                    actionButtonText.text = "Other Action";
-                    actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenOtherPage); // Placeholder for other action
                     break;
             }
         }
@@ -102,21 +98,21 @@ public class ItemLoader : MonoBehaviour
             switch (itemType)
             {
                 case ItemType.Equipment:
+                    actionButton.gameObject.SetActive(true); // Show the button
                     actionButtonText.text = "Dismantle";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
                     actionButton.onClick.AddListener(OpenDismantlePage); // Add listener for dismantle action
                     break;
 
                 case ItemType.Gem:
+                    actionButton.gameObject.SetActive(true); // Show the button
                     actionButtonText.text = "Auto Merge";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
                     actionButton.onClick.AddListener(OpenGemMergePage); // Add listener for auto merge action
                     break;
 
                 case ItemType.Other:
-                    actionButtonText.text = "Other Action";
-                    actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenOtherPage); // Placeholder for other action
+                    actionButton.gameObject.SetActive(false); // Hide the button
                     break;
             }
         }

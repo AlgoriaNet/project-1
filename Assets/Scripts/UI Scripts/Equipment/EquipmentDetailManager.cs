@@ -56,9 +56,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         
         public void Start()
         {
-            forgeButton.onClick.AddListener(OnForge);
-            replaceButton.onClick.AddListener(OnReplace);
-            demountButton.onClick.AddListener(OnDemount);
+            if (forgeButton != null)
+                forgeButton.onClick.AddListener(OnForge);
+            if (replaceButton != null)
+                replaceButton.onClick.AddListener(OnReplace);
+            if (demountButton != null)
+                demountButton.onClick.AddListener(OnDemount);
         }
 
         public void Init(Equipment equipment, List<EquipmentDetailStatus> status, [CanBeNull] Info info = null)

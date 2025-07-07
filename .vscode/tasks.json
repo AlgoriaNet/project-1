@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build Unity Project",
+			"type": "shell",
+			"command": "cd '/Volumes/WD_SSD/UnityProjects/project-1-equip' && /Applications/Unity/Hub/Editor/2022.3.30f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath '.' -buildTarget StandaloneOSX -logFile build.log",
+			"group": "build",
+			"problemMatcher": [],
+			"isBackground": false
+		}
+	]
+}
