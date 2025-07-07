@@ -63,11 +63,31 @@ public class BattleManager : MonoBehaviour
             State.UpgradeRequiredExperience.Add(100);
         }
         UpdateExperience(0);
+        
+        // Setup button listeners
+        if (pauseButton != null)
+            pauseButton.GetComponent<Button>().onClick.AddListener(TogglePause);
+        if (speedUpButton != null)
+            speedUpButton.GetComponent<Button>().onClick.AddListener(ToggleSpeedUp);
+        
         battleApi.Action("battle", new { data = "battle data" }, SetStatFromServer);
     }
 
     private void SetStatFromServer(JObject obj)
     {
+        // Handle stamina consumption response
+        if (obj["player"] != null && obj["player"]["stamina"] != null)
+        {
+            int newStamina = obj["player"]["stamina"].Value<int>();
+            PlayerProfile.Data.UpdateStamina(newStamina);
+            
+            if (obj["stamina_consumed"] != null)
+            {
+                int consumed = obj["stamina_consumed"].Value<int>();
+                Debug.Log($"[BattleManager] Battle started - Server consumed {consumed} stamina. New stamina: {newStamina}");
+            }
+        }
+        
         SetSidekicks(obj["sidekicks"]);
         SetLevelUpEffects(obj["levelUpEffects"]);
     }
@@ -171,5 +191,24 @@ public class BattleManager : MonoBehaviour
         _skillLevelUpController.ApplyEffect(skillLevelUpEffect);
         Time.timeScale = 1;
         AddMoveWap.gameObject.SetActive(false);
+    }
+
+    public void TogglePause()
+    {
+        IsSuspend = !IsSuspend;
+        Time.timeScale = IsSuspend ? 0 : BattleSpeed;
+    }
+
+    public void ToggleSpeedUp()
+    {
+        BattleSpeed = BattleSpeed == 1 ? 2 : 1;
+        if (!IsSuspend) Time.timeScale = BattleSpeed;
+        // Update button text
+        if (speedUpButton != null)
+        {
+            var text = speedUpButton.GetComponentInChildren<TMP_Text>();
+            if (text != null)
+                text.text = BattleSpeed == 1 ? "X1" : "X2";
+        }
     }
 }
