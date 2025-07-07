@@ -380,14 +380,23 @@ public class AlliesGridSetup : MonoBehaviour
             string newIndexStr = unlockedAllies[newIndex].index;
             string newName = unlockedAllies[newIndex].name;
 
-            // 🔹 Use dictionary instead of GameObject.Find()
-            if (allyItemsDict.TryGetValue(newIndexStr, out GameObject newAllyItem))
+            // 🔹 Check if we're in utilize mode (currentItemType is set)
+            if (!string.IsNullOrEmpty(currentItemType))
             {
-                OpenStep2(newAllyItem, newIndexStr, newName);
+                // In utilize mode: update ally image and maintain utilize flow state
+                NavigateUtilizeAlly(newIndexStr, newName);
             }
             else
             {
-                Debug.LogWarning($"❌ AllyItem_{newIndexStr} not found in dictionary!");
+                // Normal navigation mode: use original OpenStep2 logic
+                if (allyItemsDict.TryGetValue(newIndexStr, out GameObject newAllyItem))
+                {
+                    OpenStep2(newAllyItem, newIndexStr, newName);
+                }
+                else
+                {
+                    Debug.LogWarning($"❌ AllyItem_{newIndexStr} not found in dictionary!");
+                }
             }
         }
     }
@@ -596,11 +605,19 @@ public class AlliesGridSetup : MonoBehaviour
         currentItemType = itemType; // Store item type for button mode logic
         currentUtilizeAllyIndex = allyIndex; // Store ally index for utilize flow
 
-        // For utilize flow, disable navigation arrows since we're not in a navigation context
+        // 🔹 ENABLE navigation arrows for utilize flow - users should be able to navigate between allies
+        // Track the current ally index for navigation (same as normal Step 2 flow)
+        currentAllyIndex = unlockedAllies.FindIndex(a => a.index == allyIndex);
+
+        // Assign button events for navigation
         leftArrowButton.onClick.RemoveAllListeners();
         rightArrowButton.onClick.RemoveAllListeners();
-        leftArrowButton.interactable = false;
-        rightArrowButton.interactable = false;
+        leftArrowButton.onClick.AddListener(() => NavigateStep2Ally(-1));
+        rightArrowButton.onClick.AddListener(() => NavigateStep2Ally(1));
+
+        // Enable/disable arrows based on position (same logic as normal flow)
+        leftArrowButton.interactable = (currentAllyIndex > 0);
+        rightArrowButton.interactable = (currentAllyIndex < unlockedAllies.Count - 1);
 
         // Set default star levels (0 stars) for utilize flow
         if (step2StarGroup != null)
@@ -899,5 +916,64 @@ public class AlliesGridSetup : MonoBehaviour
         
         // The PageButtonController.ToggleButtonVisibility() will automatically call
         // the appropriate LevelUpLoading() or StarUpLoading() method to update the lower section
+    }
+
+    /// <summary>
+    /// Navigate to a different ally while maintaining utilize flow state.
+    /// Updates ally image and item (shard/skillbook) while preserving utilize mode.
+    /// </summary>
+    /// <param name="allyIndex">The new ally index</param>
+    /// <param name="allyName">The new ally name</param>
+    private void NavigateUtilizeAlly(string allyIndex, string allyName)
+    {
+        // Update ally illustration
+        string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{allyIndex}_{allyName}";
+        Sprite illustrationSprite = Resources.Load<Sprite>(illustrationPath);
+
+        if (illustrationSprite != null && step2AllyImage != null)
+        {
+            step2AllyImage.sprite = illustrationSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");
+        }
+
+        // Update current ally info for utilize flow
+        currentAllyName = allyName;
+        currentUtilizeAllyIndex = allyIndex;
+
+        // Update arrow button states
+        leftArrowButton.interactable = (currentAllyIndex > 0);
+        rightArrowButton.interactable = (currentAllyIndex < unlockedAllies.Count - 1);
+
+        // Refresh the lower section (shard/skillbook) for the new ally
+        // This ensures the item image matches the new ally while maintaining the same item type
+        if (currentItemType == "shard")
+        {
+            StarUpLoading(); // Show shard for new ally
+        }
+        else if (currentItemType == "skillbook")
+        {
+            LevelUpLoading(); // Show skillbook for new ally
+        }
+        else
+        {
+            // Fallback to LevelUp mode
+            LevelUpLoading();
+        }
+
+        // Set default star levels (0 stars) for utilize flow
+        if (step2StarGroup != null)
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
+                if (step2Star != null)
+                {
+                    step2Star.gameObject.SetActive(false);
+                }
+            }
+        }
     }
 }
