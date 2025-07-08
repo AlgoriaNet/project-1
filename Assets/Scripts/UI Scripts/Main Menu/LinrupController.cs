@@ -229,12 +229,18 @@ public class LineupController : MonoBehaviour
             return;
         }
 
+        // Prevent selecting an ally that is already assigned to a slot
+        if (officiallySelectedAllies.Contains(allyItem))
+        {
+            Debug.LogWarning("❌ This ally is already deployed in a slot and cannot be selected again.");
+            return;
+        }
+
         if (selectedAlly == allyItem) return; // If already selected, do nothing
 
         // Reset the previous selection (only if it wasn't officially selected)
         if (selectedAlly != null && !officiallySelectedAllies.Contains(selectedAlly))
         {
-            // if (prevImage != null) prevImage.color = Color.white; // Restore original color
             SetAllyColor(selectedAlly, Color.white); // Restore all elements to normal
         }
 
@@ -282,22 +288,13 @@ public class LineupController : MonoBehaviour
         if (lineupDictionary.ContainsKey(slotButton))
         {
             GameObject assignedAlly = lineupDictionary[slotButton];
-
-            // ✅ Disable the battleIcon inside this slot
             Transform battleIcon = slotButton.transform.Find("battleIcon");
             if (battleIcon != null) battleIcon.gameObject.SetActive(false);
-
-            // ✅ Restore the AllyItem's color to normal
             SetAllyColor(assignedAlly, Color.white);
-
-            // ✅ Remove the AllyItem from officially selected list
             officiallySelectedAllies.Remove(assignedAlly);
-
-            // ✅ Remove from lineup dictionary
             lineupDictionary.Remove(slotButton);
-
             Debug.Log($"🔄 Slot {slotButton.name} cleared! Ally is now unselected.");
-            return; // Exit function since we removed the assignment
+            return;
         }
 
         // ✅ If no AllyItem is selected, do nothing
@@ -307,10 +304,10 @@ public class LineupController : MonoBehaviour
             return;
         }
 
-        // ✅ Check if this slot is already filled (shouldn't reach here, but for safety)
-        if (lineupDictionary.ContainsKey(slotButton))
+        // Prevent deploying the same ally to multiple slots
+        if (officiallySelectedAllies.Contains(selectedAlly))
         {
-            Debug.LogWarning("❌ Slot already filled! Choose an empty slot.");
+            Debug.LogWarning("❌ This ally is already deployed in another slot.");
             return;
         }
 
