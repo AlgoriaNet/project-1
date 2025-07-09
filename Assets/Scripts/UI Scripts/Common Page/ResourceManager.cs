@@ -99,13 +99,13 @@ public class ResourceManager : MonoBehaviour
         
         if (gemValueText != null)
         {
-            gemValueText.text = currentGems.ToString();
+            gemValueText.text = FormatNumber(currentGems);
             Debug.Log($"Gem text updated to: {gemValueText.text}");
         }
         
         if (goldValueText != null)
         {
-            goldValueText.text = currentGold.ToString();
+            goldValueText.text = FormatNumber(currentGold);
             Debug.Log($"Gold text updated to: {goldValueText.text}");
         }
     }
@@ -123,5 +123,19 @@ public class ResourceManager : MonoBehaviour
     public int GetGemCount()
     {
         return PlayerPrefs.GetInt(gemKey, initialGem);
+    }
+
+    // Local formatting method for K-suffix display
+    private string FormatNumber(int number)
+    {
+        if (number < 1000)
+        {
+            return number.ToString();
+        }
+        
+        float thousands = number / 1000f;
+        string result = $"{thousands:F1}K";
+        Debug.Log($"[ResourceManager] Formatted {number} -> {result}");
+        return result;
     }
 }

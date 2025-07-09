@@ -178,8 +178,8 @@ public class StoreMenuController : MonoBehaviour
     public void UpdateGachaPanels(string keyType, int keyCount, int x1Cost, int x10Cost, string spritePath)
     {
         // Always set diamond costs and key images
-        x1gachaDiamondText.text = x1Cost.ToString();
-        x10gachaDiamondText.text = x10Cost.ToString();
+        x1gachaDiamondText.text = FormatNumber(x1Cost);
+        x10gachaDiamondText.text = FormatNumber(x10Cost);
         
         var keySprite = Resources.Load<Sprite>(spritePath);
         x1gachaKeyImage.sprite = keySprite;
@@ -244,5 +244,19 @@ public class StoreMenuController : MonoBehaviour
         {
             PlayerProfile.Data.RemoveListener(UpdatePlayerValues, "Player");
         }
+    }
+
+    // Local formatting method for K-suffix display
+    private string FormatNumber(int number)
+    {
+        if (number < 1000)
+        {
+            return number.ToString();
+        }
+        
+        float thousands = number / 1000f;
+        string result = $"{thousands:F1}K";
+        Debug.Log($"[StoreMenuController] Formatted {number} -> {result}");
+        return result;
     }
 }

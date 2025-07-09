@@ -47,16 +47,26 @@ public class IndexDynamicSize : MonoBehaviour
 
         // Update diamond value
         if (diamondText != null) 
-            diamondText.text = player.Diamond.ToString();
+            diamondText.text = FormatNumber(player.Diamond);
         
         if (heroKeyText != null)
-            heroKeyText.text = player.ItemsJson.TryGetValue("heroKey", out int key1) ? key1.ToString() : "0";
+            heroKeyText.text = player.ItemsJson.TryGetValue("heroKey", out int key1) ? FormatNumber(key1) : "0";
 
         if (rareKeyText != null)
-            rareKeyText.text = player.ItemsJson.TryGetValue("rareKey", out int key2) ? key2.ToString() : "0";
+            rareKeyText.text = player.ItemsJson.TryGetValue("rareKey", out int key2) ? FormatNumber(key2) : "0";
 
         if (epicKeyText != null)
-            epicKeyText.text = player.ItemsJson.TryGetValue("epicKey", out int key3) ? key3.ToString() : "0";
+            epicKeyText.text = player.ItemsJson.TryGetValue("epicKey", out int key3) ? FormatNumber(key3) : "0";
+    }
+
+    private string FormatNumber(int number)
+    {
+        if (number >= 1000)
+        {
+            float thousands = number / 1000f;
+            return $"{thousands:F1}K";
+        }
+        return number.ToString();
     }
 
     // Unsubscribe when the object is destroyed to prevent memory leaks
