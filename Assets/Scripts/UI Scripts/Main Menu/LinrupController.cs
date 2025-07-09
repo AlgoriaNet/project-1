@@ -3,16 +3,18 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
 using model;
+using Newtonsoft.Json.Linq;
+using System.Linq;
+using System;
 
 public class LineupController : MonoBehaviour
 {
-    public GameObject lineupPopup;       // Assign in Inspector
-    public GridLayoutGroup grid;         // Assign GridLayoutGroup inside LineupPopup
-    public RectTransform contentPanel;   // Assign Content Panel RectTransform (child of lineupPopup)
-    public GameObject allyItemPrefab;    // Assign AllyItem prefab
-    public int blocksPerRow = 5;         // Number of columns
+    public GameObject lineupPopup;
+    public GridLayoutGroup grid;
+    public RectTransform contentPanel;
+    public GameObject allyItemPrefab;
+    public int blocksPerRow = 5;
 
-    // These will be computed based on panel size (following AlliesGridSetup)
     private float blockWidth;
     private float nameTextWidth;
     private float nameTextHeight;
@@ -20,40 +22,37 @@ public class LineupController : MonoBehaviour
     private float starGroupHeight;
     private float skillIconWidth;
 
-    private List<(string index, string name)> unlockedAllies;  // Store unlocked allies
-    private Dictionary<string, int> starLevels;               // Store star levels
+    private List<(string index, string name)> unlockedAllies;
+    private Dictionary<string, int> starLevels;
     
-    private GameObject selectedAlly = null; // Track the currently selected AllyItem
-    private HashSet<GameObject> officiallySelectedAllies = new HashSet<GameObject>(); // Stores permanently grey Allies
-    private Dictionary<Button, GameObject> lineupDictionary = new Dictionary<Button, GameObject>(); // Tracks selected slots
+    private GameObject selectedAlly = null;
+    private HashSet<GameObject> officiallySelectedAllies = new HashSet<GameObject>();
+    private Dictionary<Button, GameObject> lineupDictionary = new Dictionary<Button, GameObject>();
 
-    // private Dictionary<Button, GameObject> slotAssignments = new Dictionary<Button, GameObject>(); // Track slot assignments
+    public Button slot1, slot2, slot3, slot4;
 
-    public Button slot1, slot2, slot3, slot4; // Assign in Inspector
+    // Track original deployment state - KEY FIX: Store by ally index, not sidekick id
+    private Dictionary<string, bool> originalDeployment = new Dictionary<string, bool>();
 
     void Start()
     {
-        // Subscribe to player data changes and load allies when data is available
         PlayerProfile.Data.AddListener(OnPlayerDataLoaded, "Player");
         
-        // Try to load allies immediately if player data is already available
         if (PlayerProfile.Data.Player != null)
         {
-            LoadAlliesData();            // Prepare unlockedAllies & starLevels
-            AdjustGridForFivePerRow();   // Compute UI sizes and set grid properties
-            LoadAllyItems();             // Instantiate and adjust each ally item
+            LoadAlliesData();
+            AdjustGridForFivePerRow();
+            LoadAllyItems();
         }
     }
     
     private void OnDestroy()
     {
-        // Clean up listeners
         PlayerProfile.Data.RemoveListener(OnPlayerDataLoaded, "Player");
     }
     
     private void OnPlayerDataLoaded(ApplicationModel model)
     {
-        // Reload allies data when player data changes (e.g., after login or ally summoning)
         LoadAlliesData();
         AdjustGridForFivePerRow();
         LoadAllyItems();
@@ -61,22 +60,15 @@ public class LineupController : MonoBehaviour
 
     private void LoadAlliesData()
     {
-        // Same character list as in AlliesGridSetup
         string[] characterNames = {
             "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
             "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
             "Lucien", "Ugra", "Eleanor", "Nyx"
         };
 
-        // UPDATED: Get unlocked allies from backend data instead of hardcoded values
         List<string> unlockedIcons = GetUnlockedAllyIndices(characterNames);
-
-        // Star levels from previous setup
-        // Star levels should come from backend sidekick data - no hardcoded values
         starLevels = new Dictionary<string, int>();
-        // TODO: Populate star levels from backend sidekick data when available
 
-        // Filter only unlocked allies (skip those not in unlockedIcons)
         unlockedAllies = new List<(string index, string name)>();
         for (int i = 0; i < characterNames.Length; i++)
         {
@@ -87,20 +79,13 @@ public class LineupController : MonoBehaviour
             }
         }
         Debug.Log($"[LineupController] Unlocked Allies Count: {unlockedAllies.Count}");
-        foreach (var ally in unlockedAllies)
-        {
-            Debug.Log($"[LineupController] Unlocked Ally: {ally.index} - {ally.name}");
-        }
     }
 
     private void AdjustGridForFivePerRow()
     {
-        // Get the content panel width.
-        // If the popup is inactive, the rect width may be zero.
         float panelWidth = contentPanel.rect.width;
         if (panelWidth == 0)
         {
-            // Temporarily activate the popup to force layout calculations.
             bool wasActive = lineupPopup.activeSelf;
             if (!wasActive)
             {
@@ -111,23 +96,17 @@ public class LineupController : MonoBehaviour
             }
         }
 
-        // Use the same calculation as in AlliesGridSetup:
-        // int constraintCount = blocksPerRow;  // (i.e. 5)
-        // blockWidth = panelWidth / (constraintCount * 13f / 12f + 0.25f);
-        blockWidth = panelWidth / 5.75f; // *** test
+        blockWidth = panelWidth / 5.75f;
         nameTextWidth   = blockWidth * 0.6f;
         nameTextHeight  = blockWidth * 0.12f;
         starGroupWidth  = blockWidth * 0.5f;
         starGroupHeight = blockWidth * 0.1f;
         skillIconWidth  = blockWidth * 0.2f;
 
-        // Set grid properties (cell size, spacing, and padding)
         grid.cellSize = new Vector2(blockWidth, blockWidth * 1.342f);
 
-        // float leftPadding = blockWidth / 6f;
-        float leftPadding = blockWidth / 4f; // *** test
-        // float spacingX = leftPadding / 2f;
-        float spacingX = leftPadding / 4f; // *** test
+        float leftPadding = blockWidth / 4f;
+        float spacingX = leftPadding / 4f;
         float spacingY = spacingX;
         grid.padding.left = Mathf.RoundToInt(leftPadding);
         grid.padding.right = Mathf.RoundToInt(leftPadding);
@@ -140,7 +119,6 @@ public class LineupController : MonoBehaviour
 
     private void LoadAllyItems()
     {
-        // Clear existing ally items to prevent duplicates when reloading
         foreach (Transform child in grid.transform)
         {
             if (child.name.StartsWith("AllyItem_"))
@@ -154,15 +132,13 @@ public class LineupController : MonoBehaviour
             GameObject newAlly = Instantiate(allyItemPrefab, grid.transform, false);
             newAlly.name = $"AllyItem_{ally.index}";
 
-            // --- Adjust NameText ---
+            // Setup components (same as before)
             TextMeshProUGUI nameText = newAlly.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
             nameText.text = ally.name;
             RectTransform nameTextRect = nameText.GetComponent<RectTransform>();
             nameTextRect.sizeDelta = new Vector2(nameTextWidth, nameTextHeight);
-            // Set Y position similar to AlliesGridSetup (starGroupHeight + 13)
             nameTextRect.anchoredPosition = new Vector2(nameTextRect.anchoredPosition.x, starGroupHeight + 13);
 
-            // --- Adjust AllyImage ---
             Image allyImage = newAlly.transform.Find("AllyImage").GetComponent<Image>();
             string imagePath = $"UILoading/CharacterImages/CardDisplay/C_{ally.index}_{ally.name}";
             Sprite allySprite = Resources.Load<Sprite>(imagePath);
@@ -170,104 +146,78 @@ public class LineupController : MonoBehaviour
             {
                 allyImage.sprite = allySprite;
             }
-            else
-            {
-                Debug.LogWarning($"❌ Image not found at path: {imagePath}");
-            }
 
-            // --- Adjust SkillIcon ---
             Image skillIcon = newAlly.transform.Find("SkillIcon").GetComponent<Image>();
             RectTransform skillIconRect = skillIcon.GetComponent<RectTransform>();
             skillIconRect.sizeDelta = new Vector2(skillIconWidth, skillIconRect.sizeDelta.y);
 
-            // --- Adjust StarGroup ---
             Transform starGroup = newAlly.transform.Find("StarGroup");
             RectTransform starGroupRect = starGroup.GetComponent<RectTransform>();
             starGroupRect.sizeDelta = new Vector2(starGroupWidth, starGroupHeight);
 
-            // (Optional) If the StarGroup has a GridLayoutGroup, adjust its cell size as in AlliesGridSetup:
             GridLayoutGroup starGrid = starGroup.GetComponent<GridLayoutGroup>();
             if (starGrid != null)
             {
-                // Square cells using the starGroup’s height.
                 starGrid.cellSize = new Vector2(starGroupHeight, starGroupHeight);
             }
 
-            // --- Setup Stars ---
-            // Use the structure from AlliesGridSetup:
             int starLevel = starLevels.ContainsKey(ally.index) ? starLevels[ally.index] : 0;
             for (int i = 1; i <= 5; i++)
             {
-                // Look for the yellow star using the same path as AlliesGridSetup
                 Transform starYellow = starGroup.Find($"Star{i}/yellow");
                 if (starYellow != null)
                 {
                     starYellow.gameObject.SetActive(i <= starLevel);
                 }
-                else
-                {
-                    Debug.LogWarning($"❌ 'yellow' star not found in Star{i} for ally {ally.index}");
-                }
             }
-    
-            // --- Add Button Click Event ---
+
             Button allyButton = newAlly.GetComponent<Button>();
             if (allyButton == null)
             {
                 allyButton = newAlly.AddComponent<Button>();
             }
             allyButton.onClick.AddListener(() => SelectAlly(newAlly));
-            }
+        }
     }
 
     private void SelectAlly(GameObject allyItem)
     {
-        // ✅ Stop pre-selection if 4 slots are already filled
         if (lineupDictionary.Count >= 4)
         {
             Debug.LogWarning("❌ Lineup is full! You cannot select more allies.");
             return;
         }
 
-        // Prevent selecting an ally that is already assigned to a slot
         if (officiallySelectedAllies.Contains(allyItem))
         {
             Debug.LogWarning("❌ This ally is already deployed in a slot and cannot be selected again.");
             return;
         }
 
-        if (selectedAlly == allyItem) return; // If already selected, do nothing
+        if (selectedAlly == allyItem) return;
 
-        // Reset the previous selection (only if it wasn't officially selected)
         if (selectedAlly != null && !officiallySelectedAllies.Contains(selectedAlly))
         {
-            SetAllyColor(selectedAlly, Color.white); // Restore all elements to normal
+            SetAllyColor(selectedAlly, Color.white);
         }
 
-        // Update the new selection
         selectedAlly = allyItem;
-
-        // ✅ Apply greyish color to all elements (temporary until officially selected)
-        SetAllyColor(selectedAlly, new Color(0.4f, 0.4f, 0.4f, 1f)); // Dark grey
+        SetAllyColor(selectedAlly, new Color(0.4f, 0.4f, 0.4f, 1f));
     }
 
     private void SetAllyColor(GameObject allyItem, Color color)
     {
         if (allyItem == null) return;
 
-        // ✅ Ally Image
         Image allyImage = allyItem.transform.Find("AllyImage")?.GetComponent<Image>();
         if (allyImage != null) allyImage.color = color;
 
-        // ✅ Name Text
         TextMeshProUGUI nameText = allyItem.transform.Find("NameText")?.GetComponent<TextMeshProUGUI>();
         if (nameText != null) nameText.color = color;
 
-        // ✅ Skill Icon
         Image skillIcon = allyItem.transform.Find("SkillIcon")?.GetComponent<Image>();
         if (skillIcon != null) skillIcon.color = color;
 
-        // ✅ StarGroup (affects both white & yellow stars)
         Transform starGroup = allyItem.transform.Find("StarGroup");
         if (starGroup != null)
         {
@@ -284,7 +234,6 @@ public class LineupController : MonoBehaviour
 
     public void EnableBattleIcon(Button slotButton)
     {
-        // ✅ If the slot already has an assigned AllyItem, remove it
         if (lineupDictionary.ContainsKey(slotButton))
         {
             GameObject assignedAlly = lineupDictionary[slotButton];
@@ -293,29 +242,32 @@ public class LineupController : MonoBehaviour
             SetAllyColor(assignedAlly, Color.white);
             officiallySelectedAllies.Remove(assignedAlly);
             lineupDictionary.Remove(slotButton);
+            
+            // Clear selectedAlly if it's the same as the removed ally
+            if (selectedAlly == assignedAlly)
+            {
+                selectedAlly = null;
+            }
+            
             Debug.Log($"🔄 Slot {slotButton.name} cleared! Ally is now unselected.");
             return;
         }
 
-        // ✅ If no AllyItem is selected, do nothing
         if (selectedAlly == null)
         {
             Debug.LogWarning("❌ No ally selected! Select an AllyItem before clicking a slot.");
             return;
         }
 
-        // Prevent deploying the same ally to multiple slots
         if (officiallySelectedAllies.Contains(selectedAlly))
         {
             Debug.LogWarning("❌ This ally is already deployed in another slot.");
             return;
         }
 
-        // ✅ Get the selected Ally’s index & name
-        string allyIndex = selectedAlly.name.Split('_')[1]; // Extract "03" from "AllyItem_03"
+        string allyIndex = selectedAlly.name.Split('_')[1];
         string allyName = selectedAlly.transform.Find("NameText").GetComponent<TextMeshProUGUI>().text;
 
-        // ✅ Load the correct battle icon from Resources
         string battleIconPath = $"UILoading/CharacterImages/UserIcons/BattlYellowIcons/L_{allyIndex}_{allyName}";
         Sprite battleIconSprite = Resources.Load<Sprite>(battleIconPath);
         if (battleIconSprite == null)
@@ -324,116 +276,171 @@ public class LineupController : MonoBehaviour
             return;
         }
 
-        // ✅ Enable and assign the battle icon inside the Slot (Slot1/battleIcon)
         Transform slotBattleIcon = slotButton.transform.Find("battleIcon");
         if (slotBattleIcon != null)
         {
-            slotBattleIcon.gameObject.SetActive(true); // Enable battle icon
+            slotBattleIcon.gameObject.SetActive(true);
             Image slotBattleIconImage = slotBattleIcon.GetComponent<Image>();
             if (slotBattleIconImage != null)
             {
-                slotBattleIconImage.sprite = battleIconSprite; // Upload the correct image
-                slotBattleIconImage.color = Color.white; // Ensure it's fully visible
+                slotBattleIconImage.sprite = battleIconSprite;
+                slotBattleIconImage.color = Color.white;
             }
         }
-        else
-        {
-            Debug.LogWarning($"❌ battleIcon not found inside {slotButton.name}!");
-        }
 
-        // ✅ Permanently mark this AllyItem as officially selected
         if (!officiallySelectedAllies.Contains(selectedAlly))
         {
             officiallySelectedAllies.Add(selectedAlly);
         }
 
-        // ✅ Add to lineupDictionary (track which ally is in which slot)
         lineupDictionary[slotButton] = selectedAlly;
 
-        // ✅ Stop pre-selection if 4 slots are filled
-        if (lineupDictionary.Count >= 4)
-        {
-            selectedAlly = null; // Clear selection (no more selections allowed)
-        }
+        // Clear selectedAlly after successful assignment
+        selectedAlly = null;
     }
 
-    // Power levels should come from backend sidekick data (ATK, DEF, etc.)
-    private Dictionary<string, int> powerLevels = new Dictionary<string, int>();
-    // TODO: Calculate power levels from backend sidekick stats when available
-
-    public void AutoDeploy()
+    public void CloseLineup()
     {
-        List<(string index, string name, int power, int stars, GameObject allyItem)> availableAllies = new List<(string, string, int, int, GameObject)>();
-
-        // ✅ Collect all unlocked allies
-        foreach (var ally in unlockedAllies)
-        {
-            string allyIndex = ally.index;
-            string allyName = ally.name;
-            int power = powerLevels.ContainsKey(allyIndex) ? powerLevels[allyIndex] : 0;
-            int stars = starLevels.ContainsKey(allyIndex) ? starLevels[allyIndex] : 0;
-
-            // ✅ Find the corresponding AllyItem GameObject
-            GameObject allyItem = GameObject.Find($"AllyItem_{allyIndex}");
-            if (allyItem == null) continue;
-
-            // ✅ Skip allies that are already in the lineup
-            if (officiallySelectedAllies.Contains(allyItem)) continue;
-
-            // ✅ Add to sorting list
-            availableAllies.Add((allyIndex, allyName, power, stars, allyItem));
-        }
-
-        // ✅ Sort by PowerLevel (descending), then StarLevel (descending)
-        availableAllies.Sort((a, b) =>
-        {
-            int powerComparison = b.power.CompareTo(a.power); // Higher power first
-            return powerComparison != 0 ? powerComparison : b.stars.CompareTo(a.stars); // Higher stars if power is the same
-        });
-
-        // ✅ Get empty slots
-        List<Button> emptySlots = new List<Button> { slot1, slot2, slot3, slot4 }
-            .FindAll(slot => !lineupDictionary.ContainsKey(slot));
-
-        // ✅ Assign top allies to available slots
-        for (int i = 0; i < emptySlots.Count && i < availableAllies.Count; i++)
-        {
-            GameObject allyItem = availableAllies[i].allyItem;
-            selectedAlly = allyItem; // Simulate selecting the ally
-            EnableBattleIcon(emptySlots[i]); // Assign to the slot
-
-            // ✅ Apply grey effect (officially selected)
-            SetAllyColor(allyItem, new Color(0.4f, 0.4f, 0.4f, 1f)); // Dark grey
-            officiallySelectedAllies.Add(allyItem);
-        }
+        lineupPopup.SetActive(false);
+        SaveLineup();
+        
+        var currentLineup = lineupDictionary.Values.Select(go => go.name.Split('_')[1]).ToList();
+        Debug.Log($"[LineupController][AGENT] Current lineup at CloseLineup: {string.Join(", ", currentLineup)}");
+        Debug.Log($"[LineupController][AGENT] About to call UpdateDeploymentToBackend()");
+        
+        UpdateDeploymentToBackend();
     }
 
-    public void OpenLineup()
+    // ADD THIS NEW METHOD - completely new
+    private string GetBaseIdFromAllyIndex(string allyIndex)
     {
-        lineupPopup.SetActive(true);
-
-        // ✅ Remove all old listeners before adding new ones
-        slot1.onClick.RemoveAllListeners();
-        slot2.onClick.RemoveAllListeners();
-        slot3.onClick.RemoveAllListeners();
-        slot4.onClick.RemoveAllListeners();
-
-        // Attach event listeners when the lineup opens
-        slot1.onClick.AddListener(() => EnableBattleIcon(slot1));
-        slot2.onClick.AddListener(() => EnableBattleIcon(slot2));
-        slot3.onClick.AddListener(() => EnableBattleIcon(slot3));
-        slot4.onClick.AddListener(() => EnableBattleIcon(slot4)); 
-
-        // ✅ Check if all slots are empty (no active children)
-        if (AreAllSlotsEmpty())
+        if (PlayerProfile.Data?.Player?.Sidekicks != null)
         {
-            Debug.Log("🔄 Slots are empty! Restoring lineup from saved data.");
-            LoadLineup();
+            foreach (var sidekick in PlayerProfile.Data.Player.Sidekicks)
+            {
+                // Match ally index to sidekick - adjust this logic based on your data structure
+                if (sidekick.id == allyIndex || sidekick.base_id == allyIndex)
+                {
+                    return sidekick.base_id;
+                }
+            }
+        }
+        
+        // Fallback: return the ally index if no match found
+        Debug.LogWarning($"No sidekick found for ally index: {allyIndex}");
+        return allyIndex;
+    }
+
+    // REPLACE THE EXISTING UpdateDeploymentToBackend METHOD with this:
+    private void UpdateDeploymentToBackend()
+    {
+        // Get current lineup ally indices
+        List<string> currentlyDeployedIndices = lineupDictionary.Values
+            .Select(go => go.name.Split('_')[1])
+            .ToList();
+        
+        // Convert ally indices to base_ids from actual sidekick records
+        List<string> currentlyDeployedBaseIds = new List<string>();
+        
+        foreach (string allyIndex in currentlyDeployedIndices)
+        {
+            if (PlayerProfile.Data?.Player?.Sidekicks != null)
+            {
+                var matchingSidekick = PlayerProfile.Data.Player.Sidekicks.FirstOrDefault(s => 
+                    s.id == allyIndex || s.base_id == allyIndex || 
+                    s.id == allyIndex.TrimStart('0') || s.base_id == allyIndex.TrimStart('0'));
+                
+                if (matchingSidekick != null)
+                {
+                    // Convert zero-padded base_id to non-zero-padded format for backend
+                    string originalBaseId = matchingSidekick.base_id;
+                    string baseId = originalBaseId;
+                    if (int.TryParse(originalBaseId, out int numericId))
+                    {
+                        baseId = numericId.ToString(); // Remove zero-padding
+                    }
+                    currentlyDeployedBaseIds.Add(baseId);
+                    Debug.Log($"[LineupController] Ally index {allyIndex} - original base_id: '{originalBaseId}' -> converted: '{baseId}'");
+                }
+                else
+                {
+                    Debug.LogWarning($"[LineupController] No sidekick found for ally index {allyIndex}");
+                    // Convert ally index to non-zero-padded format as fallback
+                    string fallbackBaseId = allyIndex;
+                    if (int.TryParse(allyIndex, out int numericId))
+                    {
+                        fallbackBaseId = numericId.ToString(); // Remove zero-padding
+                    }
+                    currentlyDeployedBaseIds.Add(fallbackBaseId);
+                    Debug.Log($"[LineupController] Using fallback base_id: '{allyIndex}' -> '{fallbackBaseId}'");
+                }
+            }
+        }
+
+        // Get originally deployed base_ids for comparison
+        List<string> originallyDeployedBaseIds = new List<string>();
+        foreach (var kvp in originalDeployment)
+        {
+            if (kvp.Value) // if was deployed
+            {
+                var matchingSidekick = PlayerProfile.Data.Player.Sidekicks?.FirstOrDefault(s => 
+                    s.id == kvp.Key || s.base_id == kvp.Key || 
+                    s.id == kvp.Key.TrimStart('0') || s.base_id == kvp.Key.TrimStart('0'));
+                
+                if (matchingSidekick != null)
+                {
+                    // Convert zero-padded base_id to non-zero-padded format for backend
+                    string originalBaseId = matchingSidekick.base_id;
+                    string baseId = originalBaseId;
+                    if (int.TryParse(originalBaseId, out int numericId))
+                    {
+                        baseId = numericId.ToString(); // Remove zero-padding
+                    }
+                    originallyDeployedBaseIds.Add(baseId);
+                }
+            }
+        }
+
+        Debug.Log($"[LineupController][AGENT] Currently deployed base_ids: [{string.Join(", ", currentlyDeployedBaseIds)}]");
+        Debug.Log($"[LineupController][AGENT] Originally deployed base_ids: [{string.Join(", ", originallyDeployedBaseIds)}]");
+
+        // Check if there are any changes
+        bool hasChanges = !currentlyDeployedBaseIds.SequenceEqual(originallyDeployedBaseIds.OrderBy(x => x).ToList()) ||
+                        currentlyDeployedBaseIds.Count != originallyDeployedBaseIds.Count;
+
+        if (hasChanges)
+        {
+            Debug.Log($"[LineupController][AGENT] Deployment changes detected. Sending complete lineup to backend.");
+            SendCompleteDeploymentUpdate(currentlyDeployedBaseIds);
         }
         else
         {
-            Debug.Log("✅ Lineup is still intact, no need to reload.");
-        }  
+            Debug.Log("[LineupController][AGENT] No deployment changes detected. No backend update sent.");
+        }
+    }
+
+    // REPLACE THE EXISTING SendCompleteDeploymentUpdate METHOD with this:
+    private void SendCompleteDeploymentUpdate(List<string> deployedBaseIds)
+    {
+        Debug.Log($"[LineupController][AGENT] Sending complete deployment update to backend: deployed_ids=[{string.Join(", ", deployedBaseIds)}]");
+        Debug.Log($"[LineupController][AGENT] WebSocketManager.Instance is null? {WebSocketManager.Instance == null}");
+        
+        if (WebSocketManager.Instance != null)
+        {
+            Debug.Log($"[LineupController][AGENT] Calling WebSocketManager.Instance.Action with deployed_ids array length: {deployedBaseIds.Count}");
+            WebSocketManager.Instance.Action(
+                "PlayerChannel",
+                "update_sidekick_deployment",
+                new {
+                    deployed_ids = deployedBaseIds.ToArray()  // Now sending actual base_ids from sidekick records
+                }
+            );
+            Debug.Log($"[LineupController][AGENT] WebSocket Action call completed");
+        }
+        else
+        {
+            Debug.LogError("[LineupController][AGENT] WebSocketManager.Instance is null! Cannot send deployment update.");
+        }
     }
 
     private bool AreAllSlotsEmpty()
@@ -458,8 +465,8 @@ public class LineupController : MonoBehaviour
             string[] parts = entry.Split(':');
             if (parts.Length != 2) continue;
 
-            string slotName = parts[0];  // e.g., "Slot_1"
-            string allyIndex = parts[1]; // e.g., "03"
+            string slotName = parts[0];
+            string allyIndex = parts[1];
 
             GameObject allyItem = GameObject.Find($"AllyItem_{allyIndex}");
             if (allyItem == null)
@@ -468,7 +475,6 @@ public class LineupController : MonoBehaviour
                 continue;
             }
 
-            // ✅ Find the correct slot
             Button slotButton = null;
             if (slotName == "Slot_1") slotButton = slot1;
             if (slotName == "Slot_2") slotButton = slot2;
@@ -477,24 +483,12 @@ public class LineupController : MonoBehaviour
 
             if (slotButton != null)
             {
-                selectedAlly = allyItem;  // Simulate selection
-                EnableBattleIcon(slotButton); // ✅ Assign ally to the slot properly
-
-                // ✅ Grey out the officially selected AllyItem
+                selectedAlly = allyItem;
+                EnableBattleIcon(slotButton);
                 officiallySelectedAllies.Add(allyItem);
-                SetAllyColor(allyItem, new Color(0.4f, 0.4f, 0.4f, 1f)); // Dark grey
-            }
-            else
-            {
-                Debug.LogWarning($"❌ Slot '{slotName}' not found in script!");
+                SetAllyColor(allyItem, new Color(0.4f, 0.4f, 0.4f, 1f));
             }
         }
-    }
-
-    public void CloseLineup()
-    {
-        lineupPopup.SetActive(false);
-        SaveLineup();
     }
 
     private void SaveLineup()
@@ -504,8 +498,8 @@ public class LineupController : MonoBehaviour
         foreach (var slot in lineupDictionary.Keys)
         {
             GameObject ally = lineupDictionary[slot];
-            string allyIndex = ally.name.Split('_')[1]; // Extract ally ID
-            lineupData.Add($"{slot.name}:{allyIndex}"); // Format: "Slot1:03"
+            string allyIndex = ally.name.Split('_')[1];
+            lineupData.Add($"{slot.name}:{allyIndex}");
         }
 
         PlayerPrefs.SetString("SavedLineup", string.Join(",", lineupData));
@@ -514,29 +508,16 @@ public class LineupController : MonoBehaviour
         Debug.Log($"💾 Saved Lineup: {string.Join(", ", lineupData)}");
     }
 
-    /// <summary>
-    /// Check if an ally is unlocked based on backend data.
-    /// This matches the logic in AlliesGridSetup.
-    /// </summary>
-    /// <param name="allyName">The ally name (e.g., "Nyx", "Aurelia")</param>
-    /// <returns>True if the ally has been summoned/unlocked</returns>
     private bool IsAllyUnlocked(string allyName)
     {
-        // Return false if player data is not loaded yet
         if (PlayerProfile.Data?.Player == null)
         {
             return false;
         }
         
-        // Use the new PlayerProfile method that handles both sidekick and legacy systems
         return PlayerProfile.Data.IsAllyUnlocked(allyName);
     }
 
-    /// <summary>
-    /// Get unlocked ally indices based on backend data.
-    /// </summary>
-    /// <param name="characterNames">Array of character names</param>
-    /// <returns>List of indices (as strings) of unlocked allies</returns>
     private List<string> GetUnlockedAllyIndices(string[] characterNames)
     {
         List<string> unlockedIndices = new List<string>();
@@ -545,16 +526,136 @@ public class LineupController : MonoBehaviour
             string index = (i + 1).ToString("D2");
             string allyName = characterNames[i];
             string fullKey = $"{index}_{allyName}";
-            // Try both fullKey (e.g. 10_Cedric) and allyName (Cedric)
+            
             if (IsAllyUnlocked(fullKey) || IsAllyUnlocked(allyName))
             {
                 unlockedIndices.Add(index);
             }
         }
-        if (unlockedIndices.Count == 0)
-        {
-            Debug.Log("[LineupController] No allies unlocked from backend yet. Waiting for actual summons.");
-        }
         return unlockedIndices;
+    }
+
+    public void OpenLineup()
+    {
+        lineupPopup.SetActive(true);
+
+        // FIXED: Track original deployment state by ally index (not sidekick id)
+        originalDeployment.Clear();
+        
+        // Store currently deployed allies from the lineup dictionary
+        foreach (var kvp in lineupDictionary)
+        {
+            GameObject allyItem = kvp.Value;
+            string allyIndex = allyItem.name.Split('_')[1];
+            originalDeployment[allyIndex] = true;
+        }
+
+        // Also check if we can get deployment state from backend data
+        if (PlayerProfile.Data?.Player?.Sidekicks != null)
+        {
+            foreach (var sidekick in PlayerProfile.Data.Player.Sidekicks)
+            {
+                if (!originalDeployment.ContainsKey(sidekick.id))
+                {
+                    originalDeployment[sidekick.id] = sidekick.is_deployed;
+                }
+            }
+        }
+
+        Debug.Log($"[LineupController][AGENT] originalDeployment at OpenLineup: {string.Join(", ", originalDeployment.Select(kvp => $"id={kvp.Key}:is_deployed={kvp.Value}"))}");
+
+        // Remove old listeners and add new ones
+        slot1.onClick.RemoveAllListeners();
+        slot2.onClick.RemoveAllListeners();
+        slot3.onClick.RemoveAllListeners();
+        slot4.onClick.RemoveAllListeners();
+
+        slot1.onClick.AddListener(() => EnableBattleIcon(slot1));
+        slot2.onClick.AddListener(() => EnableBattleIcon(slot2));
+        slot3.onClick.AddListener(() => EnableBattleIcon(slot3));
+        slot4.onClick.AddListener(() => EnableBattleIcon(slot4));
+
+        if (AreAllSlotsEmpty())
+        {
+            Debug.Log("🔄 Slots are empty! Restoring lineup from saved data.");
+            LoadLineup();
+        }
+        else
+        {
+            Debug.Log("✅ Lineup is still intact, no need to reload.");
+        }
+        
+        // Ensure allies in slots are dimmed in the grid
+        foreach (var kvp in lineupDictionary)
+        {
+            GameObject allyInSlot = kvp.Value;
+            if (allyInSlot != null)
+            {
+                SetAllyColor(allyInSlot, new Color(0.4f, 0.4f, 0.4f, 1f));
+                if (!officiallySelectedAllies.Contains(allyInSlot))
+                {
+                    officiallySelectedAllies.Add(allyInSlot);
+                }
+            }
+        }
+    }
+
+    public void AutoDeploy()
+    {
+        // Clear all current selections and slots first
+        ClearAllSelections();
+        
+        // Get first 4 available allies
+        var availableAllies = unlockedAllies.Take(4).ToList();
+        var slots = new List<Button> { slot1, slot2, slot3, slot4 };
+        
+        for (int i = 0; i < Math.Min(availableAllies.Count, slots.Count); i++)
+        {
+            string allyObjName = $"AllyItem_{availableAllies[i].index}";
+            GameObject allyItem = GameObject.Find(allyObjName);
+            if (allyItem != null)
+            {
+                selectedAlly = allyItem;
+                EnableBattleIcon(slots[i]);
+                // Ensure ally is marked as officially selected and dimmed
+                if (!officiallySelectedAllies.Contains(allyItem))
+                {
+                    officiallySelectedAllies.Add(allyItem);
+                }
+                SetAllyColor(allyItem, new Color(0.4f, 0.4f, 0.4f, 1f));
+            }
+        }
+        
+        Debug.Log("[LineupController][AGENT] AutoDeploy complete. Current lineup: " + string.Join(", ", lineupDictionary.Values.Select(go => go.name)));
+    }
+    
+    private void ClearAllSelections()
+    {
+        // Clear manually selected ally that's not in any slot
+        if (selectedAlly != null && !officiallySelectedAllies.Contains(selectedAlly))
+        {
+            SetAllyColor(selectedAlly, Color.white);
+        }
+        
+        // Clear all slots
+        var slots = new List<Button> { slot1, slot2, slot3, slot4 };
+        foreach (var slot in slots)
+        {
+            if (lineupDictionary.ContainsKey(slot))
+            {
+                GameObject assignedAlly = lineupDictionary[slot];
+                Transform battleIcon = slot.transform.Find("battleIcon");
+                if (battleIcon != null) battleIcon.gameObject.SetActive(false);
+                SetAllyColor(assignedAlly, Color.white);
+                officiallySelectedAllies.Remove(assignedAlly);
+            }
+        }
+        
+        // Clear all collections
+        lineupDictionary.Clear();
+        officiallySelectedAllies.Clear();
+        selectedAlly = null;
+        
+        Debug.Log("[LineupController][AGENT] All selections cleared for AutoDeploy");
     }
 }

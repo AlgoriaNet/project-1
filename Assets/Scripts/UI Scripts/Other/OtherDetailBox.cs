@@ -250,11 +250,10 @@ public class OtherDetailBox : MonoBehaviour
 
     private void OnMergeClicked()
     {
-        
         string allyName = GetAllyNameFromFileName(currentFileName);
         string allyIndex = GetAllyIndexFromFileName(currentFileName);
         string allyDisplayName = GetAllyDisplayNameFromFileName(currentFileName);
-        
+
         // Immediately show AllyStandPage and let it handle the summon
         if (allyStandPage != null)
         {
