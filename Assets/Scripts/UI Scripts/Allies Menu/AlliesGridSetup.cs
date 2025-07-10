@@ -30,6 +30,9 @@ public class AlliesGridSetup : MonoBehaviour
     public Transform step2StarGroup; // Assign in the Inspector
     public Button leftArrowButton;
     public Button rightArrowButton;
+    
+    // Reference to UpgradePanelManager for loading ally upgrade levels
+    public UpgradePanelManager upgradePanelManager;
 
     // Step 2 LevelUp/StarUp UI components
     public Image itemImage; // Single image that switches between shard/skillbook
@@ -356,6 +359,12 @@ public class AlliesGridSetup : MonoBehaviour
         // 🔹 CRITICAL FIX: Refresh the lower section to match the current ally
         // This ensures shard/skillbook items are coordinated with the ally image
         RefreshLowerSectionForCurrentAlly();
+        
+        // Load upgrade levels for the selected ally
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.LoadUpgradePanelsForAlly($"{index}_{name}");
+        }
     }
 
     private void AdjustStep2StarGroupSize()
@@ -974,6 +983,12 @@ public class AlliesGridSetup : MonoBehaviour
                     step2Star.gameObject.SetActive(false);
                 }
             }
+        }
+        
+        // Load upgrade levels for the navigated ally (utilize mode only)
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
         }
     }
 }
