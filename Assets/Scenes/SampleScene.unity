@@ -36104,6 +36104,7 @@ GameObject:
   m_Component:
   - component: {fileID: 554290721}
   - component: {fileID: 554290722}
+  - component: {fileID: 554290723}
   m_Layer: 5
   m_Name: Step 2
   m_TagString: Untagged
@@ -36147,6 +36148,24 @@ MonoBehaviour:
   button: {fileID: 1510295119}
   packPanel: {fileID: 237033280}
   boardPanel: {fileID: 1562282909}
+--- !u!114 &554290723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554290720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfe00519871524fc2845db36176808d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  upgradeLevelPanelPrefab: {fileID: 89841074477585346, guid: 2f76050f5a8f344d0bd12552042445aa, type: 3}
+  contentContainer: {fileID: 1687674372}
+  upgradeText: {fileID: 326299866}
+  itemText: {fileID: 387449571}
+  goldText: {fileID: 1983341694}
+  levelUpButton: {fileID: 329451377}
 --- !u!1 &556007968
 GameObject:
   m_ObjectHideFlags: 0
@@ -62331,7 +62350,7 @@ MonoBehaviour:
   step2StarGroup: {fileID: 552863518}
   leftArrowButton: {fileID: 2092208200}
   rightArrowButton: {fileID: 932484903}
-  upgradePanelManager: {fileID: 1687674375}
+  upgradePanelManager: {fileID: 554290723}
   itemImage: {fileID: 180112875}
   upButtonText: {fileID: 306287981}
 --- !u!114 &918948580
@@ -114305,7 +114324,6 @@ GameObject:
   - component: {fileID: 1687674372}
   - component: {fileID: 1687674374}
   - component: {fileID: 1687674373}
-  - component: {fileID: 1687674375}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -114372,20 +114390,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &1687674375
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687674371}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfe00519871524fc2845db36176808d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  upgradeLevelPanelPrefab: {fileID: 89841074477585346, guid: 2f76050f5a8f344d0bd12552042445aa, type: 3}
-  contentContainer: {fileID: 1687674372}
 --- !u!1 &1687760187
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,8 +37,12 @@ See `Assets/Scripts/AuthService.cs` for reference implementation of API calls.
 - **AlliesGridSetup.cs**: Main ally grid management, handles UI and navigation
 - **UpgradePanelManager.cs**: Handles ally upgrade levels display via API
 
-### Upgrade Levels API
+### Backend APIs
+
+#### 1. Upgrade Levels (Benchmark Descriptions)
 - **Endpoint**: `GET /api/allies/{ally_id}/upgrade_levels`
+- **Purpose**: Get benchmark upgrade descriptions (L02, L06, L08, L15, L20)
+- **Auth**: Not required
 - **Example**: `GET /api/allies/02_Gideon/upgrade_levels`
 - **Response Format**:
 ```json
@@ -47,11 +51,164 @@ See `Assets/Scripts/AuthService.cs` for reference implementation of API calls.
   "name": "Gideon",
   "current_level": 1,
   "upgrade_levels": [
-    {"level": "L02", "description": "Attack damage +20%", "cost": 0, "is_unlocked": false},
-    {"level": "L06", "description": "Multi-shot capability", "cost": 0, "is_unlocked": false}
+    {"level": "L02", "description": "Thunder damage +20%", "cost": 0, "is_unlocked": false},
+    {"level": "L06", "description": "Thunder multi-strike: 2 bolts", "cost": 0, "is_unlocked": false},
+    {"level": "L08", "description": "Thunder triple strike capability", "cost": 0, "is_unlocked": false},
+    {"level": "L15", "description": "Thunder ultimate: devastating storm", "cost": 0, "is_unlocked": false},
+    {"level": "L20", "description": "Thunder legendary form: all stats +100%", "cost": 0, "is_unlocked": false}
   ]
 }
 ```
+
+#### 2. Universal Level Up Costs
+- **Endpoint**: `GET /api/level_up_costs`
+- **Purpose**: Get universal level progression costs (1-20) for all sidekicks
+- **Auth**: Not required
+- **Example**: `GET /api/level_up_costs`
+- **Response Format**:
+```json
+{
+  "level_up_costs": [
+    {"level": 1, "skillbook_cost": 20, "gold_cost": 1000},
+    {"level": 2, "skillbook_cost": 25, "gold_cost": 2000},
+    ...
+  ]
+}
+```
+
+#### 3. Check Level Up Status 🔐
+- **Endpoint**: `GET /api/allies/{ally_id}/level_up_cost`
+- **Purpose**: Get current level and cost to upgrade to next level
+- **Auth**: Required (JWT token)
+- **Example**: `GET /api/allies/04_Aurelia/level_up_cost`
+- **Response Format**:
+```json
+{
+  "ally_id": "04_Aurelia",
+  "current_level": 5,
+  "next_level": 6,
+  "max_level": 20,
+  "can_level_up": true,
+  "cost": {
+    "skillbook_cost": 40,
+    "gold_cost": 5000,
+    "skillbook_name": "SKb_04_Aurelia"
+  },
+  "player_resources": {
+    "gold": 15000,
+    "skillbooks": 50
+  },
+  "has_enough_resources": true
+}
+```
+
+#### 4. Execute Level Up 🔐
+- **Endpoint**: `POST /api/allies/{ally_id}/level_up`
+- **Purpose**: Level up sidekick, deduct resources, increment level
+- **Auth**: Required (JWT token)
+- **Example**: `POST /api/allies/04_Aurelia/level_up`
+- **Success Response**:
+```json
+{
+  "success": true,
+  "ally_id": "04_Aurelia",
+  "old_level": 5,
+  "new_level": 6,
+  "costs_paid": {
+    "gold": 5000,
+    "skillbooks": 40,
+    "skillbook_name": "SKb_04_Aurelia"
+  },
+  "remaining_resources": {
+    "gold": 10000,
+    "skillbooks": 10
+  },
+  "can_level_up_again": true
+}
+```
+
+#### 5. WebSocket Ally APIs 🔐
+**Channel**: `PlayerChannel`
+
+**Get Upgrade Levels:**
+- **Action**: `get_upgrade_levels`
+- **Parameters**: `{"ally_name": "04_Aurelia"}`
+- **Response**:
+```json
+{
+  "action": "get_upgrade_levels",
+  "success": true,
+  "data": {
+    "ally_id": "04_Aurelia",
+    "name": "Aurelia", 
+    "cn_name": "奥蕾莉亚",
+    "current_level": 1,
+    "upgrade_levels": [
+      {"level": "L02", "description": "Attack damage +20%", "cost": 0, "is_unlocked": false},
+      {"level": "L06", "description": "Multi-shot: fires 2 projectiles", "cost": 0, "is_unlocked": false},
+      {"level": "L08", "description": "Triple shot capability", "cost": 0, "is_unlocked": false},
+      {"level": "L15", "description": "Ultimate ability: devastating blast", "cost": 0, "is_unlocked": false},
+      {"level": "L20", "description": "Legendary form: all stats +100%", "cost": 0, "is_unlocked": false}
+    ]
+  }
+}
+```
+
+**Get Level Up Cost:**
+- **Action**: `get_level_up_cost` 
+- **Parameters**: `{"ally_name": "04_Aurelia"}`
+- **Response**:
+```json
+{
+  "action": "get_level_up_cost",
+  "success": true,
+  "data": {
+    "ally_id": "04_Aurelia",
+    "current_level": 5,
+    "next_level": 6,
+    "max_level": 20,
+    "can_level_up": true,
+    "cost": {
+      "skillbook_cost": 40,
+      "gold_cost": 5000
+    },
+    "player_resources": {
+      "gold": 15000,
+      "skillbooks": 50
+    },
+    "has_enough_resources": true
+  }
+}
+```
+
+**Level Up Ally:**
+- **Action**: `level_up_ally`
+- **Parameters**: `{"ally_id": "04_Aurelia"}`
+- **Response**:
+```json
+{
+  "action": "level_up_ally", 
+  "success": true,
+  "data": {
+    "ally_id": "04_Aurelia",
+    "old_level": 5,
+    "new_level": 6,
+    "costs_paid": {
+      "gold": 5000,
+      "skillbooks": 40
+    },
+    "remaining_resources": {
+      "gold": 10000,
+      "skillbooks": 10
+    },
+    "can_level_up_again": true
+  }
+}
+```
+
+#### 6. Authentication APIs
+- **Login**: `POST /api/login` - Player authentication
+- **Guest Login**: `POST /api/guest_login` - Guest login system
 
 ### Data Models
 ```csharp
