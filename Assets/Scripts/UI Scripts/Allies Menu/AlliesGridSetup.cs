@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using model;
 
@@ -208,9 +209,12 @@ public class AlliesGridSetup : MonoBehaviour
 
             // Find StarGroup inside newAlly
             Transform starGroup = newAlly.transform.Find("StarGroup");
+            Debug.Log($"[AlliesGridSetup] Setting up stars for {ally.index}_{ally.name}, starGroup found: {starGroup != null}");
 
-            // Check if this ally has a predefined star level
-            int starLevel = starLevels.ContainsKey(ally.index) ? starLevels[ally.index] : 0;
+            // Get star level from PlayerProfile sidekick data
+            string allyId = $"{ally.index}_{ally.name}";
+            int starLevel = GetSidekickStarLevel(allyId);
+            Debug.Log($"[AlliesGridSetup] {allyId} has {starLevel} stars");
 
             for (int i = 1; i <= 5; i++)
             {
@@ -218,11 +222,15 @@ public class AlliesGridSetup : MonoBehaviour
 
                 if (starYellow != null)
                 {
-                    starYellow.gameObject.SetActive(i <= starLevel); // Activate based on star level
+                    bool shouldActivate = i <= starLevel;
+                    starYellow.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow: {(shouldActivate ? "ACTIVE" : "INACTIVE")} (star level: {starLevel})");
+                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow GameObject path: {GetGameObjectPath(starYellow.gameObject)}");
+                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow activeSelf: {starYellow.gameObject.activeSelf}, activeInHierarchy: {starYellow.gameObject.activeInHierarchy}");
                 }
                 else
                 {
-                    Debug.LogWarning($"❌ 'yellow' NOT FOUND inside Star{i}!");
+                    Debug.LogWarning($"❌ 'yellow' NOT FOUND inside Star{i} for {allyId}!");
                 }
             }
 
@@ -364,6 +372,27 @@ public class AlliesGridSetup : MonoBehaviour
         if (upgradePanelManager != null)
         {
             upgradePanelManager.LoadUpgradePanelsForAlly($"{index}_{name}");
+        }
+        
+        // CRITICAL FIX: Ensure UpgradePanelManager mode is synced after navigation
+        // This must happen after RefreshLowerSectionForCurrentAlly() to ensure proper mode sync
+        if (upgradePanelManager != null)
+        {
+            // Check current button state and sync UpgradePanelManager mode
+            PageButtonController pageButtonController = FindObjectOfType<PageButtonController>();
+            if (pageButtonController != null)
+            {
+                var activeButtonIndexField = typeof(PageButtonController).GetField("activeButtonIndex", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (activeButtonIndexField != null)
+                {
+                    int activeButtonIndex = (int)activeButtonIndexField.GetValue(pageButtonController);
+                    bool isStarUpMode = (activeButtonIndex == 1);
+                    Debug.Log($"[AlliesGridSetup] Navigation: Syncing UpgradePanelManager mode to {(isStarUpMode ? "StarUp" : "LevelUp")} (button {activeButtonIndex})");
+                    upgradePanelManager.SetMode(isStarUpMode);
+                }
+            }
         }
     }
 
@@ -750,6 +779,12 @@ public class AlliesGridSetup : MonoBehaviour
         {
             upButtonText.text = "LevelUp";
         }
+        
+        // Set UpgradePanelManager to LevelUp mode
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.SetMode(false); // false = LevelUp mode
+        }
     }
 
     /// <summary>
@@ -833,6 +868,12 @@ public class AlliesGridSetup : MonoBehaviour
         if (upButtonText != null)
         {
             upButtonText.text = "StarUp";
+        }
+        
+        // Set UpgradePanelManager to StarUp mode
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.SetMode(true); // true = StarUp mode
         }
     }
 
@@ -971,6 +1012,12 @@ public class AlliesGridSetup : MonoBehaviour
             // Fallback to LevelUp mode
             LevelUpLoading();
         }
+        
+        // Load upgrade levels for the new ally
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
+        }
 
         // Set default star levels (0 stars) for utilize flow
         if (step2StarGroup != null)
@@ -990,5 +1037,115 @@ public class AlliesGridSetup : MonoBehaviour
         {
             upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
         }
+    }
+    
+    /// <summary>
+    /// Get the current star level for a specific sidekick from PlayerProfile data
+    /// </summary>
+    /// <param name="allyId">The ally ID (e.g., "04_Aurelia")</param>
+    /// <returns>Current star level from PlayerProfile data</returns>
+    private int GetSidekickStarLevel(string allyId)
+    {
+        if (PlayerProfile.Data?.Sidekick == null)
+        {
+            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): PlayerProfile.Data.Sidekick is null");
+            return 0; // Default to 0 stars if no data
+        }
+        
+        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found {PlayerProfile.Data.Sidekick.Count} sidekicks");
+        
+        // Log all sidekicks for debugging
+        foreach (var s in PlayerProfile.Data.Sidekick)
+        {
+            Debug.Log($"[AlliesGridSetup] Sidekick: id={s.id}, base_id={s.base_id}, star={s.star}");
+        }
+        
+        // Find the sidekick by matching the ally ID format
+        // allyId is "04_Aurelia", base_id is "4", so we need to extract "04" and convert to int, then back to string
+        string indexPart = allyId.Split('_')[0]; // "04"
+        int allyIndex = int.Parse(indexPart); // 4
+        string baseIdToMatch = allyIndex.ToString(); // "4"
+        
+        var sidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => 
+            s.base_id == baseIdToMatch
+        );
+        
+        if (sidekick != null)
+        {
+            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found sidekick with {sidekick.star} stars");
+            return sidekick.star;
+        }
+        
+        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick not found, returning 0");
+        // If sidekick not found, return 0 as default
+        return 0;
+    }
+    
+    /// <summary>
+    /// Update star display for a specific ally item
+    /// </summary>
+    /// <param name="allyItem">The ally item GameObject</param>
+    /// <param name="allyId">The ally ID (e.g., "04_Aurelia")</param>
+    public void UpdateAllyStarDisplay(GameObject allyItem, string allyId)
+    {
+        Transform starGroup = allyItem.transform.Find("StarGroup");
+        if (starGroup == null) return;
+        
+        int starLevel = GetSidekickStarLevel(allyId);
+        
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform starYellow = starGroup.Find($"Star{i}/yellow");
+            if (starYellow != null)
+            {
+                starYellow.gameObject.SetActive(i <= starLevel);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Refresh all ally star displays (call this after star upgrades)
+    /// </summary>
+    public void RefreshAllAllyStarDisplays()
+    {
+        if (grid == null) return;
+        
+        for (int i = 0; i < grid.transform.childCount; i++)
+        {
+            Transform child = grid.transform.GetChild(i);
+            if (child.name.StartsWith("AllyItem"))
+            {
+                // Extract ally info from the ally item
+                string[] nameParts = child.name.Split('_');
+                if (nameParts.Length >= 2)
+                {
+                    string allyIndex = nameParts[1]; // "04"
+                    string allyName = nameParts.Length >= 3 ? nameParts[2] : ""; // "Aurelia" or empty
+                    
+                    // If we have both parts, create full ID, otherwise skip
+                    if (!string.IsNullOrEmpty(allyName))
+                    {
+                        string allyId = $"{allyIndex}_{allyName}";
+                        UpdateAllyStarDisplay(child.gameObject, allyId);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[AlliesGridSetup] GameObject {child.name} doesn't have expected name format");
+                    }
+                }
+            }
+        }
+    }
+    
+    private string GetGameObjectPath(GameObject obj)
+    {
+        string path = obj.name;
+        Transform parent = obj.transform.parent;
+        while (parent != null)
+        {
+            path = parent.name + "/" + path;
+            parent = parent.parent;
+        }
+        return path;
     }
 }

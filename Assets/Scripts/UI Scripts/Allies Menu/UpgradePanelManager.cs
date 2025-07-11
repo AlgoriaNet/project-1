@@ -55,6 +55,33 @@ public class PlayerResources
     public int skillbooks;
 }
 
+[System.Serializable]
+public class StarUpCostData
+{
+    public string ally_id;
+    public int current_star;
+    public int next_star;
+    public int max_star;
+    public bool can_star_up;
+    public StarUpCost cost;
+    public StarUpPlayerResources player_resources;
+    public bool has_enough_resources;
+}
+
+[System.Serializable]
+public class StarUpCost
+{
+    public int shard_cost;
+    public int gold_cost;
+}
+
+[System.Serializable]
+public class StarUpPlayerResources
+{
+    public int gold;
+    public int shards;
+}
+
 public class UpgradePanelManager : MonoBehaviour
 {
     [Header("Prefab and Container")]
@@ -65,12 +92,15 @@ public class UpgradePanelManager : MonoBehaviour
     public TextMeshProUGUI upgradeText; // The upgrade text on right panel (L01 >>> L02)
     public TextMeshProUGUI itemText; // Item cost/quantity display (40/50) - skillbook for LevelUp, shard for StarUp
     public TextMeshProUGUI goldText; // Gold cost/quantity display (5000/15000)  
+    public TextMeshProUGUI allyNameText; // Ally name display (e.g., "Aurelia" from "04_Aurelia")
     public Button levelUpButton; // Level up button
     
     [Header("Current Ally Info")]
     private string currentAllyId;
     private AllyUpgradeResponse currentUpgradeData;
     private LevelUpCostData currentLevelUpCost;
+    private StarUpCostData currentStarUpCost;
+    private bool isStarUpMode = false; // Track current mode
     
     // List to keep track of created panels
     private List<GameObject> createdPanels = new List<GameObject>();
@@ -85,6 +115,92 @@ public class UpgradePanelManager : MonoBehaviour
         
         // Subscribe to WebSocket - using PlayerChannel
         PlayerWebSocketApi.Instance.Subscribe();
+        
+        // Listen for player data changes to refresh cost data
+        PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Player");
+        
+        // Also listen for item changes (for shard/skillbook updates)
+        PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Items");
+        PlayerProfile.Data.AddListener(OnPlayerDataChanged, "OtherItems");
+    }
+    
+    void OnEnable()
+    {
+        // Refresh when the component becomes active
+        if (!string.IsNullOrEmpty(currentAllyId))
+        {
+            Debug.Log("[UpgradePanelManager] OnEnable - refreshing cost data");
+            Invoke(nameof(FetchCurrentModeCost), 0.1f); // Small delay to ensure everything is initialized
+        }
+    }
+    
+    void OnDestroy()
+    {
+        // Clean up listeners
+        PlayerProfile.Data.RemoveListener(OnPlayerDataChanged, "Player");
+        PlayerProfile.Data.RemoveListener(OnPlayerDataChanged, "Items");
+        PlayerProfile.Data.RemoveListener(OnPlayerDataChanged, "OtherItems");
+    }
+    
+    /// <summary>
+    /// Called when player data changes (e.g., after drawing shards)
+    /// </summary>
+    /// <param name="model">Updated player model</param>
+    private void OnPlayerDataChanged(ApplicationModel model)
+    {
+        // Refresh cost data if we have a current ally selected
+        if (!string.IsNullOrEmpty(currentAllyId))
+        {
+            Debug.Log("[UpgradePanelManager] Player data changed, refreshing cost data");
+            // Add a small delay to ensure the backend has updated data
+            Invoke(nameof(FetchCurrentModeCost), 0.2f);
+        }
+    }
+    
+    /// <summary>
+    /// Public method to manually refresh cost data (can be called from other scripts)
+    /// </summary>
+    public void RefreshCostData()
+    {
+        if (!string.IsNullOrEmpty(currentAllyId))
+        {
+            Debug.Log("[UpgradePanelManager] Manual refresh requested");
+            FetchCurrentModeCost();
+        }
+    }
+    
+    /// <summary>
+    /// Set the current mode (LevelUp or StarUp)
+    /// </summary>
+    /// <param name="starUpMode">True for StarUp, false for LevelUp</param>
+    public void SetMode(bool starUpMode)
+    {
+        isStarUpMode = starUpMode;
+        Debug.Log($"[UpgradePanelManager] Mode changed to: {(isStarUpMode ? "StarUp" : "LevelUp")}");
+        
+        // Update upgrade text immediately for the new mode
+        UpdateRightPanelUpgradeText();
+        
+        // Refresh cost data for the new mode
+        if (!string.IsNullOrEmpty(currentAllyId))
+        {
+            FetchCurrentModeCost();
+        }
+    }
+    
+    /// <summary>
+    /// Fetch cost data based on current mode
+    /// </summary>
+    private void FetchCurrentModeCost()
+    {
+        if (isStarUpMode)
+        {
+            FetchStarUpCost();
+        }
+        else
+        {
+            FetchLevelUpCost();
+        }
     }
     
     /// <summary>
@@ -94,6 +210,14 @@ public class UpgradePanelManager : MonoBehaviour
     public void LoadUpgradePanelsForAlly(string allyId)
     {
         currentAllyId = allyId;
+        
+        // Update ally name text (extract name from "04_Aurelia" format)
+        if (allyNameText != null && !string.IsNullOrEmpty(allyId) && allyId.Contains("_"))
+        {
+            string allyName = allyId.Split('_')[1]; // Extract "Aurelia" from "04_Aurelia"
+            allyNameText.text = allyName;
+        }
+        
         ClearExistingPanels();
         // Use WebSocket API for upgrade levels (correct payload: ally_id)
         var data = new { ally_id = allyId };
@@ -184,8 +308,8 @@ public class UpgradePanelManager : MonoBehaviour
             UpdateRightPanelUpgradeText();
         }
         
-        // Fetch level up cost data
-        FetchLevelUpCost();
+        // Fetch cost data based on current mode
+        FetchCurrentModeCost();
     }
     
     /// <summary>
@@ -243,21 +367,63 @@ public class UpgradePanelManager : MonoBehaviour
     }
     
     /// <summary>
-    /// Update the upgrade text on the right panel
+    /// Update the upgrade text on the right panel based on current mode
     /// </summary>
     private void UpdateRightPanelUpgradeText()
     {
-        if (upgradeText == null || currentUpgradeData == null)
+        if (upgradeText == null)
         {
             return;
         }
         
-        // Get the current level and find the next upgrade level
-        int currentLevel = GetSidekickCurrentLevel(currentUpgradeData.ally_id);
+        if (isStarUpMode)
+        {
+            // StarUp mode: Show star upgrade (0 ★ >>> 1 ★)
+            UpdateStarUpgradeText();
+        }
+        else
+        {
+            // LevelUp mode: Show level upgrade (L01 >>> L02)
+            UpdateLevelUpgradeText();
+        }
+    }
+    
+    /// <summary>
+    /// Update text for LevelUp mode (L01 >>> L02)
+    /// </summary>
+    private void UpdateLevelUpgradeText()
+    {
+        if (currentUpgradeData == null)
+        {
+            upgradeText.text = "L?? >>> L??";
+            return;
+        }
         
-        // For now, just show current level >>> L02 (we can make this smarter later)
+        int currentLevel = GetSidekickCurrentLevel(currentUpgradeData.ally_id);
+        int nextLevel = currentLevel + 1;
+        
         string currentLevelText = $"L{currentLevel:D2}";
-        upgradeText.text = $"{currentLevelText} >>> L02";
+        string nextLevelText = $"L{nextLevel:D2}";
+        upgradeText.text = $"{currentLevelText} >>> {nextLevelText}";
+    }
+    
+    /// <summary>
+    /// Update text for StarUp mode (S0 >>> S1)
+    /// </summary>
+    private void UpdateStarUpgradeText()
+    {
+        if (currentStarUpCost != null)
+        {
+            // Use backend data if available
+            upgradeText.text = $"S{currentStarUpCost.current_star} >>> S{currentStarUpCost.next_star}";
+        }
+        else
+        {
+            // Fallback to frontend calculation
+            int currentStar = GetSidekickCurrentStarLevel(currentAllyId);
+            int nextStar = currentStar + 1;
+            upgradeText.text = $"S{currentStar} >>> S{nextStar}";
+        }
     }
     
     /// <summary>
@@ -307,6 +473,31 @@ public class UpgradePanelManager : MonoBehaviour
         return 1;
     }
     
+    /// <summary>
+    /// Get the current star level for a specific sidekick
+    /// </summary>
+    /// <param name="allyId">The ally ID (e.g., "02_Gideon")</param>
+    /// <returns>Current star level from PlayerProfile data</returns>
+    private int GetSidekickCurrentStarLevel(string allyId)
+    {
+        if (PlayerProfile.Data?.Sidekick == null)
+        {
+            return 0; // Default to 0 stars if no data
+        }
+        // Find the sidekick by matching the ally ID format
+        var sidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => 
+            s.base_id == allyId || 
+            s.id == allyId ||
+            (s.base_id != null && allyId.Contains("_") && s.base_id.EndsWith(allyId.Split('_')[1]))
+        );
+        if (sidekick != null)
+        {
+            return sidekick.star;
+        }
+        // If sidekick not found, return 0 as default
+        return 0;
+    }
+    
     ///
     
     /// <summary>
@@ -322,20 +513,47 @@ public class UpgradePanelManager : MonoBehaviour
         
         Debug.Log($"[UpgradePanelManager] Fetching level up cost for ally: {currentAllyId}");
         
-        // Debug: Check what sidekick data we actually have
-        if (PlayerProfile.Data?.Sidekick != null)
+        // Backend expects ally_id (not ally_name) with fragment_name format ("04_Aurelia")
+        Debug.Log($"[UpgradePanelManager] Using fragment_name format: {currentAllyId}");
+        
+        var data = new { ally_id = currentAllyId };
+        
+        if (PlayerWebSocketApi.Instance != null)
         {
-            Debug.Log($"[UpgradePanelManager] Available sidekicks in PlayerProfile:");
-            foreach (var sidekick in PlayerProfile.Data.Sidekick)
-            {
-                Debug.Log($"  - ID: {sidekick.id}, Base_ID: {sidekick.base_id}, Level: {sidekick.skill_level}");
-            }
+            PlayerWebSocketApi.Instance.Action("get_level_up_cost", data, 
+                OnLevelUpCostReceived, OnLevelUpCostError);
+        }
+        else
+        {
+            Debug.LogError("[UpgradePanelManager] PlayerWebSocketApi.Instance is null");
+        }
+    }
+    
+    /// <summary>
+    /// Fetch star up cost data via WebSocket
+    /// </summary>
+    private void FetchStarUpCost()
+    {
+        if (string.IsNullOrEmpty(currentAllyId))
+        {
+            Debug.LogWarning("[UpgradePanelManager] No currentAllyId set for FetchStarUpCost");
+            return;
         }
         
-        var data = new { ally_name = currentAllyId };
+        Debug.Log($"[UpgradePanelManager] Fetching star up cost for ally: {currentAllyId}");
         
-        PlayerWebSocketApi.Instance.Action("get_level_up_cost", data, 
-            OnLevelUpCostReceived, OnLevelUpCostError);
+        // Backend expects ally_id with fragment_name format ("04_Aurelia")
+        var data = new { ally_id = currentAllyId };
+        
+        if (PlayerWebSocketApi.Instance != null)
+        {
+            PlayerWebSocketApi.Instance.Action("get_star_upgrade_cost", data, 
+                OnStarUpCostReceived, OnStarUpCostError);
+        }
+        else
+        {
+            Debug.LogError("[UpgradePanelManager] PlayerWebSocketApi.Instance is null");
+        }
     }
     
     /// <summary>
@@ -348,17 +566,10 @@ public class UpgradePanelManager : MonoBehaviour
         {
             Debug.Log($"[UpgradePanelManager] Received level up cost response: {response}");
             
-            var dataToken = response["data"];
-            if (dataToken != null)
-            {
-                currentLevelUpCost = dataToken.ToObject<LevelUpCostData>();
-                Debug.Log($"[UpgradePanelManager] Parsed level up cost data: skillbook={currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}, gold={currentLevelUpCost.cost.gold_cost}/{currentLevelUpCost.player_resources.gold}");
-                UpdateResourceDisplays();
-            }
-            else
-            {
-                Debug.LogWarning("[UpgradePanelManager] No data field in level up cost response");
-            }
+            // Backend sends data directly in response, not nested in "data" field
+            currentLevelUpCost = response.ToObject<LevelUpCostData>();
+            Debug.Log($"[UpgradePanelManager] Parsed level up cost data: skillbook={currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}, gold={currentLevelUpCost.cost.gold_cost}/{currentLevelUpCost.player_resources.gold}");
+            UpdateResourceDisplays();
         }
         catch (System.Exception e)
         {
@@ -376,72 +587,129 @@ public class UpgradePanelManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Handle star up cost response
+    /// </summary>
+    /// <param name="response">WebSocket response</param>
+    private void OnStarUpCostReceived(JObject response)
+    {
+        try
+        {
+            Debug.Log($"[UpgradePanelManager] Received star up cost response");
+            
+            // Backend sends data directly in response, not nested in "data" field
+            currentStarUpCost = response.ToObject<StarUpCostData>();
+            Debug.Log($"[UpgradePanelManager] Parsed star up cost data: shard={currentStarUpCost.cost.shard_cost}/{currentStarUpCost.player_resources.shards}, gold={currentStarUpCost.cost.gold_cost}/{currentStarUpCost.player_resources.gold}");
+            
+            // Update upgrade text with backend data
+            UpdateRightPanelUpgradeText();
+            
+            UpdateResourceDisplays();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to parse star up cost response: {e.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Handle star up cost error
+    /// </summary>
+    /// <param name="error">Error response</param>
+    private void OnStarUpCostError(JObject error)
+    {
+        Debug.LogError($"Failed to fetch star up cost: {error}");
+    }
+    
+    /// <summary>
+    /// Format number with K suffix for values over 999
+    /// </summary>
+    /// <param name="value">Number to format</param>
+    /// <returns>Formatted string like "1.2K" or "500"</returns>
+    private string FormatNumber(int value)
+    {
+        if (value >= 1000)
+        {
+            return $"{(value / 1000.0f):F1}K";
+        }
+        return value.ToString();
+    }
+    
+    /// <summary>
     /// Update resource displays on right panel
     /// </summary>
     private void UpdateResourceDisplays()
     {
-        Debug.Log("[UpgradePanelManager] UpdateResourceDisplays called");
+        Debug.Log($"[UpgradePanelManager] UpdateResourceDisplays called for mode: {(isStarUpMode ? "StarUp" : "LevelUp")}");
         
-        if (currentLevelUpCost == null)
+        if (isStarUpMode)
         {
-            Debug.LogWarning("[UpgradePanelManager] currentLevelUpCost is null - no WebSocket data received");
+            if (currentStarUpCost == null)
+            {
+                Debug.LogWarning("[UpgradePanelManager] No StarUp cost data available");
+                if (itemText != null) itemText.text = "NO DATA";
+                if (goldText != null) goldText.text = "NO DATA";
+                return;
+            }
             
-            // Show debug info in UI to see what's happening
-            if (itemText != null) itemText.text = "NO DATA";
-            if (goldText != null) goldText.text = "NO DATA";
-            return;
-        }
-        
-        Debug.Log($"[UpgradePanelManager] WebSocket data received:");
-        Debug.Log($"  - Ally: {currentLevelUpCost.ally_id}");
-        Debug.Log($"  - Current Level: {currentLevelUpCost.current_level}");
-        Debug.Log($"  - Next Level: {currentLevelUpCost.next_level}");
-        Debug.Log($"  - Next Level: {currentLevelUpCost.next_level}");
-        Debug.Log($"  - Skillbook Cost: {currentLevelUpCost.cost.skillbook_cost}");
-        Debug.Log($"  - Gold Cost: {currentLevelUpCost.cost.gold_cost}");
-        Debug.Log($"  - Player Skillbooks: {currentLevelUpCost.player_resources.skillbooks}");
-        Debug.Log($"  - Player Gold: {currentLevelUpCost.player_resources.gold}");
-        Debug.Log($"  - Can Level Up: {currentLevelUpCost.can_level_up}");
-        Debug.Log($"  - Has Enough Resources: {currentLevelUpCost.has_enough_resources}");
-        
-        // TODO: Need to detect if we're in LevelUp mode (skillbook) or StarUp mode (shard)
-        // For now, assuming LevelUp mode
-        string itemType = "skillbook"; // This should be dynamic based on current mode
-        Debug.Log($"  - Item Type: {itemType}");
-        
-        // Update item display (need/have)
-        if (itemText != null)
-        {
-            string itemDisplay = $"{currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}";
-            itemText.text = itemDisplay;
-            Debug.Log($"[UpgradePanelManager] Set itemText to: {itemDisplay}");
+            Debug.Log("[UpgradePanelManager] Updating UI with StarUp cost data");
+            
+            // Update item display (shard for star up)
+            if (itemText != null)
+            {
+                string itemDisplay = $"{currentStarUpCost.cost.shard_cost}/{currentStarUpCost.player_resources.shards}";
+                itemText.text = itemDisplay;
+                Debug.Log($"[UpgradePanelManager] Set itemText to: {itemDisplay}");
+            }
+            
+            // Update gold display with K formatting
+            if (goldText != null)
+            {
+                string goldDisplay = $"{FormatNumber(currentStarUpCost.cost.gold_cost)}/{FormatNumber(currentStarUpCost.player_resources.gold)}";
+                goldText.text = goldDisplay;
+                Debug.Log($"[UpgradePanelManager] Set goldText to: {goldDisplay}");
+            }
+            
+            // Update button state
+            if (levelUpButton != null)
+            {
+                levelUpButton.interactable = currentStarUpCost.can_star_up && currentStarUpCost.has_enough_resources;
+                Debug.Log($"[UpgradePanelManager] Set button interactable to: {levelUpButton.interactable}");
+            }
         }
         else
         {
-            Debug.LogWarning("[UpgradePanelManager] itemText is null - not assigned in Inspector?");
-        }
-        
-        // Update gold display (need/have)
-        if (goldText != null)
-        {
-            string goldDisplay = $"{currentLevelUpCost.cost.gold_cost}/{currentLevelUpCost.player_resources.gold}";
-            goldText.text = goldDisplay;
-            Debug.Log($"[UpgradePanelManager] Set goldText to: {goldDisplay}");
-        }
-        else
-        {
-            Debug.LogWarning("[UpgradePanelManager] goldText is null - not assigned in Inspector?");
-        }
-        
-        // Update level up button state
-        if (levelUpButton != null)
-        {
-            levelUpButton.interactable = currentLevelUpCost.can_level_up && currentLevelUpCost.has_enough_resources;
-            Debug.Log($"[UpgradePanelManager] Set levelUpButton.interactable to: {levelUpButton.interactable}");
-        }
-        else
-        {
-            Debug.LogWarning("[UpgradePanelManager] levelUpButton is null - not assigned in Inspector?");
+            if (currentLevelUpCost == null)
+            {
+                Debug.LogWarning("[UpgradePanelManager] No LevelUp cost data available");
+                if (itemText != null) itemText.text = "NO DATA";
+                if (goldText != null) goldText.text = "NO DATA";
+                return;
+            }
+            
+            Debug.Log("[UpgradePanelManager] Updating UI with LevelUp cost data");
+            
+            // Update item display (skillbook for level up)
+            if (itemText != null)
+            {
+                string itemDisplay = $"{currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}";
+                itemText.text = itemDisplay;
+                Debug.Log($"[UpgradePanelManager] Set itemText to: {itemDisplay}");
+            }
+            
+            // Update gold display with K formatting
+            if (goldText != null)
+            {
+                string goldDisplay = $"{FormatNumber(currentLevelUpCost.cost.gold_cost)}/{FormatNumber(currentLevelUpCost.player_resources.gold)}";
+                goldText.text = goldDisplay;
+                Debug.Log($"[UpgradePanelManager] Set goldText to: {goldDisplay}");
+            }
+            
+            // Update button state
+            if (levelUpButton != null)
+            {
+                levelUpButton.interactable = currentLevelUpCost.can_level_up && currentLevelUpCost.has_enough_resources;
+                Debug.Log($"[UpgradePanelManager] Set button interactable to: {levelUpButton.interactable}");
+            }
         }
     }
     
@@ -450,13 +718,28 @@ public class UpgradePanelManager : MonoBehaviour
     /// </summary>
     private void OnLevelUpButtonClicked()
     {
+        if (isStarUpMode)
+        {
+            HandleStarUpClick();
+        }
+        else
+        {
+            HandleLevelUpClick();
+        }
+    }
+    
+    /// <summary>
+    /// Handle level up action
+    /// </summary>
+    private void HandleLevelUpClick()
+    {
         if (currentLevelUpCost == null || !currentLevelUpCost.can_level_up || !currentLevelUpCost.has_enough_resources)
         {
             Debug.LogWarning("Cannot level up: insufficient resources or max level reached");
             return;
         }
         
-        // Use new WebSocket action 'level_upgrade' and send both ally_name and current_level
+        // Backend expects ally_name with fragment_name format ("04_Aurelia")
         var data = new {
             ally_name = currentAllyId,
             current_level = currentLevelUpCost.current_level
@@ -464,6 +747,27 @@ public class UpgradePanelManager : MonoBehaviour
         
         PlayerWebSocketApi.Instance.Action("level_upgrade", data, 
             OnLevelUpSuccess, OnLevelUpError);
+    }
+    
+    /// <summary>
+    /// Handle star up action
+    /// </summary>
+    private void HandleStarUpClick()
+    {
+        if (currentStarUpCost == null || !currentStarUpCost.can_star_up || !currentStarUpCost.has_enough_resources)
+        {
+            Debug.LogWarning("Cannot star up: insufficient resources or max star reached");
+            return;
+        }
+        
+        // Backend expects ally_name with fragment_name format ("04_Aurelia")
+        var data = new {
+            ally_name = currentAllyId,
+            current_star = currentStarUpCost.current_star
+        };
+        
+        PlayerWebSocketApi.Instance.Action("star_upgrade", data, 
+            OnStarUpSuccess, OnStarUpError);
     }
 
     /// <summary>
@@ -488,7 +792,7 @@ public class UpgradePanelManager : MonoBehaviour
                 // TODO: Update PlayerProfile.Data.Sidekick and PlayerResources if needed
 
                 // Refresh level up cost data to update displays
-                FetchLevelUpCost();
+                FetchCurrentModeCost();
                 // Update upgrade text on right panel
                 if (upgradeText != null)
                 {
@@ -519,6 +823,56 @@ public class UpgradePanelManager : MonoBehaviour
     }
     
     /// <summary>
+    /// Handle successful star up response
+    /// </summary>
+    /// <param name="response">WebSocket response</param>
+    private void OnStarUpSuccess(JObject response)
+    {
+        try
+        {
+            Debug.Log($"Star up successful: {response}");
+            var dataToken = response["data"];
+            if (dataToken != null)
+            {
+                // Refresh star up cost data to update displays
+                FetchCurrentModeCost();
+                // Update upgrade text on right panel
+                if (upgradeText != null)
+                {
+                    UpdateRightPanelUpgradeText();
+                }
+                // Refresh the upgrade panels to update lock/unlock status
+                CreateUpgradePanels();
+                
+                // Refresh star displays in the allies grid with delay to allow PlayerProfile to update
+                AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
+                if (alliesGridSetup != null)
+                {
+                    StartCoroutine(DelayedStarDisplayRefresh(alliesGridSetup));
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[UpgradePanelManager] No data field in star up response");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to process star up response: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Handle star up error
+    /// </summary>
+    /// <param name="error">Error response</param>
+    private void OnStarUpError(JObject error)
+    {
+        Debug.LogError($"Star up failed: {error}");
+        // Optionally, show error feedback to user here
+    }
+    
+    /// <summary>
     /// Public method to be called from AlliesGridSetup when ally is selected
     /// </summary>
     /// <param name="allyIndex">Ally index like "02"</param>
@@ -527,5 +881,28 @@ public class UpgradePanelManager : MonoBehaviour
     {
         string allyId = $"{allyIndex}_{allyName}";
         LoadUpgradePanelsForAlly(allyId);
+    }
+    
+    /// <summary>
+    /// Coroutine to refresh star displays with delay to allow PlayerProfile to update
+    /// </summary>
+    /// <param name="alliesGridSetup">AlliesGridSetup instance</param>
+    /// <returns>IEnumerator for coroutine</returns>
+    private System.Collections.IEnumerator DelayedStarDisplayRefresh(AlliesGridSetup alliesGridSetup)
+    {
+        // Wait for PlayerProfile to be updated by the backend response
+        yield return new WaitForSeconds(0.2f);
+        
+        Debug.Log("[UpgradePanelManager] Force refreshing PlayerProfile and star displays");
+        
+        // Force PlayerProfile to refresh by triggering a small data fetch
+        // This should update the PlayerProfile.Data.Sidekick with new star levels
+        FetchCurrentModeCost(); // This will trigger PlayerProfile update
+        
+        // Wait a bit more for the PlayerProfile to update
+        yield return new WaitForSeconds(0.3f);
+        
+        // Now refresh star displays with updated data
+        alliesGridSetup.RefreshAllAllyStarDisplays();
     }
 }
