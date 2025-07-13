@@ -415,14 +415,18 @@ public class UpgradePanelManager : MonoBehaviour
         if (currentStarUpCost != null)
         {
             // Use backend data if available
-            upgradeText.text = $"S{currentStarUpCost.current_star} >>> S{currentStarUpCost.next_star}";
+            string newText = $"S{currentStarUpCost.current_star} >>> S{currentStarUpCost.next_star}";
+            Debug.Log($"[UpgradePanelManager] UpdateStarUpgradeText: Setting upgradeText to '{newText}' from backend data");
+            upgradeText.text = newText;
         }
         else
         {
             // Fallback to frontend calculation
             int currentStar = GetSidekickCurrentStarLevel(currentAllyId);
             int nextStar = currentStar + 1;
-            upgradeText.text = $"S{currentStar} >>> S{nextStar}";
+            string newText = $"S{currentStar} >>> S{nextStar}";
+            Debug.Log($"[UpgradePanelManager] UpdateStarUpgradeText: Setting upgradeText to '{newText}' from frontend calculation");
+            upgradeText.text = newText;
         }
     }
     
@@ -834,22 +838,62 @@ public class UpgradePanelManager : MonoBehaviour
             var dataToken = response["data"];
             if (dataToken != null)
             {
-                // Refresh star up cost data to update displays
-                FetchCurrentModeCost();
                 // Update upgrade text on right panel
                 if (upgradeText != null)
                 {
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Before updating upgrade text, current text: '{upgradeText.text}'");
                     UpdateRightPanelUpgradeText();
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: After updating upgrade text, new text: '{upgradeText.text}'");
                 }
                 // Refresh the upgrade panels to update lock/unlock status
                 CreateUpgradePanels();
                 
-                // Refresh star displays in the allies grid with delay to allow PlayerProfile to update
+                // Log PlayerProfile.Data.Sidekick state immediately after star upgrade
+                Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Checking PlayerProfile.Data.Sidekick state after upgrade");
+                if (PlayerProfile.Data?.Sidekick != null)
+                {
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: PlayerProfile.Data.Sidekick has {PlayerProfile.Data.Sidekick.Count} sidekicks");
+                    foreach (var s in PlayerProfile.Data.Sidekick)
+                    {
+                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
+                    }
+                    
+                    // Check specifically for the upgraded ally
+                    string[] allyParts = currentAllyId.Split('_');
+                    if (allyParts.Length >= 2)
+                    {
+                        string targetBaseId = int.Parse(allyParts[0]).ToString(); // "11" -> "11"
+                        var upgradedSidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => s.base_id == targetBaseId);
+                        if (upgradedSidekick != null)
+                        {
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Found upgraded sidekick {currentAllyId} with {upgradedSidekick.star} stars (expected: 2)");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[UpgradePanelManager] OnStarUpSuccess: Upgraded sidekick {currentAllyId} (base_id={targetBaseId}) not found in PlayerProfile!");
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: PlayerProfile.Data.Sidekick is null!");
+                }
+                
+                // Refresh star displays immediately - backend now sends profile_update
                 AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
                 if (alliesGridSetup != null)
                 {
-                    StartCoroutine(DelayedStarDisplayRefresh(alliesGridSetup));
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Calling RefreshAllAllyStarDisplays for {currentAllyId}");
+                    alliesGridSetup.RefreshAllAllyStarDisplays();
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: RefreshAllAllyStarDisplays completed");
                 }
+                else
+                {
+                    Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: AlliesGridSetup not found!");
+                }
+                
+                // Refresh cost data to update displays
+                FetchCurrentModeCost();
             }
             else
             {
@@ -883,26 +927,4 @@ public class UpgradePanelManager : MonoBehaviour
         LoadUpgradePanelsForAlly(allyId);
     }
     
-    /// <summary>
-    /// Coroutine to refresh star displays with delay to allow PlayerProfile to update
-    /// </summary>
-    /// <param name="alliesGridSetup">AlliesGridSetup instance</param>
-    /// <returns>IEnumerator for coroutine</returns>
-    private System.Collections.IEnumerator DelayedStarDisplayRefresh(AlliesGridSetup alliesGridSetup)
-    {
-        // Wait for PlayerProfile to be updated by the backend response
-        yield return new WaitForSeconds(0.2f);
-        
-        Debug.Log("[UpgradePanelManager] Force refreshing PlayerProfile and star displays");
-        
-        // Force PlayerProfile to refresh by triggering a small data fetch
-        // This should update the PlayerProfile.Data.Sidekick with new star levels
-        FetchCurrentModeCost(); // This will trigger PlayerProfile update
-        
-        // Wait a bit more for the PlayerProfile to update
-        yield return new WaitForSeconds(0.3f);
-        
-        // Now refresh star displays with updated data
-        alliesGridSetup.RefreshAllAllyStarDisplays();
-    }
 }

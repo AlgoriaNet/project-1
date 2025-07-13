@@ -209,12 +209,11 @@ public class AlliesGridSetup : MonoBehaviour
 
             // Find StarGroup inside newAlly
             Transform starGroup = newAlly.transform.Find("StarGroup");
-            Debug.Log($"[AlliesGridSetup] Setting up stars for {ally.index}_{ally.name}, starGroup found: {starGroup != null}");
 
             // Get star level from PlayerProfile sidekick data
             string allyId = $"{ally.index}_{ally.name}";
             int starLevel = GetSidekickStarLevel(allyId);
-            Debug.Log($"[AlliesGridSetup] {allyId} has {starLevel} stars");
+            Debug.Log($"[AlliesGridSetup] {allyId} star level: {starLevel}");
 
             for (int i = 1; i <= 5; i++)
             {
@@ -224,9 +223,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= starLevel;
                     starYellow.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow: {(shouldActivate ? "ACTIVE" : "INACTIVE")} (star level: {starLevel})");
-                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow GameObject path: {GetGameObjectPath(starYellow.gameObject)}");
-                    Debug.Log($"[AlliesGridSetup] {allyId} Star{i}/yellow activeSelf: {starYellow.gameObject.activeSelf}, activeInHierarchy: {starYellow.gameObject.activeInHierarchy}");
                 }
                 else
                 {
@@ -346,6 +342,7 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // 🔹 Mirror StarGroup from Step 1 to Step 2
+        Debug.Log($"[AlliesGridSetup] OpenStep2: Mirroring stars from Step1 to Step2 for {index}_{name}");
         for (int i = 1; i <= 5; i++)
         {
             Transform step1Star = step1StarGroup.Find($"Star{i}/yellow");
@@ -353,7 +350,9 @@ public class AlliesGridSetup : MonoBehaviour
 
             if (step1Star != null && step2Star != null)
             {
-                step2Star.gameObject.SetActive(step1Star.gameObject.activeSelf);
+                bool step1Active = step1Star.gameObject.activeSelf;
+                step2Star.gameObject.SetActive(step1Active);
+                Debug.Log($"[AlliesGridSetup] OpenStep2: {index}_{name} Star{i}/yellow: Step1={step1Active} -> Step2={step1Active}");
             }
             else
             {
@@ -1054,10 +1053,10 @@ public class AlliesGridSetup : MonoBehaviour
         
         Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found {PlayerProfile.Data.Sidekick.Count} sidekicks");
         
-        // Log all sidekicks for debugging
+        // Log all sidekicks for detailed debugging
         foreach (var s in PlayerProfile.Data.Sidekick)
         {
-            Debug.Log($"[AlliesGridSetup] Sidekick: id={s.id}, base_id={s.base_id}, star={s.star}");
+            Debug.Log($"[AlliesGridSetup] Sidekick in data: id={s.id}, base_id={s.base_id}, star={s.star}");
         }
         
         // Find the sidekick by matching the ally ID format
@@ -1066,17 +1065,19 @@ public class AlliesGridSetup : MonoBehaviour
         int allyIndex = int.Parse(indexPart); // 4
         string baseIdToMatch = allyIndex.ToString(); // "4"
         
+        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Looking for base_id='{baseIdToMatch}' (from index '{indexPart}')");
+        
         var sidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => 
             s.base_id == baseIdToMatch
         );
         
         if (sidekick != null)
         {
-            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found sidekick with {sidekick.star} stars");
+            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found sidekick with {sidekick.star} stars (id={sidekick.id}, base_id={sidekick.base_id})");
             return sidekick.star;
         }
         
-        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick not found, returning 0");
+        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick with base_id='{baseIdToMatch}' not found, returning 0");
         // If sidekick not found, return 0 as default
         return 0;
     }
@@ -1089,18 +1090,59 @@ public class AlliesGridSetup : MonoBehaviour
     public void UpdateAllyStarDisplay(GameObject allyItem, string allyId)
     {
         Transform starGroup = allyItem.transform.Find("StarGroup");
-        if (starGroup == null) return;
+        if (starGroup == null) 
+        {
+            Debug.LogWarning($"[AlliesGridSetup] UpdateAllyStarDisplay: StarGroup not found for {allyId}");
+            return;
+        }
+        
+        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: STARTING update for {allyId}");
+        
+        // Log current PlayerProfile data before getting star level
+        if (PlayerProfile.Data?.Sidekick != null)
+        {
+            foreach (var s in PlayerProfile.Data.Sidekick)
+            {
+                if (s.base_id == allyId.Split('_')[0].TrimStart('0'))
+                {
+                    Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: PlayerProfile shows {allyId} has {s.star} stars (id={s.id}, base_id={s.base_id})");
+                    break;
+                }
+            }
+        }
         
         int starLevel = GetSidekickStarLevel(allyId);
+        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} GetSidekickStarLevel returned {starLevel} stars");
         
+        // Log current star states before update
         for (int i = 1; i <= 5; i++)
         {
             Transform starYellow = starGroup.Find($"Star{i}/yellow");
             if (starYellow != null)
             {
-                starYellow.gameObject.SetActive(i <= starLevel);
+                bool wasActive = starYellow.gameObject.activeSelf;
+                Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} Star{i}/yellow BEFORE: {wasActive}");
             }
         }
+        
+        // Update star states
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform starYellow = starGroup.Find($"Star{i}/yellow");
+            if (starYellow != null)
+            {
+                bool shouldActivate = i <= starLevel;
+                bool wasActive = starYellow.gameObject.activeSelf;
+                starYellow.gameObject.SetActive(shouldActivate);
+                Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} Star{i}/yellow AFTER: {wasActive} -> {shouldActivate} (should have {starLevel} stars)");
+            }
+            else
+            {
+                Debug.LogWarning($"[AlliesGridSetup] UpdateAllyStarDisplay: Star{i}/yellow not found for {allyId}");
+            }
+        }
+        
+        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: COMPLETED update for {allyId}");
     }
     
     /// <summary>
@@ -1108,11 +1150,20 @@ public class AlliesGridSetup : MonoBehaviour
     /// </summary>
     public void RefreshAllAllyStarDisplays()
     {
-        if (grid == null) return;
+        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Starting refresh for {(grid != null ? grid.transform.childCount : 0)} children");
         
+        if (grid == null) 
+        {
+            Debug.LogError($"[AlliesGridSetup] RefreshAllAllyStarDisplays: grid is null!");
+            return;
+        }
+        
+        int processedCount = 0;
         for (int i = 0; i < grid.transform.childCount; i++)
         {
             Transform child = grid.transform.GetChild(i);
+            Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Processing child {i}: {child.name}");
+            
             if (child.name.StartsWith("AllyItem"))
             {
                 // Extract ally info from the ally item
@@ -1126,15 +1177,25 @@ public class AlliesGridSetup : MonoBehaviour
                     if (!string.IsNullOrEmpty(allyName))
                     {
                         string allyId = $"{allyIndex}_{allyName}";
+                        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Found ally item #{processedCount}: {allyId}");
                         UpdateAllyStarDisplay(child.gameObject, allyId);
+                        processedCount++;
                     }
                     else
                     {
                         Debug.LogWarning($"[AlliesGridSetup] GameObject {child.name} doesn't have expected name format");
                     }
                 }
+                else
+                {
+                    Debug.LogWarning($"[AlliesGridSetup] GameObject {child.name} split failed, got {nameParts.Length} parts");
+                }
             }
         }
+        
+        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Processed {processedCount} ally items total");
+        
+        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Completed refresh");
     }
     
     private string GetGameObjectPath(GameObject obj)
