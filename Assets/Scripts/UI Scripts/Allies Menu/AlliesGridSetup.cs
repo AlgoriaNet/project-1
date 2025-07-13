@@ -18,7 +18,7 @@ public class AlliesGridSetup : MonoBehaviour
     private int currentAllyIndex;
     private List<(string index, string name)> unlockedAllies; // Store unlocked allies
     private Dictionary<string, int> starLevels;
-    private Dictionary<string, GameObject> allyItemsDict = new Dictionary<string, GameObject>();
+    public Dictionary<string, GameObject> allyItemsDict = new Dictionary<string, GameObject>();
     private float nameTextWidth;
     private float nameTextHeight;
     private float starGroupWidth;
@@ -51,6 +51,9 @@ public class AlliesGridSetup : MonoBehaviour
         PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Player");
         PlayerProfile.Data.AddListener(OnPlayerDataChanged, "Sidekicks");
         
+        // Clear existing ally items first for fresh star data
+        ClearExistingAllyItems();
+        
         InitializeAlliesGrid();
     }
     
@@ -63,12 +66,12 @@ public class AlliesGridSetup : MonoBehaviour
     
     private void OnPlayerDataChanged(ApplicationModel model)
     {
-        // Only refresh star displays when player data changes to avoid performance issues
-        // Full grid rebuild only when needed (new allies unlocked)
-        if (PlayerProfile.Data?.Player != null && grid != null && grid.transform.childCount > 0)
+        // Force full reload to ensure star displays show current data
+        if (PlayerProfile.Data?.Player != null && grid != null)
         {
-            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Refreshing star displays only for performance");
-            RefreshAllAllyStarDisplays();
+            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Forcing full grid reload to update star displays");
+            ClearExistingAllyItems();
+            InitializeAlliesGrid();
         }
         else
         {
@@ -77,7 +80,7 @@ public class AlliesGridSetup : MonoBehaviour
         }
     }
     
-    private void InitializeAlliesGrid()
+    public void InitializeAlliesGrid()
     {
         // Don't initialize if player data is not available yet (except for force reload)
         if (PlayerProfile.Data?.Player == null)
@@ -119,16 +122,21 @@ public class AlliesGridSetup : MonoBehaviour
         LoadAllyItems();
     }
 
-    private void ClearExistingAllyItems()
+    public void ClearExistingAllyItems()
     {
         // Clear existing ally items to prevent duplicates when refreshing
-        foreach (Transform child in grid.transform)
+        int destroyedCount = 0;
+        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: Starting to clear items, contentPanel has {contentPanel.childCount} children");
+        
+        foreach (Transform child in contentPanel)
         {
-            if (child.name.StartsWith("AllyItem_"))
-            {
-                Destroy(child.gameObject);
-            }
+            Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: DESTROYING {child.name}");
+            Destroy(child.gameObject);
+            destroyedCount++;
         }
+        
+        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: Destroyed {destroyedCount} children");
+        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: After destruction, contentPanel has {contentPanel.childCount} children");
         
         // Clear the dictionary as well
         allyItemsDict.Clear();
@@ -1156,21 +1164,6 @@ public class AlliesGridSetup : MonoBehaviour
         Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: COMPLETED update for {allyId}");
     }
     
-    /// <summary>
-    /// Force complete reload of allies grid (call when menu opens)
-    /// </summary>
-    public void ForceReloadAlliesGrid()
-    {
-        Debug.Log("[AlliesGridSetup] ForceReloadAlliesGrid: Starting forced reload");
-        
-        // Clear all existing items to force fresh creation
-        ClearExistingAllyItems();
-        
-        // Force re-initialization regardless of current state
-        InitializeAlliesGrid();
-        
-        Debug.Log("[AlliesGridSetup] ForceReloadAlliesGrid: Completed forced reload");
-    }
     
     /// <summary>
     /// Refresh all ally star displays (call this after star upgrades)
