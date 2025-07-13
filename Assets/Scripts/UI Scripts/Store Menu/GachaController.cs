@@ -759,7 +759,7 @@ public class GachaController : MonoBehaviour
             CloseGachaPage();
             grid.SetActive(false);
 
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
 
             switch (lastDraw)
             {
@@ -788,7 +788,7 @@ public class GachaController : MonoBehaviour
             CloseGachaPage();
             block.SetActive(false);
 
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
 
             switch (lastDraw)
             {

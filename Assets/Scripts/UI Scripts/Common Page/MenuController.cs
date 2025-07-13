@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using model;
 
 public class MenuController : MonoBehaviour
 {
@@ -45,6 +46,14 @@ public class MenuController : MonoBehaviour
     private void ToggleMenu(int activeMenuIndex)
     {
         currentMenuIndex = activeMenuIndex; // Update the active menu index
+        
+        // Refresh PlayerProfile data whenever switching menus for consistent data sync
+        if (PlayerProfile.Data != null)
+        {
+            Debug.Log($"[MenuController] ToggleMenu: Refreshing PlayerProfile data for menu switch to index {activeMenuIndex}");
+            PlayerProfile.Data.NotifyListeners("Sidekicks");
+            PlayerProfile.Data.NotifyListeners("Player");
+        }
 
         // Loop through all menus
         for (int i = 0; i < menus.Length; i++)
