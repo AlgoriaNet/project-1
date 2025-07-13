@@ -55,12 +55,14 @@ public class MenuController : MonoBehaviour
         // 🔹 Change button visuals
         UpdateButtonVisuals(buttons[activeMenuIndex]);
 
-        // 🔹 Special Case: If Menu 1 is activated (index 0)
+        // 🔹 Special Case: If Menu 1 is activated (index 0) - Allies Menu
         if (activeMenuIndex == 0)
         {
             if (step1Panel != null) step1Panel.SetActive(true);
             if (step2Panel != null) step2Panel.SetActive(false);
             if (lowerGroup != null) lowerGroup.SetActive(false);
+            
+            // Allies menu opened - the OnPlayerDataChanged listener should handle refresh automatically
         }
 
         // 🔹 Always reset Hero Menu (index 1) to Equipment tab

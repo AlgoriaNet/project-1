@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -62,16 +63,26 @@ public class AlliesGridSetup : MonoBehaviour
     
     private void OnPlayerDataChanged(ApplicationModel model)
     {
-        // Refresh allies grid when player data changes (e.g., after ally summon)
-        InitializeAlliesGrid();
+        // Only refresh star displays when player data changes to avoid performance issues
+        // Full grid rebuild only when needed (new allies unlocked)
+        if (PlayerProfile.Data?.Player != null && grid != null && grid.transform.childCount > 0)
+        {
+            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Refreshing star displays only for performance");
+            RefreshAllAllyStarDisplays();
+        }
+        else
+        {
+            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Full grid initialization needed");
+            InitializeAlliesGrid();
+        }
     }
     
     private void InitializeAlliesGrid()
     {
-        // Don't initialize if player data is not available yet
+        // Don't initialize if player data is not available yet (except for force reload)
         if (PlayerProfile.Data?.Player == null)
         {
-            return;
+            Debug.LogWarning("[AlliesGridSetup] InitializeAlliesGrid: PlayerProfile.Data.Player is null - continuing anyway for force reload");
         }
         
         // Get the content panel width
@@ -176,8 +187,8 @@ public class AlliesGridSetup : MonoBehaviour
         {
             GameObject newAlly = Instantiate(allyItemPrefab, grid.transform, false);
 
-            // ***** RENAME THE GAMEOBJECT FOR substring() TO WORK *****
-            newAlly.name = $"AllyItem_{ally.index}";
+            // ***** RENAME THE GAMEOBJECT FOR RefreshAllAllyStarDisplays() TO WORK *****
+            newAlly.name = $"AllyItem_{ally.index}_{ally.name}";
 
             // Store reference
             allyItemsDict[ally.index] = newAlly;
@@ -1146,6 +1157,22 @@ public class AlliesGridSetup : MonoBehaviour
     }
     
     /// <summary>
+    /// Force complete reload of allies grid (call when menu opens)
+    /// </summary>
+    public void ForceReloadAlliesGrid()
+    {
+        Debug.Log("[AlliesGridSetup] ForceReloadAlliesGrid: Starting forced reload");
+        
+        // Clear all existing items to force fresh creation
+        ClearExistingAllyItems();
+        
+        // Force re-initialization regardless of current state
+        InitializeAlliesGrid();
+        
+        Debug.Log("[AlliesGridSetup] ForceReloadAlliesGrid: Completed forced reload");
+    }
+    
+    /// <summary>
     /// Refresh all ally star displays (call this after star upgrades)
     /// </summary>
     public void RefreshAllAllyStarDisplays()
@@ -1197,6 +1224,64 @@ public class AlliesGridSetup : MonoBehaviour
         
         Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Completed refresh");
     }
+    
+    /// <summary>
+    /// Update Step2 star group display immediately - SIMPLE approach like S text
+    /// </summary>
+    /// <param name="starLevel">The star level (1-5)</param>
+    public void UpdateStep2StarsFromSValue(int starLevel)
+    {
+        if (step2StarGroup == null)
+        {
+            Debug.LogWarning("[AlliesGridSetup] UpdateStep2StarsFromSValue: step2StarGroup is null");
+            return;
+        }
+        
+        Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Setting Step2 stars to {starLevel}");
+        
+        // Update Step2 star group - if S shows 3, enable Star1,2,3 and disable Star4,5
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform starYellow = step2StarGroup.Find($"Star{i}/yellow");
+            if (starYellow != null)
+            {
+                bool shouldActivate = i <= starLevel;
+                starYellow.gameObject.SetActive(shouldActivate);
+                Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Star{i}/yellow = {shouldActivate}");
+            }
+            else
+            {
+                Debug.LogWarning($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Step2 Star{i}/yellow not found");
+            }
+        }
+        
+        Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Completed - Step2 now shows {starLevel} stars");
+    }
+    
+    /// <summary>
+    /// Update Step2 star group display immediately (for instant star upgrade feedback)
+    /// </summary>
+    /// <param name="allyId">The ally ID (e.g., "04_Aurelia")</param>
+    public void UpdateStep2StarDisplay(string allyId)
+    {
+        if (step2StarGroup == null)
+        {
+            Debug.LogWarning("[AlliesGridSetup] UpdateStep2StarDisplay: step2StarGroup is null");
+            return;
+        }
+        
+        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: Updating Step2 stars for {allyId}");
+        
+        // Get current star level from PlayerProfile data
+        int starLevel = GetSidekickStarLevel(allyId);
+        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: {allyId} has {starLevel} stars");
+        
+        // Use the simple approach
+        UpdateStep2StarsFromSValue(starLevel);
+        
+        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: Completed Step2 star update for {allyId}");
+    }
+    
     
     private string GetGameObjectPath(GameObject obj)
     {

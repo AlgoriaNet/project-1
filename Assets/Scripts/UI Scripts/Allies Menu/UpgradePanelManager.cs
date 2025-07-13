@@ -879,10 +879,19 @@ public class UpgradePanelManager : MonoBehaviour
                     Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: PlayerProfile.Data.Sidekick is null!");
                 }
                 
-                // Refresh star displays immediately - backend now sends profile_update
+                // Trigger PlayerProfile listener to ensure same refresh mechanism as gacha
+                Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Triggering PlayerProfile Sidekicks notification for consistent refresh");
+                PlayerProfile.Data.NotifyListeners("Sidekicks");
+                
+                // Refresh star displays immediately - both Step1 and Step2
                 AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
                 if (alliesGridSetup != null)
                 {
+                    // Update Step2 star group immediately for instant visual feedback
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Updating Step2 star display immediately for {currentAllyId}");
+                    alliesGridSetup.UpdateStep2StarDisplay(currentAllyId);
+                    
+                    // Also refresh Step1 star displays for consistency
                     Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Calling RefreshAllAllyStarDisplays for {currentAllyId}");
                     alliesGridSetup.RefreshAllAllyStarDisplays();
                     Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: RefreshAllAllyStarDisplays completed");

@@ -250,7 +250,35 @@ public class WebSocketManager : MonoBehaviour
         }
         else
         {
-            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+            Debug.Log($"[WebSocketManager] SetProfileFromServer: Raw Player data from backend: {obj["Player"]}");
+            
+            Player playerData = obj["Player"].ToObject<Player>();
+            
+            // Log sidekick data specifically before setting
+            if (playerData?.Sidekicks != null)
+            {
+                Debug.Log($"[WebSocketManager] SetProfileFromServer: Backend returned {playerData.Sidekicks.Count} sidekicks");
+                foreach (var sidekick in playerData.Sidekicks)
+                {
+                    Debug.Log($"[WebSocketManager] Backend sidekick: id={sidekick.id}, base_id={sidekick.base_id}, star={sidekick.star}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[WebSocketManager] SetProfileFromServer: Backend returned NULL or empty Sidekicks array!");
+            }
+            
+            PlayerProfile.Data.SetPlayer(playerData);
+            
+            // Log what actually got set in PlayerProfile after processing
+            Debug.Log($"[WebSocketManager] SetProfileFromServer: After setting PlayerProfile, Data.Sidekick count = {PlayerProfile.Data.Sidekick?.Count ?? 0}");
+            if (PlayerProfile.Data.Sidekick != null)
+            {
+                foreach (var sidekick in PlayerProfile.Data.Sidekick)
+                {
+                    Debug.Log($"[WebSocketManager] PlayerProfile sidekick after set: id={sidekick.id}, base_id={sidekick.base_id}, star={sidekick.star}");
+                }
+            }
         }
     }
 

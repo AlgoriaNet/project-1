@@ -153,6 +153,10 @@ public class AllyStandPage : MonoBehaviour
             }
             Debug.Log($"✅ Successfully summoned {allyName}!");
             
+            // Trigger PlayerProfile listener to ensure allies menu refresh (same fix as gacha and star upgrade)
+            Debug.Log($"[AllyStandPage] OnSummonSuccess: Triggering PlayerProfile Sidekicks notification for consistent refresh");
+            PlayerProfile.Data.NotifyListeners("Sidekicks");
+            
             // Force refresh OtherDetailBox to update shard count immediately
             if (OtherDetailBox.Instance != null)
             {
