@@ -46,18 +46,15 @@ namespace model
             if (this.Player?.Sidekicks != null && this.Player.Sidekicks.Count > 0)
             {
                 this.Sidekick = this.Player.Sidekicks;
-                Debug.Log($"[PlayerProfile] SetPlayer: Updated Sidekick collection with {this.Sidekick.Count} sidekicks from Player.Sidekicks");
             }
             else if (this.Sidekick == null)
             {
                 // Only initialize empty list if we don't have any existing data
                 this.Sidekick = new List<Sidekick>();
-                Debug.Log("[PlayerProfile] SetPlayer: Initialized empty Sidekick collection (no existing data)");
             }
             else
             {
                 // Preserve existing sidekick data when new player data doesn't include sidekicks
-                Debug.Log($"[PlayerProfile] SetPlayer: Preserving existing {this.Sidekick.Count} sidekicks (new data has no sidekicks)");
             }
   
             NotifyListeners("Player");

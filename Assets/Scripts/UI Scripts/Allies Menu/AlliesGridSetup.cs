@@ -69,29 +69,23 @@ public class AlliesGridSetup : MonoBehaviour
         // Skip if this GameObject is inactive (prevents coroutine error)
         if (!gameObject.activeInHierarchy)
         {
-            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: GameObject inactive, skipping");
             return;
         }
         
         // Only reload grid if Allies Menu (step1Panel) is actually active
         if (step1Panel != null && !step1Panel.activeInHierarchy)
         {
-            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Allies Menu not active, skipping grid reload");
             return;
         }
-        
-        Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Reloading grid with fresh data");
         
         // Force full reload to ensure star displays show current data
         if (PlayerProfile.Data?.Player != null && grid != null)
         {
-            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Forcing full grid reload to update star displays");
             ClearExistingAllyItems();
             InitializeAlliesGrid();
         }
         else
         {
-            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Full grid initialization needed");
             InitializeAlliesGrid();
         }
     }
@@ -101,28 +95,18 @@ public class AlliesGridSetup : MonoBehaviour
     /// </summary>
     public void ForceReloadWithFreshData()
     {
-        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: STARTING - Clearing and reloading grid with fresh backend data");
-        Debug.Log($"[AlliesGridSetup] ForceReloadWithFreshData: step1Panel active = {(step1Panel != null ? step1Panel.activeInHierarchy.ToString() : "NULL")}");
-        Debug.Log($"[AlliesGridSetup] ForceReloadWithFreshData: grid childCount = {(grid != null ? grid.transform.childCount.ToString() : "NULL")}");
-        
         ClearExistingAllyItems();
-        
-        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: About to call InitializeAlliesGrid()");
         InitializeAlliesGrid();
-        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: COMPLETED - InitializeAlliesGrid() finished");
     }
     
     public void InitializeAlliesGrid()
     {
-        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: STARTING grid initialization");
         
         // Don't initialize if player data is not available yet (except for force reload)
         if (PlayerProfile.Data?.Player == null)
         {
-            Debug.LogWarning("[AlliesGridSetup] InitializeAlliesGrid: PlayerProfile.Data.Player is null - continuing anyway for force reload");
         }
         
-        Debug.Log($"[AlliesGridSetup] InitializeAlliesGrid: Sidekick count = {(PlayerProfile.Data?.Sidekick?.Count ?? -1)}");
         
         // Get the content panel width
         float panelWidth = contentPanel.rect.width;
@@ -155,16 +139,13 @@ public class AlliesGridSetup : MonoBehaviour
         // Apply calculated block size
         grid.cellSize = new Vector2(blockWidth, blockWidth * 1.342f); // Adjust height proportionally
 
-        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: About to call LoadAllyItems()");
         LoadAllyItems();
-        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: COMPLETED - LoadAllyItems() finished");
     }
 
     public void ClearExistingAllyItems()
     {
         // Clear existing ally items to prevent duplicates when refreshing
         int destroyedCount = 0;
-        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: Starting to clear items, contentPanel has {contentPanel.childCount} children");
         
         // SAFE DESTROY: Only destroy AllyItem prefabs, not other UI elements
         List<Transform> allyItemsToDestroy = new List<Transform>();
@@ -178,13 +159,10 @@ public class AlliesGridSetup : MonoBehaviour
         
         foreach (Transform child in allyItemsToDestroy)
         {
-            Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: DESTROYING {child.name}");
             Destroy(child.gameObject);
             destroyedCount++;
         }
         
-        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: Destroyed {destroyedCount} children");
-        Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: After destruction, contentPanel has {contentPanel.childCount} children");
         
         // Clear the dictionary as well
         allyItemsDict.Clear();
@@ -192,7 +170,6 @@ public class AlliesGridSetup : MonoBehaviour
 
     private void LoadAllyItems()
     {
-        Debug.Log("[AlliesGridSetup] LoadAllyItems: STARTING ally items loading");
         
         // Character names matching the file names
         string[] characterNames = {
@@ -282,7 +259,6 @@ public class AlliesGridSetup : MonoBehaviour
             // Get star level from PlayerProfile sidekick data
             string allyId = $"{ally.index}_{ally.name}";
             int starLevel = GetSidekickStarLevel(allyId);
-            Debug.Log($"[AlliesGridSetup] {allyId} star level: {starLevel}");
 
             for (int i = 1; i <= 5; i++)
             {
@@ -292,7 +268,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= starLevel;
                     starYellow.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[AlliesGridSetup] LoadAllyItems: {allyId} Star{i}/yellow = {shouldActivate}");
                 }
                 else
                 {
@@ -306,7 +281,6 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 canvas.enabled = false;
                 canvas.enabled = true;
-                Debug.Log($"[AlliesGridSetup] LoadAllyItems: Forced Canvas refresh for {allyId}");
             }
 
             // Retain Gray Tint for Locked Allies
@@ -377,7 +351,6 @@ public class AlliesGridSetup : MonoBehaviour
         }
 
         // TEST: Destroy Step1 grid content when opening Step2
-        Debug.Log("[AlliesGridSetup] OpenStep2: DESTROYING Step1 grid content for testing");
         ClearExistingAllyItems();
 
         // Switch panels
@@ -427,7 +400,6 @@ public class AlliesGridSetup : MonoBehaviour
         // 🔹 Set Step2 stars based on actual backend star level (not mirroring from Step1)
         string allyId = $"{index}_{name}";
         int actualStarLevel = GetSidekickStarLevel(allyId);
-        Debug.Log($"[AlliesGridSetup] OpenStep2: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
         
         // Set complete star state based on actual star level
         for (int i = 1; i <= 5; i++)
@@ -437,7 +409,6 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 bool shouldActivate = i <= actualStarLevel;
                 step2Star.gameObject.SetActive(shouldActivate);
-                Debug.Log($"[AlliesGridSetup] OpenStep2: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
             }
             else
             {
@@ -473,7 +444,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     int activeButtonIndex = (int)activeButtonIndexField.GetValue(pageButtonController);
                     bool isStarUpMode = (activeButtonIndex == 1);
-                    Debug.Log($"[AlliesGridSetup] Navigation: Syncing UpgradePanelManager mode to {(isStarUpMode ? "StarUp" : "LevelUp")} (button {activeButtonIndex})");
                     upgradePanelManager.SetMode(isStarUpMode);
                 }
             }
@@ -529,7 +499,6 @@ public class AlliesGridSetup : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Loading ally {index}_{name} directly");
 
         // Load ally illustration (same as original OpenStep2)
         string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{index}_{name}";
@@ -563,7 +532,6 @@ public class AlliesGridSetup : MonoBehaviour
         // Set Step2 stars based on actual backend star level
         string allyId = $"{index}_{name}";
         int actualStarLevel = GetSidekickStarLevel(allyId);
-        Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
         
         // Set complete star state based on actual star level
         for (int i = 1; i <= 5; i++)
@@ -573,7 +541,6 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 bool shouldActivate = i <= actualStarLevel;
                 step2Star.gameObject.SetActive(shouldActivate);
-                Debug.Log($"[AlliesGridSetup] OpenStep2Direct: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
             }
             else
             {
@@ -606,7 +573,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     int activeButtonIndex = (int)activeButtonIndexField.GetValue(pageButtonController);
                     bool isStarUpMode = (activeButtonIndex == 1);
-                    Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Syncing UpgradePanelManager mode to {(isStarUpMode ? "StarUp" : "LevelUp")} (button {activeButtonIndex})");
                     upgradePanelManager.SetMode(isStarUpMode);
                 }
             }
@@ -747,7 +713,6 @@ public class AlliesGridSetup : MonoBehaviour
         {
             string allyId = $"{allyIndex}_{allyName}";
             int actualStarLevel = GetSidekickStarLevel(allyId);
-            Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
             
             for (int i = 1; i <= 5; i++)
             {
@@ -756,7 +721,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= actualStarLevel;
                     step2Star.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
@@ -793,7 +757,6 @@ public class AlliesGridSetup : MonoBehaviour
             // If still no unlocked allies after initialization, we can't proceed
             if (unlockedAllies == null || unlockedAllies.Count == 0)
             {
-                Debug.LogError($"[AlliesGridSetup] No unlocked allies available for utilize flow");
                 return false;
             }
         }
@@ -842,7 +805,6 @@ public class AlliesGridSetup : MonoBehaviour
         {
             string allyId = $"{allyIndex}_{allyName}";
             int actualStarLevel = GetSidekickStarLevel(allyId);
-            Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2Simple: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
             
             for (int i = 1; i <= 5; i++)
             {
@@ -851,7 +813,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= actualStarLevel;
                     step2Star.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2Simple: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
@@ -890,19 +851,16 @@ public class AlliesGridSetup : MonoBehaviour
     {
         if (string.IsNullOrEmpty(currentAllyName))
         {
-            Debug.LogWarning("[AlliesGridSetup] No current ally set for LevelUp loading");
             return;
         }
 
         // Get current ally index from unlockedAllies (ally is guaranteed to be unlocked)
         if (unlockedAllies == null || unlockedAllies.Count == 0)
         {
-            Debug.LogWarning($"[AlliesGridSetup] unlockedAllies is null or empty. Running InitializeAlliesGrid first.");
             InitializeAlliesGrid();
             
             if (unlockedAllies == null || unlockedAllies.Count == 0)
             {
-                Debug.LogError($"[AlliesGridSetup] Still no unlocked allies after initialization. Cannot proceed with LevelUp loading.");
                 return;
             }
         }
@@ -914,7 +872,6 @@ public class AlliesGridSetup : MonoBehaviour
         {
             // In utilize mode, we can construct the path directly without relying on unlockedAllies
             // This handles cases where the ally might not be in the unlockedAllies list yet
-            Debug.Log($"[AlliesGridSetup] Using utilize mode fallback for ally {currentUtilizeAllyIndex}_{currentAllyName}");
             
             // Load SkillBook Image using stored data
             string fallbackSkillBookPath = $"UILoading/CharacterImages/Skillbook/SKb_{currentUtilizeAllyIndex}_{currentAllyName}";
@@ -941,7 +898,6 @@ public class AlliesGridSetup : MonoBehaviour
         
         if (string.IsNullOrEmpty(currentAlly.index))
         {
-            Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
             return;
         }
 
@@ -980,19 +936,16 @@ public class AlliesGridSetup : MonoBehaviour
     {
         if (string.IsNullOrEmpty(currentAllyName))
         {
-            Debug.LogWarning("[AlliesGridSetup] No current ally set for StarUp loading");
             return;
         }
 
         // Get current ally index from unlockedAllies (ally is guaranteed to be unlocked)
         if (unlockedAllies == null || unlockedAllies.Count == 0)
         {
-            Debug.LogWarning($"[AlliesGridSetup] unlockedAllies is null or empty. Running InitializeAlliesGrid first.");
             InitializeAlliesGrid();
             
             if (unlockedAllies == null || unlockedAllies.Count == 0)
             {
-                Debug.LogError($"[AlliesGridSetup] Still no unlocked allies after initialization. Cannot proceed with StarUp loading.");
                 return;
             }
         }
@@ -1004,7 +957,6 @@ public class AlliesGridSetup : MonoBehaviour
         {
             // In utilize mode, we can construct the path directly without relying on unlockedAllies
             // This handles cases where the ally might not be in the unlockedAllies list yet
-            Debug.Log($"[AlliesGridSetup] Using utilize mode fallback for shard {currentUtilizeAllyIndex}_{currentAllyName}");
             
             // Load Shard Image using stored data
             string fallbackShardPath = $"UILoading/CharacterImages/Shard/{currentUtilizeAllyIndex}_{currentAllyName}";
@@ -1031,7 +983,6 @@ public class AlliesGridSetup : MonoBehaviour
         
         if (string.IsNullOrEmpty(currentAlly.index))
         {
-            Debug.LogError($"[AlliesGridSetup] Could not find ally index for {currentAllyName} in unlockedAllies");
             return;
         }
 
@@ -1210,7 +1161,6 @@ public class AlliesGridSetup : MonoBehaviour
         {
             string allyId = $"{allyIndex}_{allyName}";
             int actualStarLevel = GetSidekickStarLevel(allyId);
-            Debug.Log($"[AlliesGridSetup] NavigateUtilizeAlly: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
             
             for (int i = 1; i <= 5; i++)
             {
@@ -1219,7 +1169,6 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= actualStarLevel;
                     step2Star.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[AlliesGridSetup] NavigateUtilizeAlly: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
@@ -1238,20 +1187,9 @@ public class AlliesGridSetup : MonoBehaviour
     /// <returns>Current star level from PlayerProfile data</returns>
     private int GetSidekickStarLevel(string allyId)
     {
-        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): ENTRY - Called at {System.DateTime.Now:HH:mm:ss.fff}");
-        
         if (PlayerProfile.Data?.Sidekick == null)
         {
-            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): PlayerProfile.Data.Sidekick is null");
             return 0; // Default to 0 stars if no data
-        }
-        
-        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found {PlayerProfile.Data.Sidekick.Count} sidekicks");
-        
-        // Log all sidekicks for detailed debugging
-        foreach (var s in PlayerProfile.Data.Sidekick)
-        {
-            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick in data: id={s.id}, base_id={s.base_id}, star={s.star}");
         }
         
         // Find the sidekick by matching the ally ID format
@@ -1260,19 +1198,15 @@ public class AlliesGridSetup : MonoBehaviour
         int allyIndex = int.Parse(indexPart); // 4
         string baseIdToMatch = allyIndex.ToString(); // "4"
         
-        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Looking for base_id='{baseIdToMatch}' (from index '{indexPart}')");
-        
         var sidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => 
             s.base_id == baseIdToMatch
         );
         
         if (sidekick != null)
         {
-            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): FOUND sidekick with {sidekick.star} stars (id={sidekick.id}, base_id={sidekick.base_id}) at {System.DateTime.Now:HH:mm:ss.fff}");
             return sidekick.star;
         }
         
-        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick with base_id='{baseIdToMatch}' not found, returning 0");
         // If sidekick not found, return 0 as default
         return 0;
     }
@@ -1287,11 +1221,9 @@ public class AlliesGridSetup : MonoBehaviour
         Transform starGroup = allyItem.transform.Find("StarGroup");
         if (starGroup == null) 
         {
-            Debug.LogWarning($"[AlliesGridSetup] UpdateAllyStarDisplay: StarGroup not found for {allyId}");
             return;
         }
         
-        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: STARTING update for {allyId}");
         
         // Log current PlayerProfile data before getting star level
         if (PlayerProfile.Data?.Sidekick != null)
@@ -1300,25 +1232,12 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 if (s.base_id == allyId.Split('_')[0].TrimStart('0'))
                 {
-                    Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: PlayerProfile shows {allyId} has {s.star} stars (id={s.id}, base_id={s.base_id})");
                     break;
                 }
             }
         }
         
         int starLevel = GetSidekickStarLevel(allyId);
-        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} GetSidekickStarLevel returned {starLevel} stars");
-        
-        // Log current star states before update
-        for (int i = 1; i <= 5; i++)
-        {
-            Transform starYellow = starGroup.Find($"Star{i}/yellow");
-            if (starYellow != null)
-            {
-                bool wasActive = starYellow.gameObject.activeSelf;
-                Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} Star{i}/yellow BEFORE: {wasActive}");
-            }
-        }
         
         // Update star states
         for (int i = 1; i <= 5; i++)
@@ -1329,15 +1248,12 @@ public class AlliesGridSetup : MonoBehaviour
                 bool shouldActivate = i <= starLevel;
                 bool wasActive = starYellow.gameObject.activeSelf;
                 starYellow.gameObject.SetActive(shouldActivate);
-                Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: {allyId} Star{i}/yellow AFTER: {wasActive} -> {shouldActivate} (should have {starLevel} stars)");
             }
             else
             {
-                Debug.LogWarning($"[AlliesGridSetup] UpdateAllyStarDisplay: Star{i}/yellow not found for {allyId}");
             }
         }
         
-        Debug.Log($"[AlliesGridSetup] UpdateAllyStarDisplay: COMPLETED update for {allyId}");
     }
     
     
@@ -1346,18 +1262,15 @@ public class AlliesGridSetup : MonoBehaviour
     /// </summary>
     public void RefreshAllAllyStarDisplays()
     {
-        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Starting refresh for {(grid != null ? grid.transform.childCount : 0)} children");
         
         if (grid == null) 
         {
-            Debug.LogError($"[AlliesGridSetup] RefreshAllAllyStarDisplays: grid is null!");
             return;
         }
         
         // Additional check: if grid has no children, force recreation
         if (grid.transform.childCount == 0)
         {
-            Debug.Log("[AlliesGridSetup] RefreshAllAllyStarDisplays: Grid has no children, forcing recreation");
             InitializeAlliesGrid();
             return;
         }
@@ -1366,7 +1279,6 @@ public class AlliesGridSetup : MonoBehaviour
         for (int i = 0; i < grid.transform.childCount; i++)
         {
             Transform child = grid.transform.GetChild(i);
-            Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Processing child {i}: {child.name}");
             
             if (child.name.StartsWith("AllyItem"))
             {
@@ -1381,25 +1293,20 @@ public class AlliesGridSetup : MonoBehaviour
                     if (!string.IsNullOrEmpty(allyName))
                     {
                         string allyId = $"{allyIndex}_{allyName}";
-                        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Found ally item #{processedCount}: {allyId}");
                         UpdateAllyStarDisplay(child.gameObject, allyId);
                         processedCount++;
                     }
                     else
                     {
-                        Debug.LogWarning($"[AlliesGridSetup] GameObject {child.name} doesn't have expected name format");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[AlliesGridSetup] GameObject {child.name} split failed, got {nameParts.Length} parts");
                 }
             }
         }
         
-        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Processed {processedCount} ally items total");
         
-        Debug.Log($"[AlliesGridSetup] RefreshAllAllyStarDisplays: Completed refresh");
     }
     
     /// <summary>
@@ -1410,11 +1317,9 @@ public class AlliesGridSetup : MonoBehaviour
     {
         if (step2StarGroup == null)
         {
-            Debug.LogWarning("[AlliesGridSetup] UpdateStep2StarsFromSValue: step2StarGroup is null");
             return;
         }
         
-        Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Setting Step2 stars to {starLevel}");
         
         // Update Step2 star group - if S shows 3, enable Star1,2,3 and disable Star4,5
         for (int i = 1; i <= 5; i++)
@@ -1424,15 +1329,12 @@ public class AlliesGridSetup : MonoBehaviour
             {
                 bool shouldActivate = i <= starLevel;
                 starYellow.gameObject.SetActive(shouldActivate);
-                Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Star{i}/yellow = {shouldActivate}");
             }
             else
             {
-                Debug.LogWarning($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Step2 Star{i}/yellow not found");
             }
         }
         
-        Debug.Log($"[AlliesGridSetup] UpdateStep2StarsFromSValue: Completed - Step2 now shows {starLevel} stars");
     }
     
     /// <summary>
@@ -1443,20 +1345,16 @@ public class AlliesGridSetup : MonoBehaviour
     {
         if (step2StarGroup == null)
         {
-            Debug.LogWarning("[AlliesGridSetup] UpdateStep2StarDisplay: step2StarGroup is null");
             return;
         }
         
-        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: Updating Step2 stars for {allyId}");
         
         // Get current star level from PlayerProfile data
         int starLevel = GetSidekickStarLevel(allyId);
-        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: {allyId} has {starLevel} stars");
         
         // Use the simple approach
         UpdateStep2StarsFromSValue(starLevel);
         
-        Debug.Log($"[AlliesGridSetup] UpdateStep2StarDisplay: Completed Step2 star update for {allyId}");
     }
     
     

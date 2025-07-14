@@ -130,7 +130,6 @@ public class UpgradePanelManager : MonoBehaviour
         // Refresh when the component becomes active
         if (!string.IsNullOrEmpty(currentAllyId))
         {
-            Debug.Log("[UpgradePanelManager] OnEnable - refreshing cost data");
             Invoke(nameof(FetchCurrentModeCost), 0.1f); // Small delay to ensure everything is initialized
         }
     }
@@ -152,7 +151,6 @@ public class UpgradePanelManager : MonoBehaviour
         // Refresh cost data if we have a current ally selected
         if (!string.IsNullOrEmpty(currentAllyId))
         {
-            Debug.Log("[UpgradePanelManager] Player data changed, refreshing cost data");
             // Add a small delay to ensure the backend has updated data
             Invoke(nameof(FetchCurrentModeCost), 0.2f);
         }
@@ -165,7 +163,6 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(currentAllyId))
         {
-            Debug.Log("[UpgradePanelManager] Manual refresh requested");
             FetchCurrentModeCost();
         }
     }
@@ -177,7 +174,6 @@ public class UpgradePanelManager : MonoBehaviour
     public void SetMode(bool starUpMode)
     {
         isStarUpMode = starUpMode;
-        Debug.Log($"[UpgradePanelManager] Mode changed to: {(isStarUpMode ? "StarUp" : "LevelUp")}");
         
         // Update upgrade text immediately for the new mode
         UpdateRightPanelUpgradeText();
@@ -235,7 +231,6 @@ public class UpgradePanelManager : MonoBehaviour
     {
         try
         {
-            Debug.Log($"[UpgradePanelManager] Received upgrade levels response: {response}");
             // Parse the response as AllyUpgradeResponse (root object)
             currentUpgradeData = response.ToObject<AllyUpgradeResponse>();
             if (currentUpgradeData != null && currentUpgradeData.upgrade_levels != null)
@@ -244,19 +239,16 @@ public class UpgradePanelManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError("[UpgradePanelManager] Failed to parse upgrade levels data from WebSocket response");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[UpgradePanelManager] Error parsing upgrade levels response: {e.Message}");
         }
     }
 
     // WebSocket error handler for upgrade levels
     private void OnUpgradeLevelsError(Newtonsoft.Json.Linq.JObject error)
     {
-        Debug.LogError($"[UpgradePanelManager] Failed to fetch upgrade levels via WebSocket: {error}");
     }
     
     /// <summary>
@@ -264,7 +256,6 @@ public class UpgradePanelManager : MonoBehaviour
     /// </summary>
     private void ClearExistingPanels()
     {
-        Debug.Log($"[UpgradePanelManager] Clearing {createdPanels.Count} existing panels");
         foreach (GameObject panel in createdPanels)
         {
             if (panel != null)
@@ -273,7 +264,6 @@ public class UpgradePanelManager : MonoBehaviour
             }
         }
         createdPanels.Clear();
-        Debug.Log($"[UpgradePanelManager] Panels cleared, list now has {createdPanels.Count} items");
     }
     
     /// <summary>
@@ -283,15 +273,12 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (currentUpgradeData?.upgrade_levels == null) 
         {
-            Debug.LogWarning("[UpgradePanelManager] No upgrade_levels data to create panels");
             return;
         }
         
-        Debug.Log($"[UpgradePanelManager] Creating {currentUpgradeData.upgrade_levels.Count} panels for {currentUpgradeData.name}");
         
         foreach (UpgradeLevel upgradeLevel in currentUpgradeData.upgrade_levels)
         {
-            Debug.Log($"[UpgradePanelManager] Creating panel for level: {upgradeLevel.level} - {upgradeLevel.description}");
             
             // Instantiate the prefab
             GameObject newPanel = Instantiate(upgradeLevelPanelPrefab, contentContainer);
@@ -301,7 +288,6 @@ public class UpgradePanelManager : MonoBehaviour
             SetupPanelContent(newPanel, upgradeLevel);
         }
         
-        Debug.Log($"[UpgradePanelManager] Finished creating {createdPanels.Count} upgrade panels for {currentUpgradeData.name}");
         
         // Update the right panel upgrade text (only if upgradeText is assigned)
         if (upgradeText != null)
@@ -394,44 +380,32 @@ public class UpgradePanelManager : MonoBehaviour
     /// </summary>
     private void UpdateLevelUpgradeText()
     {
-        Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: ENTRY - currentLevelUpCost is {(currentLevelUpCost != null ? "NOT NULL" : "NULL")}");
-        Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: ENTRY - upgradeText is {(upgradeText != null ? "NOT NULL" : "NULL")}");
         
         if (currentLevelUpCost != null)
         {
             // Use backend data if available
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Using backend data - current_level={currentLevelUpCost.current_level}, next_level={currentLevelUpCost.next_level}");
             string newText = $"L{currentLevelUpCost.current_level:D2} >>> L{currentLevelUpCost.next_level:D2}";
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Setting upgradeText to '{newText}' from backend data");
             upgradeText.text = newText;
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Text set successfully to '{upgradeText.text}'");
         }
         else
         {
             // Fallback to frontend calculation
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: currentLevelUpCost is NULL, using frontend calculation");
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: currentUpgradeData is {(currentUpgradeData != null ? "NOT NULL" : "NULL")}");
             
             if (currentUpgradeData == null)
             {
-                Debug.LogWarning("[UpgradePanelManager] UpdateLevelUpgradeText: currentUpgradeData is NULL, setting to L?? >>> L??");
                 upgradeText.text = "L?? >>> L??";
                 return;
             }
             
             int currentLevel = GetSidekickCurrentLevel(currentUpgradeData.ally_id);
             int nextLevel = currentLevel + 1;
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Frontend calculation - currentLevel={currentLevel}, nextLevel={nextLevel}");
             
             string currentLevelText = $"L{currentLevel:D2}";
             string nextLevelText = $"L{nextLevel:D2}";
             string newText = $"{currentLevelText} >>> {nextLevelText}";
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Setting upgradeText to '{newText}' from frontend calculation");
             upgradeText.text = newText;
-            Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: Text set successfully to '{upgradeText.text}'");
         }
         
-        Debug.Log($"[UpgradePanelManager] UpdateLevelUpgradeText: EXIT - final upgradeText.text: '{upgradeText?.text ?? "NULL"}'");
     }
     
     /// <summary>
@@ -443,7 +417,6 @@ public class UpgradePanelManager : MonoBehaviour
         {
             // Use backend data if available
             string newText = $"S{currentStarUpCost.current_star} >>> S{currentStarUpCost.next_star}";
-            Debug.Log($"[UpgradePanelManager] UpdateStarUpgradeText: Setting upgradeText to '{newText}' from backend data");
             upgradeText.text = newText;
             
             // Update yellow star to match the current star level
@@ -455,7 +428,6 @@ public class UpgradePanelManager : MonoBehaviour
             int currentStar = GetSidekickCurrentStarLevel(currentAllyId);
             int nextStar = currentStar + 1;
             string newText = $"S{currentStar} >>> S{nextStar}";
-            Debug.Log($"[UpgradePanelManager] UpdateStarUpgradeText: Setting upgradeText to '{newText}' from frontend calculation");
             upgradeText.text = newText;
             
             // Update yellow star to match the current star level
@@ -544,14 +516,11 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(currentAllyId))
         {
-            Debug.LogWarning("[UpgradePanelManager] No currentAllyId set for FetchLevelUpCost");
             return;
         }
         
-        Debug.Log($"[UpgradePanelManager] Fetching level up cost for ally: {currentAllyId}");
         
         // Backend expects ally_id (not ally_name) with fragment_name format ("04_Aurelia")
-        Debug.Log($"[UpgradePanelManager] Using fragment_name format: {currentAllyId}");
         
         var data = new { ally_id = currentAllyId };
         
@@ -562,7 +531,6 @@ public class UpgradePanelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[UpgradePanelManager] PlayerWebSocketApi.Instance is null");
         }
     }
     
@@ -573,11 +541,9 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(currentAllyId))
         {
-            Debug.LogWarning("[UpgradePanelManager] No currentAllyId set for FetchStarUpCost");
             return;
         }
         
-        Debug.Log($"[UpgradePanelManager] Fetching star up cost for ally: {currentAllyId}");
         
         // Backend expects ally_id with fragment_name format ("04_Aurelia")
         var data = new { ally_id = currentAllyId };
@@ -589,7 +555,6 @@ public class UpgradePanelManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[UpgradePanelManager] PlayerWebSocketApi.Instance is null");
         }
     }
     
@@ -601,11 +566,9 @@ public class UpgradePanelManager : MonoBehaviour
     {
         try
         {
-            Debug.Log($"[UpgradePanelManager] Received level up cost response: {response}");
             
             // Backend sends data directly in response, not nested in "data" field
             currentLevelUpCost = response.ToObject<LevelUpCostData>();
-            Debug.Log($"[UpgradePanelManager] Parsed level up cost data: skillbook={currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}, gold={currentLevelUpCost.cost.gold_cost}/{currentLevelUpCost.player_resources.gold}");
             
             // Update upgrade text with backend data (same as star upgrade)
             UpdateRightPanelUpgradeText();
@@ -635,11 +598,9 @@ public class UpgradePanelManager : MonoBehaviour
     {
         try
         {
-            Debug.Log($"[UpgradePanelManager] Received star up cost response");
             
             // Backend sends data directly in response, not nested in "data" field
             currentStarUpCost = response.ToObject<StarUpCostData>();
-            Debug.Log($"[UpgradePanelManager] Parsed star up cost data: shard={currentStarUpCost.cost.shard_cost}/{currentStarUpCost.player_resources.shards}, gold={currentStarUpCost.cost.gold_cost}/{currentStarUpCost.player_resources.gold}");
             
             // Update upgrade text with backend data
             UpdateRightPanelUpgradeText();
@@ -680,26 +641,22 @@ public class UpgradePanelManager : MonoBehaviour
     /// </summary>
     private void UpdateResourceDisplays()
     {
-        Debug.Log($"[UpgradePanelManager] UpdateResourceDisplays called for mode: {(isStarUpMode ? "StarUp" : "LevelUp")}");
         
         if (isStarUpMode)
         {
             if (currentStarUpCost == null)
             {
-                Debug.LogWarning("[UpgradePanelManager] No StarUp cost data available");
                 if (itemText != null) itemText.text = "NO DATA";
                 if (goldText != null) goldText.text = "NO DATA";
                 return;
             }
             
-            Debug.Log("[UpgradePanelManager] Updating UI with StarUp cost data");
             
             // Update item display (shard for star up)
             if (itemText != null)
             {
                 string itemDisplay = $"{currentStarUpCost.cost.shard_cost}/{currentStarUpCost.player_resources.shards}";
                 itemText.text = itemDisplay;
-                Debug.Log($"[UpgradePanelManager] Set itemText to: {itemDisplay}");
             }
             
             // Update gold display with K formatting
@@ -707,34 +664,29 @@ public class UpgradePanelManager : MonoBehaviour
             {
                 string goldDisplay = $"{FormatNumber(currentStarUpCost.cost.gold_cost)}/{FormatNumber(currentStarUpCost.player_resources.gold)}";
                 goldText.text = goldDisplay;
-                Debug.Log($"[UpgradePanelManager] Set goldText to: {goldDisplay}");
             }
             
             // Update button state
             if (levelUpButton != null)
             {
                 levelUpButton.interactable = currentStarUpCost.can_star_up && currentStarUpCost.has_enough_resources;
-                Debug.Log($"[UpgradePanelManager] Set button interactable to: {levelUpButton.interactable}");
             }
         }
         else
         {
             if (currentLevelUpCost == null)
             {
-                Debug.LogWarning("[UpgradePanelManager] No LevelUp cost data available");
                 if (itemText != null) itemText.text = "NO DATA";
                 if (goldText != null) goldText.text = "NO DATA";
                 return;
             }
             
-            Debug.Log("[UpgradePanelManager] Updating UI with LevelUp cost data");
             
             // Update item display (skillbook for level up)
             if (itemText != null)
             {
                 string itemDisplay = $"{currentLevelUpCost.cost.skillbook_cost}/{currentLevelUpCost.player_resources.skillbooks}";
                 itemText.text = itemDisplay;
-                Debug.Log($"[UpgradePanelManager] Set itemText to: {itemDisplay}");
             }
             
             // Update gold display with K formatting
@@ -742,14 +694,12 @@ public class UpgradePanelManager : MonoBehaviour
             {
                 string goldDisplay = $"{FormatNumber(currentLevelUpCost.cost.gold_cost)}/{FormatNumber(currentLevelUpCost.player_resources.gold)}";
                 goldText.text = goldDisplay;
-                Debug.Log($"[UpgradePanelManager] Set goldText to: {goldDisplay}");
             }
             
             // Update button state
             if (levelUpButton != null)
             {
                 levelUpButton.interactable = currentLevelUpCost.can_level_up && currentLevelUpCost.has_enough_resources;
-                Debug.Log($"[UpgradePanelManager] Set button interactable to: {levelUpButton.interactable}");
             }
         }
     }
@@ -819,29 +769,21 @@ public class UpgradePanelManager : MonoBehaviour
     {
         try
         {
-            Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Level up successful: {response}");
             
             // Log current state before any changes
-            Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: BEFORE - currentLevelUpCost: {(currentLevelUpCost != null ? $"current={currentLevelUpCost.current_level}, next={currentLevelUpCost.next_level}" : "NULL")}");
-            Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: BEFORE - upgradeText.text: '{upgradeText?.text ?? "NULL"}'");
-            Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: BEFORE - currentAllyId: '{currentAllyId}'");
             
             // Parse the response for new level, gold, and skillbooks
             var dataToken = response["data"];
             if (dataToken != null)
             {
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Found data token in response");
                 
                 // Update upgrade text on right panel FIRST (same pattern as star upgrade)
                 if (upgradeText != null)
                 {
-                    Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Before UpdateRightPanelUpgradeText, current text: '{upgradeText.text}'");
                     UpdateRightPanelUpgradeText();
-                    Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: After UpdateRightPanelUpgradeText, new text: '{upgradeText.text}'");
                 }
                 else
                 {
-                    Debug.LogError("[UpgradePanelManager] OnLevelUpSuccess: upgradeText is NULL!");
                 }
 
                 // Update PlayerProfile and UI with new values if needed
@@ -853,35 +795,25 @@ public class UpgradePanelManager : MonoBehaviour
                 // TODO: Update PlayerProfile.Data.Sidekick and PlayerResources if needed
                 
                 // Refresh the upgrade panels to update lock/unlock status
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Calling CreateUpgradePanels()");
                 CreateUpgradePanels();
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: CreateUpgradePanels() completed");
                 
                 // Update Step1 and Step2 displays for consistency (same as star upgrade)
                 AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
                 if (alliesGridSetup != null)
                 {
-                    Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Calling RefreshAllAllyStarDisplays for {currentAllyId}");
                     alliesGridSetup.RefreshAllAllyStarDisplays();
-                    Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: RefreshAllAllyStarDisplays completed");
                 }
                 else
                 {
-                    Debug.LogError($"[UpgradePanelManager] OnLevelUpSuccess: AlliesGridSetup not found!");
                 }
                 
                 // Refresh cost data to update displays (LAST step like star upgrade)
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: Calling FetchCurrentModeCost() - this should update currentLevelUpCost");
                 FetchCurrentModeCost();
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: FetchCurrentModeCost() completed");
                 
                 // Log final state
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: FINAL - upgradeText.text: '{upgradeText?.text ?? "NULL"}'");
-                Debug.Log($"[UpgradePanelManager] OnLevelUpSuccess: FINAL - currentLevelUpCost: {(currentLevelUpCost != null ? $"current={currentLevelUpCost.current_level}, next={currentLevelUpCost.next_level}" : "NULL")}");
             }
             else
             {
-                Debug.LogWarning("[UpgradePanelManager] No data field in level up response");
             }
         }
         catch (System.Exception e)
@@ -908,7 +840,6 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (step2StarGroup != null)
         {
-            Debug.Log($"[UpgradePanelManager] Setting complete star state to {sValue} stars");
             
             // Set complete star state - enable stars 1 through sValue, disable the rest
             for (int i = 1; i <= 5; i++)
@@ -918,17 +849,14 @@ public class UpgradePanelManager : MonoBehaviour
                 {
                     bool shouldActivate = i <= sValue;
                     starYellow.gameObject.SetActive(shouldActivate);
-                    Debug.Log($"[UpgradePanelManager] Star{i}/yellow = {shouldActivate}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[UpgradePanelManager] Star{i}/yellow not found in step2StarGroup");
                 }
             }
         }
         else
         {
-            Debug.LogError("[UpgradePanelManager] step2StarGroup is null - please drag StarGroup from UpperGroup in Inspector");
         }
     }
     
@@ -948,62 +876,38 @@ public class UpgradePanelManager : MonoBehaviour
                 var updatedSidekickToken = response["updated_sidekick"];
                 if (updatedSidekickToken != null)
                 {
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Found updated_sidekick data: {updatedSidekickToken}");
-                    
                     // Parse updated sidekick data
                     var updatedSidekick = updatedSidekickToken.ToObject<model.Sidekick>();
                     if (updatedSidekick != null && PlayerProfile.Data?.Sidekick != null)
                     {
-                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: BEFORE UPDATE - PlayerProfile has {PlayerProfile.Data.Sidekick.Count} sidekicks");
-                        foreach (var s in PlayerProfile.Data.Sidekick)
-                        {
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: BEFORE - Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
-                        }
-                        
                         // Find and update the specific sidekick in PlayerProfile.Data.Sidekick
                         var existingSidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => s.id == updatedSidekick.id);
                         if (existingSidekick != null)
                         {
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Updating sidekick {existingSidekick.id} from star {existingSidekick.star} to {updatedSidekick.star}");
                             existingSidekick.star = updatedSidekick.star;
                             existingSidekick.skill_level = updatedSidekick.skill_level;
-                            
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER UPDATE - Sidekick {existingSidekick.id} now has {existingSidekick.star} stars");
                         }
                         else
                         {
-                            Debug.LogWarning($"[UpgradePanelManager] OnStarUpSuccess: Could not find existing sidekick with id {updatedSidekick.id} to update");
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Available sidekick IDs: {string.Join(", ", PlayerProfile.Data.Sidekick.Select(s => s.id))}");
-                        }
-                        
-                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER UPDATE - PlayerProfile sidekicks state:");
-                        foreach (var s in PlayerProfile.Data.Sidekick)
-                        {
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER - Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
                         }
                     }
                     else
                     {
-                        Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: Failed to parse updated_sidekick or PlayerProfile.Data.Sidekick is null");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("[UpgradePanelManager] OnStarUpSuccess: No updated_sidekick field found in response");
                 }
                 
                 // Update upgrade text on right panel
                 if (upgradeText != null)
                 {
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Before updating upgrade text, current text: '{upgradeText.text}'");
                     UpdateRightPanelUpgradeText();
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: After updating upgrade text, new text: '{upgradeText.text}'");
                     
                     // Extract S value and update Step2 star yellow immediately
                     string sText = upgradeText.text; // e.g., "S3"
                     if (sText.StartsWith("S") && int.TryParse(sText.Substring(1), out int sValue))
                     {
-                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Extracted S value = {sValue}, updating Step2 star");
                         UpdateStep2StarYellow(sValue);
                     }
                 }
@@ -1016,16 +920,13 @@ public class UpgradePanelManager : MonoBehaviour
                 if (alliesGridSetup != null)
                 {
                     // Update Step2 star group immediately for instant visual feedback
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Updating Step2 star display immediately for {currentAllyId}");
                     alliesGridSetup.UpdateStep2StarDisplay(currentAllyId);
                     
                     // Force Step1 grid recreation with fresh data now that PlayerProfile.Data.Sidekick is updated
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Forcing Step1 grid recreation with updated sidekick data");
                     alliesGridSetup.ForceReloadWithFreshData();
                 }
                 else
                 {
-                    Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: AlliesGridSetup not found!");
                 }
                 
                 // Refresh cost data to update displays
@@ -1033,7 +934,6 @@ public class UpgradePanelManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("[UpgradePanelManager] No data field in star up response");
             }
         }
         catch (System.Exception e)
@@ -1057,14 +957,11 @@ public class UpgradePanelManager : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator DelayedStep1GridRecreation(AlliesGridSetup alliesGridSetup, string allyId)
     {
-        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: Waiting for PlayerProfile.Data to update for {allyId}");
         
         // Wait a short time for backend data to update PlayerProfile.Data.Sidekick
         yield return new WaitForSeconds(0.5f);
         
-        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: Now forcing Step1 grid recreation with fresh data for {allyId}");
         alliesGridSetup.ForceReloadWithFreshData();
-        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: ForceReloadWithFreshData completed for {allyId}");
     }
     
     

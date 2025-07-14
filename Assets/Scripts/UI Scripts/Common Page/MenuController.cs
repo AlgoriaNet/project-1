@@ -50,7 +50,6 @@ public class MenuController : MonoBehaviour
         // Refresh PlayerProfile data whenever switching menus for consistent data sync
         if (PlayerProfile.Data != null)
         {
-            Debug.Log($"[MenuController] ToggleMenu: Refreshing PlayerProfile data for menu switch to index {activeMenuIndex}");
             PlayerProfile.Data.NotifyListeners("Sidekicks");
             PlayerProfile.Data.NotifyListeners("Player");
         }
@@ -75,7 +74,6 @@ public class MenuController : MonoBehaviour
             AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
             if (alliesGridSetup != null)
             {
-                Debug.Log("[MenuController] ToggleMenu: Forcing AlliesGridSetup reload for fresh data");
                 alliesGridSetup.ForceReloadWithFreshData();
             }
         }
