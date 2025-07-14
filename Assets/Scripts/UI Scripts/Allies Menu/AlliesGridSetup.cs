@@ -316,6 +316,10 @@ public class AlliesGridSetup : MonoBehaviour
             return;
         }
 
+        // TEST: Destroy Step1 grid content when opening Step2
+        Debug.Log("[AlliesGridSetup] OpenStep2: DESTROYING Step1 grid content for testing");
+        ClearExistingAllyItems();
+
         // Switch panels
         step1Panel.SetActive(false);
         step2Panel.SetActive(true);
@@ -446,14 +450,104 @@ public class AlliesGridSetup : MonoBehaviour
             }
             else
             {
-                // Normal navigation mode: use original OpenStep2 logic
-                if (allyItemsDict.TryGetValue(newIndexStr, out GameObject newAllyItem))
+                // Normal navigation mode: use Step2-only logic (no Step1 dependency)
+                OpenStep2Direct(newIndexStr, newName);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Open Step2 directly without needing Step1 allyItem (for navigation)
+    /// </summary>
+    /// <param name="index">The ally index (e.g., "04", "10")</param>
+    /// <param name="name">The ally name (e.g., "Aurelia", "Cedric")</param>
+    private void OpenStep2Direct(string index, string name)
+    {
+        if (step2AllyImage == null)
+        {
+            Debug.LogError("❌ step2AllyImage is NOT assigned in Inspector!");
+            return;
+        }
+
+        Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Loading ally {index}_{name} directly");
+
+        // Load ally illustration (same as original OpenStep2)
+        string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{index}_{name}";
+        Sprite illustrationSprite = Resources.Load<Sprite>(illustrationPath);
+
+        if (illustrationSprite != null)
+        {
+            step2AllyImage.sprite = illustrationSprite;
+        }
+        else
+        {
+            Debug.LogWarning($"❌ Illustration not found at path: {illustrationPath}");
+        }
+
+        // Store current ally info for LevelUp/StarUp toggle methods
+        currentAllyName = name;
+
+        // Track the current ally index for navigation
+        currentAllyIndex = unlockedAllies.FindIndex(a => a.index == index);
+
+        // Assign button events
+        leftArrowButton.onClick.RemoveAllListeners();
+        rightArrowButton.onClick.RemoveAllListeners();
+        leftArrowButton.onClick.AddListener(() => NavigateStep2Ally(-1));
+        rightArrowButton.onClick.AddListener(() => NavigateStep2Ally(1));
+
+        // Enable/disable arrows based on position
+        leftArrowButton.interactable = (currentAllyIndex > 0);
+        rightArrowButton.interactable = (currentAllyIndex < unlockedAllies.Count - 1);
+
+        // Set Step2 stars based on actual backend star level
+        string allyId = $"{index}_{name}";
+        int actualStarLevel = GetSidekickStarLevel(allyId);
+        Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
+        
+        // Set complete star state based on actual star level
+        for (int i = 1; i <= 5; i++)
+        {
+            Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
+            if (step2Star != null)
+            {
+                bool shouldActivate = i <= actualStarLevel;
+                step2Star.gameObject.SetActive(shouldActivate);
+                Debug.Log($"[AlliesGridSetup] OpenStep2Direct: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
+            }
+            else
+            {
+                Debug.LogWarning($"❌ Step2 Star{i}/yellow not found!");
+            }
+        }
+
+        // Delay the size adjustment to allow layout updates
+        Invoke(nameof(AdjustStep2StarGroupSize), 0.05f);
+
+        // Refresh the lower section to match the current ally
+        RefreshLowerSectionForCurrentAlly();
+        
+        // Load upgrade levels for the selected ally
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.LoadUpgradePanelsForAlly($"{index}_{name}");
+        }
+        
+        // Sync UpgradePanelManager mode after navigation
+        if (upgradePanelManager != null)
+        {
+            PageButtonController pageButtonController = FindObjectOfType<PageButtonController>();
+            if (pageButtonController != null)
+            {
+                var activeButtonIndexField = typeof(PageButtonController).GetField("activeButtonIndex", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (activeButtonIndexField != null)
                 {
-                    OpenStep2(newAllyItem, newIndexStr, newName);
-                }
-                else
-                {
-                    Debug.LogWarning($"❌ AllyItem_{newIndexStr} not found in dictionary!");
+                    int activeButtonIndex = (int)activeButtonIndexField.GetValue(pageButtonController);
+                    bool isStarUpMode = (activeButtonIndex == 1);
+                    Debug.Log($"[AlliesGridSetup] OpenStep2Direct: Syncing UpgradePanelManager mode to {(isStarUpMode ? "StarUp" : "LevelUp")} (button {activeButtonIndex})");
+                    upgradePanelManager.SetMode(isStarUpMode);
                 }
             }
         }
