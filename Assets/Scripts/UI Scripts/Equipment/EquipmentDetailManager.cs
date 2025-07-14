@@ -23,7 +23,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             Compare,
             Forge,
             Replace,
-            Demount
+            Dismantle
         }
         
         [NonSerialized] public List<EquipmentDetailStatus> Status;
@@ -61,7 +61,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (replaceButton != null)
                 replaceButton.onClick.AddListener(OnReplace);
             if (demountButton != null)
-                demountButton.onClick.AddListener(OnDemount);
+                demountButton.onClick.AddListener(OnDismantle);
         }
 
         public void Init(Equipment equipment, List<EquipmentDetailStatus> status, [CanBeNull] Info info = null)
@@ -74,7 +74,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
                 detailStatus == EquipmentDetailStatus.Replace));
             demountButton.gameObject.SetActive(status.Exists(detailStatus =>
-                detailStatus == EquipmentDetailStatus.Demount));
+                detailStatus == EquipmentDetailStatus.Dismantle));
 
             // Assign sprite to the Image based on resourcesPath
             Sprite itemSprite = Resources.Load<Sprite>($"UILoading/Equipment/{_equipment.Name}");
@@ -117,7 +117,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             _equipmentApi.Action("replace", apiParams, SetProfileFromServer);
         }
 
-        public void OnDemount()
+        public void OnDismantle()
         {
         }
 
