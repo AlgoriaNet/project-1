@@ -66,6 +66,22 @@ public class AlliesGridSetup : MonoBehaviour
     
     private void OnPlayerDataChanged(ApplicationModel model)
     {
+        // Skip if this GameObject is inactive (prevents coroutine error)
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: GameObject inactive, skipping");
+            return;
+        }
+        
+        // Only reload grid if Allies Menu (step1Panel) is actually active
+        if (step1Panel != null && !step1Panel.activeInHierarchy)
+        {
+            Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Allies Menu not active, skipping grid reload");
+            return;
+        }
+        
+        Debug.Log("[AlliesGridSetup] OnPlayerDataChanged: Reloading grid with fresh data");
+        
         // Force full reload to ensure star displays show current data
         if (PlayerProfile.Data?.Player != null && grid != null)
         {
@@ -80,13 +96,33 @@ public class AlliesGridSetup : MonoBehaviour
         }
     }
     
+    /// <summary>
+    /// Force reload grid with fresh backend data (called when explicitly opening Allies Menu)
+    /// </summary>
+    public void ForceReloadWithFreshData()
+    {
+        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: STARTING - Clearing and reloading grid with fresh backend data");
+        Debug.Log($"[AlliesGridSetup] ForceReloadWithFreshData: step1Panel active = {(step1Panel != null ? step1Panel.activeInHierarchy.ToString() : "NULL")}");
+        Debug.Log($"[AlliesGridSetup] ForceReloadWithFreshData: grid childCount = {(grid != null ? grid.transform.childCount.ToString() : "NULL")}");
+        
+        ClearExistingAllyItems();
+        
+        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: About to call InitializeAlliesGrid()");
+        InitializeAlliesGrid();
+        Debug.Log("[AlliesGridSetup] ForceReloadWithFreshData: COMPLETED - InitializeAlliesGrid() finished");
+    }
+    
     public void InitializeAlliesGrid()
     {
+        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: STARTING grid initialization");
+        
         // Don't initialize if player data is not available yet (except for force reload)
         if (PlayerProfile.Data?.Player == null)
         {
             Debug.LogWarning("[AlliesGridSetup] InitializeAlliesGrid: PlayerProfile.Data.Player is null - continuing anyway for force reload");
         }
+        
+        Debug.Log($"[AlliesGridSetup] InitializeAlliesGrid: Sidekick count = {(PlayerProfile.Data?.Sidekick?.Count ?? -1)}");
         
         // Get the content panel width
         float panelWidth = contentPanel.rect.width;
@@ -119,7 +155,9 @@ public class AlliesGridSetup : MonoBehaviour
         // Apply calculated block size
         grid.cellSize = new Vector2(blockWidth, blockWidth * 1.342f); // Adjust height proportionally
 
+        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: About to call LoadAllyItems()");
         LoadAllyItems();
+        Debug.Log("[AlliesGridSetup] InitializeAlliesGrid: COMPLETED - LoadAllyItems() finished");
     }
 
     public void ClearExistingAllyItems()
@@ -128,7 +166,17 @@ public class AlliesGridSetup : MonoBehaviour
         int destroyedCount = 0;
         Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: Starting to clear items, contentPanel has {contentPanel.childCount} children");
         
+        // SAFE DESTROY: Only destroy AllyItem prefabs, not other UI elements
+        List<Transform> allyItemsToDestroy = new List<Transform>();
         foreach (Transform child in contentPanel)
+        {
+            if (child.name.StartsWith("AllyItem_"))
+            {
+                allyItemsToDestroy.Add(child);
+            }
+        }
+        
+        foreach (Transform child in allyItemsToDestroy)
         {
             Debug.Log($"[AlliesGridSetup] ClearExistingAllyItems: DESTROYING {child.name}");
             Destroy(child.gameObject);
@@ -144,6 +192,8 @@ public class AlliesGridSetup : MonoBehaviour
 
     private void LoadAllyItems()
     {
+        Debug.Log("[AlliesGridSetup] LoadAllyItems: STARTING ally items loading");
+        
         // Character names matching the file names
         string[] characterNames = {
             "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
@@ -193,7 +243,7 @@ public class AlliesGridSetup : MonoBehaviour
         ClearExistingAllyItems(); // Clear old items before creating new ones
         foreach (var ally in sortedAllies)
         {
-            GameObject newAlly = Instantiate(allyItemPrefab, grid.transform, false);
+            GameObject newAlly = Instantiate(allyItemPrefab, contentPanel, false);
 
             // ***** RENAME THE GAMEOBJECT FOR RefreshAllAllyStarDisplays() TO WORK *****
             newAlly.name = $"AllyItem_{ally.index}_{ally.name}";
@@ -242,11 +292,21 @@ public class AlliesGridSetup : MonoBehaviour
                 {
                     bool shouldActivate = i <= starLevel;
                     starYellow.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[AlliesGridSetup] LoadAllyItems: {allyId} Star{i}/yellow = {shouldActivate}");
                 }
                 else
                 {
                     Debug.LogWarning($"❌ 'yellow' NOT FOUND inside Star{i} for {allyId}!");
                 }
+            }
+
+            // Force Canvas update for star changes
+            Canvas canvas = newAlly.GetComponentInParent<Canvas>();
+            if (canvas != null)
+            {
+                canvas.enabled = false;
+                canvas.enabled = true;
+                Debug.Log($"[AlliesGridSetup] LoadAllyItems: Forced Canvas refresh for {allyId}");
             }
 
             // Retain Gray Tint for Locked Allies
@@ -1178,6 +1238,8 @@ public class AlliesGridSetup : MonoBehaviour
     /// <returns>Current star level from PlayerProfile data</returns>
     private int GetSidekickStarLevel(string allyId)
     {
+        Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): ENTRY - Called at {System.DateTime.Now:HH:mm:ss.fff}");
+        
         if (PlayerProfile.Data?.Sidekick == null)
         {
             Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): PlayerProfile.Data.Sidekick is null");
@@ -1189,7 +1251,7 @@ public class AlliesGridSetup : MonoBehaviour
         // Log all sidekicks for detailed debugging
         foreach (var s in PlayerProfile.Data.Sidekick)
         {
-            Debug.Log($"[AlliesGridSetup] Sidekick in data: id={s.id}, base_id={s.base_id}, star={s.star}");
+            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Sidekick in data: id={s.id}, base_id={s.base_id}, star={s.star}");
         }
         
         // Find the sidekick by matching the ally ID format
@@ -1206,7 +1268,7 @@ public class AlliesGridSetup : MonoBehaviour
         
         if (sidekick != null)
         {
-            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): Found sidekick with {sidekick.star} stars (id={sidekick.id}, base_id={sidekick.base_id})");
+            Debug.Log($"[AlliesGridSetup] GetSidekickStarLevel({allyId}): FOUND sidekick with {sidekick.star} stars (id={sidekick.id}, base_id={sidekick.base_id}) at {System.DateTime.Now:HH:mm:ss.fff}");
             return sidekick.star;
         }
         
@@ -1289,6 +1351,14 @@ public class AlliesGridSetup : MonoBehaviour
         if (grid == null) 
         {
             Debug.LogError($"[AlliesGridSetup] RefreshAllAllyStarDisplays: grid is null!");
+            return;
+        }
+        
+        // Additional check: if grid has no children, force recreation
+        if (grid.transform.childCount == 0)
+        {
+            Debug.Log("[AlliesGridSetup] RefreshAllAllyStarDisplays: Grid has no children, forcing recreation");
+            InitializeAlliesGrid();
             return;
         }
         

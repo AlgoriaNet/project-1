@@ -944,6 +944,54 @@ public class UpgradePanelManager : MonoBehaviour
             var dataToken = response["data"];
             if (dataToken != null)
             {
+                // Extract updated_sidekick data from response (Backend Option 1) - it's at root level, not in data
+                var updatedSidekickToken = response["updated_sidekick"];
+                if (updatedSidekickToken != null)
+                {
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Found updated_sidekick data: {updatedSidekickToken}");
+                    
+                    // Parse updated sidekick data
+                    var updatedSidekick = updatedSidekickToken.ToObject<model.Sidekick>();
+                    if (updatedSidekick != null && PlayerProfile.Data?.Sidekick != null)
+                    {
+                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: BEFORE UPDATE - PlayerProfile has {PlayerProfile.Data.Sidekick.Count} sidekicks");
+                        foreach (var s in PlayerProfile.Data.Sidekick)
+                        {
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: BEFORE - Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
+                        }
+                        
+                        // Find and update the specific sidekick in PlayerProfile.Data.Sidekick
+                        var existingSidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => s.id == updatedSidekick.id);
+                        if (existingSidekick != null)
+                        {
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Updating sidekick {existingSidekick.id} from star {existingSidekick.star} to {updatedSidekick.star}");
+                            existingSidekick.star = updatedSidekick.star;
+                            existingSidekick.skill_level = updatedSidekick.skill_level;
+                            
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER UPDATE - Sidekick {existingSidekick.id} now has {existingSidekick.star} stars");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[UpgradePanelManager] OnStarUpSuccess: Could not find existing sidekick with id {updatedSidekick.id} to update");
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Available sidekick IDs: {string.Join(", ", PlayerProfile.Data.Sidekick.Select(s => s.id))}");
+                        }
+                        
+                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER UPDATE - PlayerProfile sidekicks state:");
+                        foreach (var s in PlayerProfile.Data.Sidekick)
+                        {
+                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: AFTER - Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: Failed to parse updated_sidekick or PlayerProfile.Data.Sidekick is null");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[UpgradePanelManager] OnStarUpSuccess: No updated_sidekick field found in response");
+                }
+                
                 // Update upgrade text on right panel
                 if (upgradeText != null)
                 {
@@ -959,43 +1007,9 @@ public class UpgradePanelManager : MonoBehaviour
                         UpdateStep2StarYellow(sValue);
                     }
                 }
+                
                 // Refresh the upgrade panels to update lock/unlock status
                 CreateUpgradePanels();
-                
-                // Log PlayerProfile.Data.Sidekick state immediately after star upgrade
-                Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Checking PlayerProfile.Data.Sidekick state after upgrade");
-                if (PlayerProfile.Data?.Sidekick != null)
-                {
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: PlayerProfile.Data.Sidekick has {PlayerProfile.Data.Sidekick.Count} sidekicks");
-                    foreach (var s in PlayerProfile.Data.Sidekick)
-                    {
-                        Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Sidekick id={s.id}, base_id={s.base_id}, star={s.star}");
-                    }
-                    
-                    // Check specifically for the upgraded ally
-                    string[] allyParts = currentAllyId.Split('_');
-                    if (allyParts.Length >= 2)
-                    {
-                        string targetBaseId = int.Parse(allyParts[0]).ToString(); // "11" -> "11"
-                        var upgradedSidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s => s.base_id == targetBaseId);
-                        if (upgradedSidekick != null)
-                        {
-                            Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Found upgraded sidekick {currentAllyId} with {upgradedSidekick.star} stars (expected: 2)");
-                        }
-                        else
-                        {
-                            Debug.LogWarning($"[UpgradePanelManager] OnStarUpSuccess: Upgraded sidekick {currentAllyId} (base_id={targetBaseId}) not found in PlayerProfile!");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"[UpgradePanelManager] OnStarUpSuccess: PlayerProfile.Data.Sidekick is null!");
-                }
-                
-                // Trigger PlayerProfile listener to ensure same refresh mechanism as gacha
-                Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Triggering PlayerProfile Sidekicks notification for consistent refresh");
-                PlayerProfile.Data.NotifyListeners("Sidekicks");
                 
                 // Refresh star displays immediately - both Step1 and Step2
                 AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
@@ -1005,10 +1019,9 @@ public class UpgradePanelManager : MonoBehaviour
                     Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Updating Step2 star display immediately for {currentAllyId}");
                     alliesGridSetup.UpdateStep2StarDisplay(currentAllyId);
                     
-                    // Also refresh Step1 star displays for consistency
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Calling RefreshAllAllyStarDisplays for {currentAllyId}");
-                    alliesGridSetup.RefreshAllAllyStarDisplays();
-                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: RefreshAllAllyStarDisplays completed");
+                    // Force Step1 grid recreation with fresh data now that PlayerProfile.Data.Sidekick is updated
+                    Debug.Log($"[UpgradePanelManager] OnStarUpSuccess: Forcing Step1 grid recreation with updated sidekick data");
+                    alliesGridSetup.ForceReloadWithFreshData();
                 }
                 else
                 {
@@ -1038,6 +1051,22 @@ public class UpgradePanelManager : MonoBehaviour
         Debug.LogError($"Star up failed: {error}");
         // Optionally, show error feedback to user here
     }
+    
+    /// <summary>
+    /// Delay Step1 grid recreation to ensure PlayerProfile.Data has fresh sidekick data
+    /// </summary>
+    private System.Collections.IEnumerator DelayedStep1GridRecreation(AlliesGridSetup alliesGridSetup, string allyId)
+    {
+        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: Waiting for PlayerProfile.Data to update for {allyId}");
+        
+        // Wait a short time for backend data to update PlayerProfile.Data.Sidekick
+        yield return new WaitForSeconds(0.5f);
+        
+        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: Now forcing Step1 grid recreation with fresh data for {allyId}");
+        alliesGridSetup.ForceReloadWithFreshData();
+        Debug.Log($"[UpgradePanelManager] DelayedStep1GridRecreation: ForceReloadWithFreshData completed for {allyId}");
+    }
+    
     
     /// <summary>
     /// Public method to be called from AlliesGridSetup when ally is selected

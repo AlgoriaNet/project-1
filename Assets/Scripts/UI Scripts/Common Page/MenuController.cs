@@ -69,7 +69,15 @@ public class MenuController : MonoBehaviour
         {
             if (step1Panel != null) step1Panel.SetActive(true);
             if (step2Panel != null) step2Panel.SetActive(false);
-            if (lowerGroup != null) lowerGroup.SetActive(false);  
+            if (lowerGroup != null) lowerGroup.SetActive(false);
+            
+            // Force AlliesGridSetup to reload with fresh data when explicitly opening Allies Menu
+            AlliesGridSetup alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
+            if (alliesGridSetup != null)
+            {
+                Debug.Log("[MenuController] ToggleMenu: Forcing AlliesGridSetup reload for fresh data");
+                alliesGridSetup.ForceReloadWithFreshData();
+            }
         }
 
         // 🔹 Always reset Hero Menu (index 1) to Equipment tab
