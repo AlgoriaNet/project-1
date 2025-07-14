@@ -94,6 +94,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 {
                     EquipmentDetailManager.EquipmentDetailStatus.Compare,
                     EquipmentDetailManager.EquipmentDetailStatus.Replace,
+                    EquipmentDetailManager.EquipmentDetailStatus.Forge,
                     EquipmentDetailManager.EquipmentDetailStatus.Dismantle
                 },
                 new EquipmentDetailManager.Info

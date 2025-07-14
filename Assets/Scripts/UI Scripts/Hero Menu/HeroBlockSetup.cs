@@ -227,7 +227,31 @@ public class HeroBlockSetup : MonoBehaviour
                     itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
                     blockButton.onClick.AddListener(() => 
                     {
-                        EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
+                        // Detect context based on active panels
+                        EquipmentComparisonManager.EquippedOn context = EquipmentComparisonManager.EquippedOn.Hero;
+                        
+                        Debug.Log($"[HeroBlockSetup] Context Detection - allyStep2Panel null: {allyStep2Panel == null}");
+                        if (allyStep2Panel != null)
+                        {
+                            Debug.Log($"[HeroBlockSetup] Context Detection - allyStep2Panel active: {allyStep2Panel.activeInHierarchy}");
+                        }
+                        Debug.Log($"[HeroBlockSetup] Context Detection - heroStep2Panel null: {heroStep2Panel == null}");
+                        if (heroStep2Panel != null)
+                        {
+                            Debug.Log($"[HeroBlockSetup] Context Detection - heroStep2Panel active: {heroStep2Panel.activeInHierarchy}");
+                        }
+                        
+                        if (allyStep2Panel != null && allyStep2Panel.activeInHierarchy)
+                        {
+                            context = EquipmentComparisonManager.EquippedOn.Sidekick;
+                            Debug.Log("[HeroBlockSetup] Detected Ally context - using Sidekick");
+                        }
+                        else
+                        {
+                            Debug.Log("[HeroBlockSetup] Detected Hero context - using Hero");
+                        }
+                        
+                        EquipmentComparisonManager.Instance.Init(context, equipment?.Id); 
                     });
                 }
                 

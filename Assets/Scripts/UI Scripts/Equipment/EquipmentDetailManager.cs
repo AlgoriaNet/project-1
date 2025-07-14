@@ -123,6 +123,29 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         public void OnForge()
         {
+            if (EquipmentForgeManager.Instance != null)
+            {
+                // Determine context based on available info
+                EquipmentForgeManager.ForgeContext context = EquipmentForgeManager.ForgeContext.Hero;
+                
+                Debug.Log($"[EquipmentDetailManager] OnForge: _info.Type = {_info?.Type}, SidekickId = {_info?.SidekickId}");
+                
+                if (_info != null && _info.Type == "sidekick")
+                {
+                    context = EquipmentForgeManager.ForgeContext.Ally;
+                    Debug.Log("[EquipmentDetailManager] Detected Ally context!");
+                }
+                else
+                {
+                    Debug.Log("[EquipmentDetailManager] Using Hero context (default)");
+                }
+                
+                EquipmentForgeManager.Instance.OpenForgePage(context);
+            }
+            else
+            {
+                Debug.LogError("EquipmentForgeManager.Instance is null!");
+            }
         }
 
         private void SetProfileFromServer(JObject obj)

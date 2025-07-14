@@ -5543,6 +5543,7 @@ GameObject:
   - component: {fileID: 95556005}
   - component: {fileID: 95556006}
   - component: {fileID: 95556007}
+  - component: {fileID: 95556008}
   m_Layer: 5
   m_Name: PopUpBox
   m_TagString: Untagged
@@ -5658,6 +5659,39 @@ MonoBehaviour:
   allyIllustrationImage: {fileID: 1617078270}
   allyNameText: {fileID: 462792705}
   closeButton: {fileID: 0}
+--- !u!114 &95556008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95556001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2cbb620eca0543f68294f7dc175d417, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forgePage: {fileID: 1848364211}
+  commonPage: {fileID: 736015918}
+  forgeBlock: {fileID: 1264902711}
+  forgePackContent: {fileID: 1773433199}
+  forgePackGrid: {fileID: 1773433201}
+  enhanceButton: {fileID: 914619125}
+  upgradeButton: {fileID: 1784955279}
+  enhancePanel: {fileID: 581774909}
+  upgradePanel: {fileID: 24154693}
+  enhanceOrangeImage: {fileID: 191565702}
+  enhanceGreyImage: {fileID: 966834362}
+  upgradeOrangeImage: {fileID: 1538652769}
+  upgradeGreyImage: {fileID: 1114339634}
+  heroStep2Panel: {fileID: 1262441832}
+  allyStep2Panel: {fileID: 554290720}
+  step3Panel: {fileID: 1063673503}
+  page1: {fileID: 772775876}
+  heroMenu: {fileID: 2042961323}
+  allyMenu: {fileID: 918948574}
+  heroSourceContentPanel: {fileID: 1392455117}
+  allySourceContentPanel: {fileID: 1090299598}
 --- !u!1 &96338606
 GameObject:
   m_ObjectHideFlags: 0
@@ -10199,10 +10233,10 @@ RectTransform:
   - {fileID: 818940042}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 19.92038, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 19.92038, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &164676380
 MonoBehaviour:
@@ -20228,10 +20262,10 @@ RectTransform:
   - {fileID: 1503305889}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 179.28342, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 179.28342, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &314492402
 MonoBehaviour:
@@ -26620,9 +26654,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2042961328}
-        m_TargetAssemblyTypeName: HeroBlockSetup, Assembly-CSharp
-        m_MethodName: OpenForgePage
+      - m_Target: {fileID: 1714996872}
+        m_TargetAssemblyTypeName: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDetailManager,
+          Assembly-CSharp
+        m_MethodName: OnForge
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -42462,8 +42497,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2042961328}
-        m_TargetAssemblyTypeName: HeroBlockSetup, Assembly-CSharp
+      - m_Target: {fileID: 95556008}
+        m_TargetAssemblyTypeName: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentForgeManager,
+          Assembly-CSharp
         m_MethodName: CloseForgePage
         m_Mode: 1
         m_Arguments:
@@ -47656,7 +47692,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
@@ -47665,11 +47705,11 @@ PrefabInstance:
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 1714996872}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 1063673503}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
       value: 
@@ -47680,15 +47720,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenForgePage
+      value: OnForge
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: LoadForgePageData
+      value: SetActive
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
       value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDetailManager,
+        Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
@@ -52037,6 +52086,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 771710565}
   m_CullTransparentMesh: 1
+--- !u!1 &772775876 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5069113131867248105, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+  m_PrefabInstance: {fileID: 708637944}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &774164161
 GameObject:
   m_ObjectHideFlags: 0
@@ -57754,10 +57808,10 @@ RectTransform:
   - {fileID: 1384277469}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 139.44266, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 139.44266, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &861964737
 MonoBehaviour:
@@ -78264,10 +78318,10 @@ RectTransform:
   - {fileID: 1098277734}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 59.76114, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 59.76114, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1137248909
 MonoBehaviour:
@@ -117565,6 +117619,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1714992727}
   m_CullTransparentMesh: 1
+--- !u!114 &1714996872 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2678482723182522127, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+  m_PrefabInstance: {fileID: 956996780}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a50d635189704597955ad37894380ba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1717895527
 GameObject:
   m_ObjectHideFlags: 0
@@ -118927,10 +118992,10 @@ RectTransform:
   - {fileID: 420959604}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 99.6019, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 99.6019, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1737751071
 MonoBehaviour:
