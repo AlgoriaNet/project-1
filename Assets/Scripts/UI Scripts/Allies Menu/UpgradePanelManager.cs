@@ -908,15 +908,22 @@ public class UpgradePanelManager : MonoBehaviour
     {
         if (step2StarGroup != null)
         {
-            Transform starYellow = step2StarGroup.Find($"Star{sValue}/yellow");
-            if (starYellow != null)
+            Debug.Log($"[UpgradePanelManager] Setting complete star state to {sValue} stars");
+            
+            // Set complete star state - enable stars 1 through sValue, disable the rest
+            for (int i = 1; i <= 5; i++)
             {
-                starYellow.gameObject.SetActive(true);
-                Debug.Log($"[UpgradePanelManager] Enabled Star{sValue}/yellow");
-            }
-            else
-            {
-                Debug.LogWarning($"[UpgradePanelManager] Star{sValue}/yellow not found in step2StarGroup");
+                Transform starYellow = step2StarGroup.Find($"Star{i}/yellow");
+                if (starYellow != null)
+                {
+                    bool shouldActivate = i <= sValue;
+                    starYellow.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[UpgradePanelManager] Star{i}/yellow = {shouldActivate}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[UpgradePanelManager] Star{i}/yellow not found in step2StarGroup");
+                }
             }
         }
         else

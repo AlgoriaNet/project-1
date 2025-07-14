@@ -360,22 +360,24 @@ public class AlliesGridSetup : MonoBehaviour
             return;
         }
 
-        // 🔹 Mirror StarGroup from Step 1 to Step 2
-        Debug.Log($"[AlliesGridSetup] OpenStep2: Mirroring stars from Step1 to Step2 for {index}_{name}");
+        // 🔹 Set Step2 stars based on actual backend star level (not mirroring from Step1)
+        string allyId = $"{index}_{name}";
+        int actualStarLevel = GetSidekickStarLevel(allyId);
+        Debug.Log($"[AlliesGridSetup] OpenStep2: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
+        
+        // Set complete star state based on actual star level
         for (int i = 1; i <= 5; i++)
         {
-            Transform step1Star = step1StarGroup.Find($"Star{i}/yellow");
             Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
-
-            if (step1Star != null && step2Star != null)
+            if (step2Star != null)
             {
-                bool step1Active = step1Star.gameObject.activeSelf;
-                step2Star.gameObject.SetActive(step1Active);
-                Debug.Log($"[AlliesGridSetup] OpenStep2: {index}_{name} Star{i}/yellow: Step1={step1Active} -> Step2={step1Active}");
+                bool shouldActivate = i <= actualStarLevel;
+                step2Star.gameObject.SetActive(shouldActivate);
+                Debug.Log($"[AlliesGridSetup] OpenStep2: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
             }
             else
             {
-                Debug.LogWarning($"❌ Star{i}/yellow not found in Step 1 or Step 2!");
+                Debug.LogWarning($"❌ Step2 Star{i}/yellow not found!");
             }
         }
 
@@ -586,15 +588,21 @@ public class AlliesGridSetup : MonoBehaviour
         leftArrowButton.interactable = false;
         rightArrowButton.interactable = false;
 
-        // Set default star levels (0 stars) for utilize flow
+        // Set Step2 stars based on actual star level for utilize flow
         if (step2StarGroup != null)
         {
+            string allyId = $"{allyIndex}_{allyName}";
+            int actualStarLevel = GetSidekickStarLevel(allyId);
+            Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
+            
             for (int i = 1; i <= 5; i++)
             {
                 Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
                 if (step2Star != null)
                 {
-                    step2Star.gameObject.SetActive(false);
+                    bool shouldActivate = i <= actualStarLevel;
+                    step2Star.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
@@ -675,15 +683,21 @@ public class AlliesGridSetup : MonoBehaviour
         leftArrowButton.interactable = (currentAllyIndex > 0);
         rightArrowButton.interactable = (currentAllyIndex < unlockedAllies.Count - 1);
 
-        // Set default star levels (0 stars) for utilize flow
+        // Set Step2 stars based on actual star level for utilize flow
         if (step2StarGroup != null)
         {
+            string allyId = $"{allyIndex}_{allyName}";
+            int actualStarLevel = GetSidekickStarLevel(allyId);
+            Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2Simple: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
+            
             for (int i = 1; i <= 5; i++)
             {
                 Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
                 if (step2Star != null)
                 {
-                    step2Star.gameObject.SetActive(false);
+                    bool shouldActivate = i <= actualStarLevel;
+                    step2Star.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[AlliesGridSetup] OpenUtilizeStep2Simple: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
@@ -1037,15 +1051,21 @@ public class AlliesGridSetup : MonoBehaviour
             upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
         }
 
-        // Set default star levels (0 stars) for utilize flow
+        // Set Step2 stars based on actual star level for utilize flow
         if (step2StarGroup != null)
         {
+            string allyId = $"{allyIndex}_{allyName}";
+            int actualStarLevel = GetSidekickStarLevel(allyId);
+            Debug.Log($"[AlliesGridSetup] NavigateUtilizeAlly: Setting Step2 stars for {allyId} to {actualStarLevel} stars");
+            
             for (int i = 1; i <= 5; i++)
             {
                 Transform step2Star = step2StarGroup.Find($"Star{i}/yellow");
                 if (step2Star != null)
                 {
-                    step2Star.gameObject.SetActive(false);
+                    bool shouldActivate = i <= actualStarLevel;
+                    step2Star.gameObject.SetActive(shouldActivate);
+                    Debug.Log($"[AlliesGridSetup] NavigateUtilizeAlly: {allyId} Step2 Star{i}/yellow = {shouldActivate}");
                 }
             }
         }
