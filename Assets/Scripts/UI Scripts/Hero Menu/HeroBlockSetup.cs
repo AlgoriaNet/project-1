@@ -25,7 +25,8 @@ public class HeroBlockSetup : MonoBehaviour
     private float rightPadding;
     private float spacingX;
     private float spacingY;
-    public GameObject step2Panel; // Reference to Step 2 Panel
+    public GameObject heroStep2Panel; // Reference to Hero Step 2 Panel
+    public GameObject allyStep2Panel; // Reference to Ally Step 2 Panel
 
     [SerializeField]
     private ItemLoader itemLoader;
@@ -261,7 +262,7 @@ public class HeroBlockSetup : MonoBehaviour
     private void OpenStep3(GameObject blockItem)
     {
         // Hide Step 2 and show Step 3 panel
-        step2Panel.SetActive(false);
+        heroStep2Panel.SetActive(false);
         step3Panel.SetActive(true);
 
         // Call the appropriate page logic based on the item type
@@ -315,8 +316,8 @@ public class HeroBlockSetup : MonoBehaviour
             string imageFileName = blockImage.sprite.name; // Get the image file name
             string equipmentName = imageFileName.Split('_')[0]; // Equipment name (before the "_")
 
-            // Use the Inspector-assigned Step2Panel > UpperGroup > Right Panel > Grid
-            Transform gridTransform = step2Panel.transform.Find("Upper Group/Right Panel/Grid");
+            // Use the Inspector-assigned heroStep2Panel > UpperGroup > Right Panel > Grid
+            Transform gridTransform = heroStep2Panel.transform.Find("Upper Group/Right Panel/Grid");
 
             if (gridTransform != null)
             {
@@ -454,8 +455,8 @@ public class HeroBlockSetup : MonoBehaviour
         {
             string partName = partImage.sprite.name; // Retrieve the name of the part image
 
-            // Use the Inspector-assigned Step2Panel > UpperGroup > Right Panel > Grid
-            Transform gridTransform = step2Panel.transform.Find("Upper Group/Right Panel/Grid");
+            // Use the Inspector-assigned heroStep2Panel > UpperGroup > Right Panel > Grid
+            Transform gridTransform = heroStep2Panel.transform.Find("Upper Group/Right Panel/Grid");
 
             if (gridTransform != null)
             {
@@ -558,7 +559,7 @@ public class HeroBlockSetup : MonoBehaviour
         step3Panel.SetActive(false);
 
         // Show Step 3 panel
-        step2Panel.SetActive(true);
+        heroStep2Panel.SetActive(true);
     }
 
     public void OpenForgePage()
@@ -566,8 +567,8 @@ public class HeroBlockSetup : MonoBehaviour
         ForgePage.SetActive(true);
         CommonPage.SetActive(false);
         CloseStep3();
-        step2Panel.SetActive(false);
-
+        heroStep2Panel.SetActive(false);
+        allyStep2Panel.SetActive(false);
         LoadForgePagePack(); // Load Pack after activating Hero Step 2
 
         // Add button listeners when ForgePage opens
@@ -672,7 +673,7 @@ public class HeroBlockSetup : MonoBehaviour
     {
         ForgePage.SetActive(false);
         CommonPage.SetActive(true);
-        step2Panel.SetActive(true);
+        heroStep2Panel.SetActive(true);
 
         // Clear ForgeBlock TopText and Image
         TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
@@ -692,7 +693,8 @@ public class HeroBlockSetup : MonoBehaviour
     {
         DismantlePage.SetActive(true);
         CloseStep3();
-        step2Panel.SetActive(false);
+        heroStep2Panel.SetActive(false);
+        allyStep2Panel.SetActive(false);
         commonPage.SetActive(false);
 
         LoadDismantlePagePack();
@@ -743,7 +745,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void CloseDismantlePage()
     {
         DismantlePage.SetActive(false);
-        step2Panel.SetActive(true);
+        heroStep2Panel.SetActive(true);
 
         CongratsPage.SetActive(false);
         DismantlePack.SetActive(true);

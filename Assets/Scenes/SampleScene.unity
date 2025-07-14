@@ -5562,6 +5562,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1848364212}
+  - {fileID: 850695945}
   - {fileID: 1063673504}
   - {fileID: 16595654}
   - {fileID: 1613661566}
@@ -13871,7 +13873,7 @@ GameObject:
   m_Component:
   - component: {fileID: 202782452}
   m_Layer: 5
-  m_Name: Step 1
+  m_Name: Ally Step 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -36107,7 +36109,7 @@ GameObject:
   - component: {fileID: 554290722}
   - component: {fileID: 554290723}
   m_Layer: 5
-  m_Name: Step 2
+  m_Name: Ally Step 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57132,7 +57134,7 @@ RectTransform:
   - {fileID: 1900089464}
   - {fileID: 1352440963}
   - {fileID: 1166928466}
-  m_Father: {fileID: 2042961324}
+  m_Father: {fileID: 95556002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -125299,7 +125301,7 @@ RectTransform:
   - {fileID: 581774910}
   - {fileID: 24154694}
   - {fileID: 618587720}
-  m_Father: {fileID: 2042961324}
+  m_Father: {fileID: 95556002}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -137228,8 +137230,6 @@ RectTransform:
   m_Children:
   - {fileID: 1262441833}
   - {fileID: 325606330}
-  - {fileID: 1848364212}
-  - {fileID: 850695945}
   - {fileID: 747696161}
   m_Father: {fileID: 774164165}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -137306,7 +137306,8 @@ MonoBehaviour:
   scrollView: {fileID: 1290777831}
   blocksPerRow: 5
   totalBlocks: 0
-  step2Panel: {fileID: 1262441832}
+  heroStep2Panel: {fileID: 1262441832}
+  allyStep2Panel: {fileID: 554290720}
   itemLoader: {fileID: 2042961329}
   step3Panel: {fileID: 325606329}
   closeButton: {fileID: 1717895531}
