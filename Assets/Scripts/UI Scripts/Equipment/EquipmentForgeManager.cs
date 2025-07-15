@@ -141,10 +141,21 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     equipment.Id == EquipmentComparisonManager.Instance.ComparedEquippedId);
             }
 
+            // If no equipment is selected, use the equipped helm as default (same as HeroEquipments.cs)
             if (selectedEquipment == null)
             {
-                Debug.LogError("❌ No equipment selected for forging!");
-                return;
+                var heroEquipments = PlayerProfile.Data.GetHeroEquipments();
+                selectedEquipment = heroEquipments.Find(equipment => equipment.Part == "Helm");
+                
+                if (selectedEquipment != null)
+                {
+                    Debug.Log($"✅ No equipment selected - using equipped helm as default: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
+                }
+                else
+                {
+                    Debug.LogError("❌ No equipped helm available for forging!");
+                    return;
+                }
             }
 
             // Update forge block with selected equipment data

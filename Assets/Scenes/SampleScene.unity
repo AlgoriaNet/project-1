@@ -5687,7 +5687,7 @@ MonoBehaviour:
   upgradeGreyImage: {fileID: 1114339634}
   heroStep2Panel: {fileID: 1262441832}
   allyStep2Panel: {fileID: 554290720}
-  step3Panel: {fileID: 1063673503}
+  equipCompPanel: {fileID: 0}
   page1: {fileID: 772775876}
   heroMenu: {fileID: 2042961323}
   allyMenu: {fileID: 918948574}
@@ -5714,7 +5714,7 @@ MonoBehaviour:
   dismantlePack: {fileID: 1352440962}
   heroStep2Panel: {fileID: 1262441832}
   allyStep2Panel: {fileID: 554290720}
-  step3Panel: {fileID: 1063673503}
+  equipCompPanel: {fileID: 0}
   heroMenu: {fileID: 2042961323}
   allyMenu: {fileID: 918948574}
   heroSourceContentPanel: {fileID: 1392455117}
@@ -10260,10 +10260,10 @@ RectTransform:
   - {fileID: 818940042}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 19.92038, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 19.92038, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &164676380
 MonoBehaviour:
@@ -20289,10 +20289,10 @@ RectTransform:
   - {fileID: 1503305889}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 179.28342, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 179.28342, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &314492402
 MonoBehaviour:
@@ -48006,17 +48006,21 @@ PrefabInstance:
       propertyPath: m_fontSize
       value: 26.7
       objectReference: {fileID: 0}
+    - target: {fileID: 9095707103046378784, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 0}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenDismantlePage
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -57835,10 +57839,10 @@ RectTransform:
   - {fileID: 1384277469}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 139.44266, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 139.44266, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &861964737
 MonoBehaviour:
@@ -62952,12 +62956,6 @@ MonoBehaviour:
   forgePackContent: {fileID: 532952679}
   forgePackGrid: {fileID: 532952681}
   forgeBlock: {fileID: 1028577380}
-  DismantlePage: {fileID: 823604916}
-  dismantlePackContent: {fileID: 712345890}
-  dismantlePackGrid: {fileID: 712345888}
-  CongratsPage: {fileID: 1389914830}
-  DismantlePack: {fileID: 1208766205}
-  dismantleBlock: {fileID: 1237828355}
 --- !u!1 &920491932
 GameObject:
   m_ObjectHideFlags: 0
@@ -65688,6 +65686,10 @@ PrefabInstance:
       value: -15.303962
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 2042961328}
@@ -65697,7 +65699,7 @@ PrefabInstance:
       objectReference: {fileID: 2042961328}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenForgePage
+      value: LoadForgePageData
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
@@ -78351,10 +78353,10 @@ RectTransform:
   - {fileID: 1098277734}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 59.76114, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 59.76114, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1137248909
 MonoBehaviour:
@@ -116001,7 +116003,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 3
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Mode
@@ -116010,11 +116016,11 @@ PrefabInstance:
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 1714996872}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 16595653}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_Target
       value: 
@@ -116025,15 +116031,24 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenForgePage
+      value: OnForge
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: LoadForgePageData
+      value: SetActive
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_MethodName
       value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDetailManager,
+        Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: UnityEngine.GameObject, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 949937194408958692, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[2].m_TargetAssemblyTypeName
@@ -116246,6 +116261,18 @@ PrefabInstance:
     - target: {fileID: 8962478418724370308, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_fontSize
       value: 26.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 9095707103046378784, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: LoadForgePageData
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -119026,10 +119053,10 @@ RectTransform:
   - {fileID: 420959604}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 99.6019, y: 0}
-  m_SizeDelta: {x: 200, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 99.6019, y: -100}
+  m_SizeDelta: {x: 0, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1737751071
 MonoBehaviour:
@@ -137430,12 +137457,6 @@ MonoBehaviour:
   forgePackGrid: {fileID: 1773433201}
   forgeBlock: {fileID: 1264902711}
   commonPage: {fileID: 736015918}
-  DismantlePage: {fileID: 850695944}
-  dismantlePackContent: {fileID: 869443358}
-  dismantlePackGrid: {fileID: 869443360}
-  CongratsPage: {fileID: 1656530108}
-  DismantlePack: {fileID: 1352440962}
-  dismantleBlock: {fileID: 1900089464}
   equipmentTabButton: {fileID: 372318549}
   gemTabButton: {fileID: 1761277943}
   otherTabButton: {fileID: 416476766}
