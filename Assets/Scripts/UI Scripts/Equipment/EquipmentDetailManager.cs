@@ -119,6 +119,29 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         public void OnDismantle()
         {
+            if (EquipmentDismantleManager.Instance != null)
+            {
+                // Determine context based on available info
+                EquipmentDismantleManager.DismantleContext context = EquipmentDismantleManager.DismantleContext.Hero;
+                
+                Debug.Log($"[EquipmentDetailManager] OnDismantle: _info.Type = {_info?.Type}, SidekickId = {_info?.SidekickId}");
+                
+                if (_info != null && _info.Type == "sidekick")
+                {
+                    context = EquipmentDismantleManager.DismantleContext.Ally;
+                    Debug.Log("[EquipmentDetailManager] Detected Ally context for dismantle!");
+                }
+                else
+                {
+                    Debug.Log("[EquipmentDetailManager] Using Hero context for dismantle (default)");
+                }
+                
+                EquipmentDismantleManager.Instance.OpenDismantlePage(context);
+            }
+            else
+            {
+                Debug.LogError("❌ EquipmentDismantleManager.Instance is null!");
+            }
         }
 
         public void OnForge()

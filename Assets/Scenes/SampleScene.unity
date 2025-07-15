@@ -5544,6 +5544,7 @@ GameObject:
   - component: {fileID: 95556006}
   - component: {fileID: 95556007}
   - component: {fileID: 95556008}
+  - component: {fileID: 95556009}
   m_Layer: 5
   m_Name: PopUpBox
   m_TagString: Untagged
@@ -5688,6 +5689,32 @@ MonoBehaviour:
   allyStep2Panel: {fileID: 554290720}
   step3Panel: {fileID: 1063673503}
   page1: {fileID: 772775876}
+  heroMenu: {fileID: 2042961323}
+  allyMenu: {fileID: 918948574}
+  heroSourceContentPanel: {fileID: 1392455117}
+  allySourceContentPanel: {fileID: 1090299598}
+--- !u!114 &95556009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95556001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2e0ea7d067c049ee9e6a1bb8daa9b4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dismantlePage: {fileID: 850695944}
+  commonPage: {fileID: 736015918}
+  dismantleBlock: {fileID: 1900089463}
+  dismantlePackContent: {fileID: 869443358}
+  dismantlePackGrid: {fileID: 869443360}
+  congratsPage: {fileID: 1656530108}
+  dismantlePack: {fileID: 1352440962}
+  heroStep2Panel: {fileID: 1262441832}
+  allyStep2Panel: {fileID: 554290720}
+  step3Panel: {fileID: 1063673503}
   heroMenu: {fileID: 2042961323}
   allyMenu: {fileID: 918948574}
   heroSourceContentPanel: {fileID: 1392455117}
@@ -10233,10 +10260,10 @@ RectTransform:
   - {fileID: 818940042}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 19.92038, y: -100}
-  m_SizeDelta: {x: 0, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 19.92038, y: 0}
+  m_SizeDelta: {x: 200, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &164676380
 MonoBehaviour:
@@ -20262,10 +20289,10 @@ RectTransform:
   - {fileID: 1503305889}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 179.28342, y: -100}
-  m_SizeDelta: {x: 0, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 179.28342, y: 0}
+  m_SizeDelta: {x: 200, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &314492402
 MonoBehaviour:
@@ -57808,10 +57835,10 @@ RectTransform:
   - {fileID: 1384277469}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 139.44266, y: -100}
-  m_SizeDelta: {x: 0, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 139.44266, y: 0}
+  m_SizeDelta: {x: 200, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &861964737
 MonoBehaviour:
@@ -61547,8 +61574,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2042961328}
-        m_TargetAssemblyTypeName: HeroBlockSetup, Assembly-CSharp
+      - m_Target: {fileID: 95556009}
+        m_TargetAssemblyTypeName: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDismantleManager,
+          Assembly-CSharp
         m_MethodName: OpenCongratsPage
         m_Mode: 1
         m_Arguments:
@@ -65910,18 +65938,23 @@ PrefabInstance:
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 2042961328}
+      objectReference: {fileID: 1714996872}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 1063673503}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OpenDismantlePage
+      value: OnDismantle
       objectReference: {fileID: 0}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
       value: SetActive
+      objectReference: {fileID: 0}
+    - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDetailManager,
+        Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 9206054319769607239, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
@@ -69964,7 +69997,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1.8009644, y: 0}
+  m_AnchoredPosition: {x: 1.8010254, y: 0}
   m_SizeDelta: {x: 580, y: 580}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1025437483
@@ -78318,10 +78351,10 @@ RectTransform:
   - {fileID: 1098277734}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 59.76114, y: -100}
-  m_SizeDelta: {x: 0, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 59.76114, y: 0}
+  m_SizeDelta: {x: 200, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1137248909
 MonoBehaviour:
@@ -81007,8 +81040,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2042961328}
-        m_TargetAssemblyTypeName: HeroBlockSetup, Assembly-CSharp
+      - m_Target: {fileID: 95556009}
+        m_TargetAssemblyTypeName: PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox.EquipmentDismantleManager,
+          Assembly-CSharp
         m_MethodName: CloseDismantlePage
         m_Mode: 1
         m_Arguments:
@@ -93432,7 +93466,7 @@ GameObject:
   - component: {fileID: 1373071434}
   - component: {fileID: 1373071433}
   m_Layer: 5
-  m_Name: TopText
+  m_Name: EquipNameText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -118992,10 +119026,10 @@ RectTransform:
   - {fileID: 420959604}
   m_Father: {fileID: 1730897760}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 99.6019, y: -100}
-  m_SizeDelta: {x: 0, y: 200}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 99.6019, y: 0}
+  m_SizeDelta: {x: 200, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1737751071
 MonoBehaviour:
@@ -141438,7 +141472,7 @@ GameObject:
   - component: {fileID: 2093590924}
   - component: {fileID: 2093590923}
   m_Layer: 5
-  m_Name: Image
+  m_Name: EquipImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
