@@ -104,6 +104,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             allyStep2Panel.SetActive(false);
             LoadForgePagePack();
 
+            // Load selected equipment data into forge block
+            LoadForgePageData();
+
             // Add button listeners when ForgePage opens
             enhanceButton.onClick.RemoveAllListeners();
             upgradeButton.onClick.RemoveAllListeners();
@@ -130,32 +133,81 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 return;
             }
 
-            // Reference Hero Step 3 → Page_1 → UpperGroup → Block
-            Transform heroBlock = page1.transform.Find("UpperGroup/Block");
-            if (heroBlock == null)
+            // Get the selected equipment from EquipmentComparisonManager
+            Equipment selectedEquipment = null;
+            if (EquipmentComparisonManager.Instance != null && EquipmentComparisonManager.Instance.ComparedEquippedId > 0)
             {
-                Debug.LogError("❌ Hero Step 3 Block NOT found!");
+                selectedEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment => 
+                    equipment.Id == EquipmentComparisonManager.Instance.ComparedEquippedId);
+            }
+
+            if (selectedEquipment == null)
+            {
+                Debug.LogError("❌ No equipment selected for forging!");
                 return;
             }
 
-            // Copy TopText
-            TextMeshProUGUI heroTopText = heroBlock.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-            TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-            if (heroTopText != null && forgeTopText != null)
+            // Update forge block with selected equipment data
+            LoadSelectedEquipmentToForgeBlock(selectedEquipment);
+        }
+
+        private void LoadSelectedEquipmentToForgeBlock(Equipment equipment)
+        {
+            // Find EquipImage and EquipNameText in the forge block
+            Image equipImage = forgeBlock.transform.Find("EquipImage")?.GetComponent<Image>();
+            TextMeshProUGUI equipNameText = forgeBlock.transform.Find("EquipNameText")?.GetComponent<TextMeshProUGUI>();
+            
+            // Get the background image component from the forge block itself (for quality color)
+            Image backgroundImage = forgeBlock.GetComponent<Image>();
+
+            if (equipImage == null)
             {
-                forgeTopText.text = heroTopText.text;
+                Debug.LogError("❌ EquipImage NOT found in ForgeBlock! Expected hierarchy: Block/EquipImage");
+                return;
             }
 
-            // Copy Image
-            Image heroImage = heroBlock.Find("Image")?.GetComponent<Image>();
-            Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
-            if (heroImage != null && forgeImage != null)
+            if (equipNameText == null)
             {
-                forgeImage.sprite = heroImage.sprite;
-                forgeImage.color = Color.white; // Ensure visibility
+                Debug.LogError("❌ EquipNameText NOT found in ForgeBlock! Expected hierarchy: Block/EquipNameText");
+                return;
             }
 
-            Debug.Log("✅ ForgePage Block Updated Successfully!");
+            // Load equipment image
+            string imagePath = $"UILoading/Equipment/{equipment.Name}";
+            Sprite equipmentSprite = Resources.Load<Sprite>(imagePath);
+            if (equipmentSprite != null)
+            {
+                equipImage.sprite = equipmentSprite;
+                equipImage.color = Color.white; // Ensure visibility
+                Debug.Log($"✅ Loaded equipment image: {imagePath}");
+            }
+            else
+            {
+                Debug.LogError($"❌ Equipment sprite not found at path: {imagePath}");
+                equipImage.color = Color.clear; // Hide if no sprite found
+            }
+
+            // Set equipment name (extract equipment type from name, e.g., "Chest" from "Chest_06")
+            string equipmentDisplayName = equipment.Name;
+            if (equipment.Name.Contains("_"))
+            {
+                equipmentDisplayName = equipment.Name.Split('_')[0]; // Get "Chest" from "Chest_06"
+            }
+            equipNameText.text = equipmentDisplayName;
+
+            // Set background color based on equipment quality
+            if (backgroundImage != null)
+            {
+                Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
+                backgroundImage.color = qualityColor;
+                Debug.Log($"✅ Set equipment quality color: Quality {equipment.Quality} = {qualityColor}");
+            }
+            else
+            {
+                Debug.LogWarning("⚠️ No background Image component found on ForgeBlock for quality color");
+            }
+
+            Debug.Log($"✅ ForgePage Block Updated Successfully with {equipment.Name} (ID: {equipment.Id}, Quality: {equipment.Quality})!");
         }
         
         public void LoadForgePagePack()
@@ -190,30 +242,61 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 Debug.LogError($"❌ {currentContext} Source Content Panel NOT assigned in Inspector!");
             }
 
-            // Apply dynamic grid adjustments
+            // Apply dynamic grid adjustments with delayed setup to ensure RectTransform is properly sized
             if (forgePackGrid != null)
             {
-                SetupForgePackGrid();
+                StartCoroutine(DelayedSetupForgePackGrid());
             }
+        }
+        
+        private System.Collections.IEnumerator DelayedSetupForgePackGrid()
+        {
+            // Wait for the next frame to ensure UI layout is updated
+            yield return null;
+            
+            // Force canvas update to ensure rect sizes are calculated
+            Canvas.ForceUpdateCanvases();
+            
+            // Wait one more frame for the force update to take effect
+            yield return null;
+            
+            SetupForgePackGrid();
         }
         
         private void SetupForgePackGrid()
         {
-            // Try to get grid settings from HeroBlockSetup
-            HeroBlockSetup heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
-            if (heroBlockSetup != null)
+            // Get panel width from the RectTransform, ensuring it's properly updated
+            RectTransform forgeContentRect = forgePackContent.GetComponent<RectTransform>();
+            float panelWidth = forgeContentRect.rect.width;
+            
+            // If width is still 0 or very small, use a fallback calculation
+            if (panelWidth <= 10f)
             {
-                // Access the grid layout variables through reflection or make them public
-                // For now, use default values similar to HeroBlockSetup
-                float panelWidth = forgePackContent.GetComponent<RectTransform>().rect.width;
-                int blocksPerRow = 5;
+                Debug.LogWarning($"[ForgeManager] forgePackContent width is too small ({panelWidth}), using fallback calculation");
                 
-                blockWidth = panelWidth / (blocksPerRow + 1);
-                leftPadding = blockWidth * 0.25f;
-                rightPadding = blockWidth * 0.25f;
-                spacingX = blockWidth * 0.125f;
-                spacingY = blockWidth * 0.125f;
+                // Get width from parent or use a reasonable fallback
+                RectTransform parentRect = forgeContentRect.parent as RectTransform;
+                if (parentRect != null && parentRect.rect.width > 10f)
+                {
+                    panelWidth = parentRect.rect.width;
+                    Debug.Log($"[ForgeManager] Using parent width: {panelWidth}");
+                }
+                else
+                {
+                    // Last resort fallback - use a standard screen proportion
+                    panelWidth = Screen.width * 0.8f;
+                    Debug.Log($"[ForgeManager] Using screen-based fallback width: {panelWidth}");
+                }
             }
+            
+            int blocksPerRow = 5;
+            blockWidth = panelWidth / (blocksPerRow + 1);
+            leftPadding = blockWidth * 0.25f;
+            rightPadding = blockWidth * 0.25f;
+            spacingX = blockWidth * 0.125f;
+            spacingY = blockWidth * 0.125f;
+            
+            Debug.Log($"[ForgeManager] Grid setup - panelWidth: {panelWidth}, blockWidth: {blockWidth}, context: {currentContext}");
             
             forgePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             forgePackGrid.constraintCount = 5;
@@ -256,15 +339,25 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 heroStep2Panel.SetActive(true);
             }
 
-            // Clear ForgeBlock TopText and Image
-            TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-            Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
+            // Clear ForgeBlock EquipImage, EquipNameText, and background color
+            Image equipImage = forgeBlock.transform.Find("EquipImage")?.GetComponent<Image>();
+            TextMeshProUGUI equipNameText = forgeBlock.transform.Find("EquipNameText")?.GetComponent<TextMeshProUGUI>();
+            Image backgroundImage = forgeBlock.GetComponent<Image>();
 
-            if (forgeTopText != null) forgeTopText.text = "";
-            if (forgeImage != null)
+            if (equipImage != null)
             {
-                forgeImage.sprite = null;
-                forgeImage.color = new Color(0, 0, 0, 0); // Fully transparent
+                equipImage.sprite = null;
+                equipImage.color = new Color(0, 0, 0, 0); // Fully transparent
+            }
+
+            if (equipNameText != null)
+            {
+                equipNameText.text = "";
+            }
+
+            if (backgroundImage != null)
+            {
+                backgroundImage.color = Color.white; // Reset to default white background
             }
 
             Debug.Log($"✅ ForgePage Block Cleared on Close! Returned to {currentContext} panel.");
