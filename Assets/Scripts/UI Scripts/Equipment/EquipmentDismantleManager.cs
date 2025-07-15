@@ -22,7 +22,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [Header("Other Panel References")]
         public GameObject heroStep2Panel;
         public GameObject allyStep2Panel;
-        public GameObject step3Panel;
+        public GameObject equipCompPanel;
         
         [Header("Menu References")]
         public GameObject heroMenu;
@@ -92,7 +92,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             dismantlePage.SetActive(true);
             commonPage.SetActive(false);
-            CloseStep3();
+            CloseEquipComp();
             heroStep2Panel.SetActive(false);
             allyStep2Panel.SetActive(false);
             LoadDismantlePagePack();
@@ -101,11 +101,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             LoadDismantlePageData();
         }
         
-        private void CloseStep3()
+        private void CloseEquipComp()
         {
-            if (step3Panel != null)
+            if (equipCompPanel != null)
             {
-                step3Panel.SetActive(false);
+                equipCompPanel.SetActive(false);
             }
         }
         

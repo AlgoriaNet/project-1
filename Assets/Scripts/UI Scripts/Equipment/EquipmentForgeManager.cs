@@ -28,7 +28,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [Header("Other Panel References")]
         public GameObject heroStep2Panel;
         public GameObject allyStep2Panel;
-        public GameObject step3Panel;
+        public GameObject equipCompPanel;
         public GameObject page1;
         
         [Header("Menu References")]
@@ -99,7 +99,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             forgePage.SetActive(true);
             commonPage.SetActive(false);
-            CloseStep3();
+            CloseEquipComp();
             heroStep2Panel.SetActive(false);
             allyStep2Panel.SetActive(false);
             LoadForgePagePack();
@@ -117,11 +117,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             ToggleEnhanceUpgrade(true);
         }
         
-        private void CloseStep3()
+        private void CloseEquipComp()
         {
-            if (step3Panel != null)
+            if (equipCompPanel != null)
             {
-                step3Panel.SetActive(false);
+                equipCompPanel.SetActive(false);
             }
         }
         

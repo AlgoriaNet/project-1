@@ -51,13 +51,7 @@ public class AlliesBlockSetup : MonoBehaviour
     public GridLayoutGroup forgePackGrid; // Assign the GridLayoutGroup of ForgePage's Pack in Inspector
     public GameObject forgeBlock; // Assign ForgePage → Block in Inspector
 
-    public GameObject DismantlePage;
-    public Transform dismantlePackContent; 
-    public GridLayoutGroup dismantlePackGrid; 
-
-    public GameObject CongratsPage;
-    public GameObject DismantlePack;
-    public RectTransform dismantleBlock; 
+ 
 
     // A dictionary to store the mapping between gem image file names and their localized names
     private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
@@ -682,77 +676,9 @@ public class AlliesBlockSetup : MonoBehaviour
         Debug.Log("✅ ForgePage Block Cleared on Close!");
     }
 
-    public void OpenDismantlePage()
-    {
-        DismantlePage.SetActive(true);
-        CloseStep3();
-        step2Panel.SetActive(false);
 
-        LoadDismantlePagePack();
-    }
 
-    public void LoadDismantlePagePack()
-    {
-        if (dismantlePackContent == null)
-        {
-            Debug.LogError("❌ ForgePage Pack Content NOT assigned in Inspector!");
-            return;
-        }
 
-        // Clear existing items in ForgePage Pack
-        foreach (Transform child in dismantlePackContent)
-        {
-            Destroy(child.gameObject);
-        }
 
-        // Clone each item from the existing Pack
-        foreach (Transform item in contentPanel) // contentPanel is already assigned in HeroBlockSetup
-        {
-            GameObject newItem = Instantiate(item.gameObject, dismantlePackContent);
-            newItem.name = item.name; // Keep the same name
-        }
 
-        // ✅ Apply dynamic grid adjustments
-        if (dismantlePackGrid != null)
-        {
-            dismantlePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            dismantlePackGrid.constraintCount = 5; // Match LowerGroup settings
-            dismantlePackGrid.cellSize = new Vector2(blockWidth, blockWidth); 
-            dismantlePackGrid.spacing = new Vector2(spacingX, spacingY);
-            dismantlePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
-            dismantlePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
-        }
-
-        Debug.Log("✅ dismantlePage Pack Loaded Successfully!");
-    }
-
-    public void OpenCongratsPage()
-    {
-        CongratsPage.SetActive(true);
-        DismantlePack.SetActive(false);
-        MoveBlockDown();
-    }
-
-    public void CloseDismantlePage()
-    {
-        DismantlePage.SetActive(false);
-        step2Panel.SetActive(true);
-
-        CongratsPage.SetActive(false);
-        DismantlePack.SetActive(true);
-
-        MoveBlockUp();
-    }
-
-    public void MoveBlockDown()
-    {
-        dismantleBlock.anchorMin = new Vector2(dismantleBlock.anchorMin.x, 0.5f);
-        dismantleBlock.anchorMax = new Vector2(dismantleBlock.anchorMax.x, 0.5f);
-    }
-
-    public void MoveBlockUp()
-    {
-        dismantleBlock.anchorMin = new Vector2(dismantleBlock.anchorMin.x, 0.75f);
-        dismantleBlock.anchorMax = new Vector2(dismantleBlock.anchorMax.x, 0.7f);
-    }
 }

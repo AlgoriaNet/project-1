@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using model; // For IEnumerator and coroutines
 using TMPro;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // For EquipmentDismantleManager
 
 public class ItemLoader : MonoBehaviour
 {
@@ -132,9 +133,16 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenDismantlePage()
     {
-        // Logic for Dismantle (to be implemented)
-        FindObjectOfType<HeroBlockSetup>()?.OpenDismantlePage();
-        Debug.Log("Opening Dismantle Page...");
+        // Use the new EquipmentDismantleManager instead of HeroBlockSetup
+        if (EquipmentDismantleManager.Instance != null)
+        {
+            EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Hero);
+            Debug.Log("Opening Dismantle Page via EquipmentDismantleManager...");
+        }
+        else
+        {
+            Debug.LogError("❌ EquipmentDismantleManager.Instance is null!");
+        }
     }
 
     private void OpenGemMergePage()
