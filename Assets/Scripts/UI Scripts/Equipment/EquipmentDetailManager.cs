@@ -42,6 +42,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [NonSerialized] private Equipment _equipment;
         [NonSerialized] private Info _info;
         private EquipmentWebSocketApi _equipmentApi;
+        private bool _isEquipping = false; // Guard to prevent double equipping
         [SerializeField] private List<TextMeshProUGUI> extraNames;
         [SerializeField] private List<TextMeshProUGUI> extraValues;
 
@@ -58,21 +59,38 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         
         public void Start()
         {
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Start called - adding button listeners");
+            
             if (forgeButton != null)
                 forgeButton.onClick.AddListener(OnForge);
             if (replaceButton != null)
                 replaceButton.onClick.AddListener(OnReplace);
             if (demountButton != null)
                 demountButton.onClick.AddListener(OnDismantle);
-            if (equipButton != null)
-                equipButton.onClick.AddListener(OnEquip);
+            // Don't add equipButton listener here - it will be added in Init() to prevent conflicts
+            // if (equipButton != null)
+            //     equipButton.onClick.AddListener(OnEquip);
         }
 
         public void Init(Equipment equipment, List<EquipmentDetailStatus> status, [CanBeNull] Info info = null)
         {
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Init called - equipment: {equipment?.Name}, info.Type: {info?.Type}, info.SidekickId: {info?.SidekickId}");
+            
             _equipment = equipment;
             Status = status;
             _info = info;
+            
+            // Remove and re-add listeners to prevent double-clicking issues
+            if (equipButton != null)
+            {
+                equipButton.onClick.RemoveAllListeners();
+                equipButton.onClick.AddListener(OnEquip);
+                Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Added OnEquip listener to equipButton");
+            }
+            else
+            {
+                Debug.LogWarning($"[EquipmentDetailManager-{GetInstanceID()}] equipButton is null in Init!");
+            }
             currentTag.gameObject.SetActive(
                 status.Exists(detailStatus => detailStatus == EquipmentDetailStatus.Current));
             replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
@@ -211,16 +229,23 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         public void OnEquip()
         {
-            Debug.Log($"[EquipmentDetailManager] OnEquip called - equipment: {_equipment?.Name}");
-            Debug.Log($"[EquipmentDetailManager] _info null: {_info == null}");
-            Debug.Log($"[EquipmentDetailManager] _info.Type: {_info?.Type}");
-            Debug.Log($"[EquipmentDetailManager] _info.SidekickId: {_info?.SidekickId}");
-            Debug.Log($"[EquipmentDetailManager] _equipment null: {_equipment == null}");
-            Debug.Log($"[EquipmentDetailManager] _equipment.Id: {_equipment?.Id}");
+            // Prevent double execution
+            if (_isEquipping)
+            {
+                Debug.LogWarning($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip already in progress - ignoring duplicate call");
+                return;
+            }
+            
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip called - equipment: {_equipment?.Name}");
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info null: {_info == null}");
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info.Type: {_info?.Type}");
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info.SidekickId: {_info?.SidekickId}");
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _equipment null: {_equipment == null}");
+            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _equipment.Id: {_equipment?.Id}");
             
             if (_equipment == null)
             {
-                Debug.LogError("[EquipmentDetailManager] OnEquip: No equipment to equip!");
+                Debug.LogWarning($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip: No equipment data - likely old instance with stale listener, ignoring");
                 return;
             }
 
@@ -228,6 +253,14 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Debug.LogError("[EquipmentDetailManager] ❌ Equip button clicked but _info is null! Cannot proceed with equip operation.");
                 return;
+            }
+
+            // Set the guard flag and disable button
+            _isEquipping = true;
+            if (equipButton != null)
+            {
+                equipButton.interactable = false;
+                Debug.Log("[EquipmentDetailManager] Disabled equip button to prevent double-clicking");
             }
 
             var apiParams = new
@@ -238,15 +271,59 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             };
             
             Debug.Log($"[EquipmentDetailManager] Equip API params - type: {_info.Type}, sidekickId: {_info.SidekickId}, equipmentId: {_equipment.Id}");
-            Debug.Log($"[EquipmentDetailManager] Using Replace API for equipping to empty slot");
+            Debug.Log($"[EquipmentDetailManager] Using dedicated Equip API for empty slot equipping");
             
-            // Use the existing Replace API - it handles both replace and equip scenarios
-            _equipmentApi.Action("replace", apiParams, SetProfileFromServer);
+            // Use the dedicated Equip API for empty slot equipping
+            _equipmentApi.Action("equip", apiParams, SetProfileFromServer);
         }
 
         private void SetProfileFromServer(JObject obj)
         {
-            PlayerProfile.Data.SetPlayer(obj["Player"].ToObject<Player>());
+            Debug.Log($"[EquipmentDetailManager] SetProfileFromServer called with response structure");
+            
+            // Reset the guard flag and re-enable the equip button regardless of success/failure
+            _isEquipping = false;
+            if (equipButton != null)
+            {
+                equipButton.interactable = true;
+                Debug.Log("[EquipmentDetailManager] Re-enabled equip button and reset guard flag");
+            }
+            
+            if (obj == null)
+            {
+                Debug.LogError("[EquipmentDetailManager] ❌ Server response is null!");
+                return;
+            }
+            
+            // Check for the correct response structure: obj["player_profile"]["Player"]
+            if (obj["player_profile"] == null)
+            {
+                Debug.LogError($"[EquipmentDetailManager] ❌ Server response missing 'player_profile' field. Response keys: {string.Join(", ", obj.Properties().Select(p => p.Name))}");
+                return;
+            }
+            
+            if (obj["player_profile"]["Player"] == null)
+            {
+                Debug.LogError($"[EquipmentDetailManager] ❌ Server response missing 'Player' field in player_profile. player_profile keys: {string.Join(", ", obj["player_profile"].Cast<JProperty>().Select(p => p.Name))}");
+                return;
+            }
+            
+            try
+            {
+                PlayerProfile.Data.SetPlayer(obj["player_profile"]["Player"].ToObject<Player>());
+                Debug.Log("[EquipmentDetailManager] ✅ Player profile updated successfully from server response");
+                
+                // Close the equipment detail popup after successful equipping
+                if (EquipmentDetailBox.Instance != null && EquipmentDetailBox.Instance.popUpBox != null)
+                {
+                    EquipmentDetailBox.Instance.popUpBox.SetActive(false);
+                    Debug.Log("[EquipmentDetailManager] Closed equipment detail popup after successful equipping");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[EquipmentDetailManager] ❌ Failed to parse Player object: {ex.Message}");
+            }
         }
     }
 }

@@ -60993,7 +60993,7 @@ MonoBehaviour:
   leftArrowButton: {fileID: 2092208200}
   rightArrowButton: {fileID: 932484903}
   upgradePanelManager: {fileID: 554290723}
-  alliesEquipments: {fileID: 0}
+  alliesEquipments: {fileID: 918948582}
   itemImage: {fileID: 180112875}
   upButtonText: {fileID: 306287981}
 --- !u!114 &918948580
@@ -61056,7 +61056,7 @@ MonoBehaviour:
   forgePackContent: {fileID: 532952679}
   forgePackGrid: {fileID: 532952681}
   forgeBlock: {fileID: 1028577380}
-  alliesGridSetup: {fileID: 0}
+  alliesGridSetup: {fileID: 918948579}
 --- !u!114 &918948582
 MonoBehaviour:
   m_ObjectHideFlags: 0

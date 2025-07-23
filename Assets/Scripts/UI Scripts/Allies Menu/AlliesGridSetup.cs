@@ -1194,6 +1194,13 @@ public class AlliesGridSetup : MonoBehaviour
         {
             upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
         }
+        
+        // Load equipment display for the navigated ally
+        if (alliesEquipments != null)
+        {
+            alliesEquipments.InitForCurrentAlly();
+            Debug.Log($"[AlliesGridSetup] Refreshed equipment slots for navigated ally: {allyName}");
+        }
     }
     
     /// <summary>

@@ -26,6 +26,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             background.color = ItemLoader.quantityColor[equipment.Quality];
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
             icon.color = Color.white;
+            Debug.Log($"[EquipmentColumnManager] Initialized equipment {equipment.Name} with quality {equipment.Quality} color");
         }
 
         public void ClearIcon()
@@ -33,6 +34,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             _equipment = null;
             icon.sprite = null;
             icon.color = Color.clear;
+            // Reset background color to white for empty slots
+            background.color = Color.white;
+            Debug.Log($"[EquipmentColumnManager] Cleared equipment slot - background reset to white");
         }
         
         private void OnDetail()

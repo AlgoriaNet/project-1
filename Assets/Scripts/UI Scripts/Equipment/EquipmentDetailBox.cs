@@ -65,10 +65,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             var infoObject = new EquipmentDetailManager.Info
             {
                 Type = context.ToString().ToLower(),
-                SidekickId = context == EquipmentComparisonManager.EquippedOn.Sidekick ? contextId : null
+                SidekickId = context == EquipmentComparisonManager.EquippedOn.Sidekick ? contextId : (int?)null
             };
 
             Debug.Log($"[EquipmentDetailBox] InitForEquipping - equipment: {equipment?.Name}, context: {context}, contextId: {contextId}");
+            Debug.Log($"[EquipmentDetailBox] Created Info object - Type: {infoObject.Type}, SidekickId: {infoObject.SidekickId}");
 
             _currentEquipmentDetailManager.Init(equipment,
                 new List<EquipmentDetailManager.EquipmentDetailStatus>
