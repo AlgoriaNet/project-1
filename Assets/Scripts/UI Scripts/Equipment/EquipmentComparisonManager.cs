@@ -56,15 +56,22 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             _currentEquippedOn = equippedOn;
             ComparedEquippedId = (int)equippedId;
             _comparedEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment => equipment.Id == equippedId);
+            
+            Debug.Log($"[EquipmentComparisonManager] Init - looking for compared equipment ID {equippedId}");
+            Debug.Log($"[EquipmentComparisonManager] Init - found compared equipment: {(_comparedEquipment != null ? $"ID {_comparedEquipment.Id}, Part {_comparedEquipment.Part}" : "NULL")}");
+            
             if (_currentEquippedOn == EquippedOn.Hero)
             {
+                Debug.Log("[EquipmentComparisonManager] Init - looking for current Hero equipment");
                 _currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
                     equipment.Part == _comparedEquipment.Part && equipment.EquipWithHeroId > 0);
             }
             else
             {
+                Debug.Log($"[EquipmentComparisonManager] Init - looking for current Sidekick equipment with sidekickId {sidekickId} and part {_comparedEquipment?.Part}");
                 _currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
                     equipment.Part == _comparedEquipment.Part && equipment.EquipWithSidekickId == sidekickId);
+                Debug.Log($"[EquipmentComparisonManager] Init - found current sidekick equipment: {(_currentEquipment != null ? $"ID {_currentEquipment.Id}" : "NULL")}");
             }
 
             SidekickId = sidekickId;
@@ -74,21 +81,28 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         private void UpdateUi()
         {
-            if (_currentEquipment != null)
-            {
-                currentEquipmentTransform.gameObject.SetActive(true);
-                _currentEquipmentDetailManager.Init(_currentEquipment,
-                    new List<EquipmentDetailManager.EquipmentDetailStatus>
-                    {
-                        EquipmentDetailManager.EquipmentDetailStatus.Current
-                    });
-            }
-            else
-            {
-                currentEquipmentTransform.gameObject.SetActive(false);
-            }
+            Debug.Log($"[EquipmentComparisonManager] UpdateUi - currentEquipment: {(_currentEquipment != null ? $"Found ID {_currentEquipment.Id}" : "NULL")}");
+            Debug.Log($"[EquipmentComparisonManager] UpdateUi - comparedEquipment: {(_comparedEquipment != null ? $"Found ID {_comparedEquipment.Id}" : "NULL")}");
+            Debug.Log($"[EquipmentComparisonManager] UpdateUi - currentEquippedOn: {_currentEquippedOn}, SidekickId: {SidekickId}");
+            
+            // Always show EquipmentDetail (1) - even for empty slots
+            Debug.Log($"[EquipmentComparisonManager] Always activating currentEquipmentTransform - equipment: {(_currentEquipment != null ? $"ID {_currentEquipment.Id}" : "NULL")}");
+            currentEquipmentTransform.gameObject.SetActive(true);
+            _currentEquipmentDetailManager.Init(_currentEquipment,
+                new List<EquipmentDetailManager.EquipmentDetailStatus>
+                {
+                    EquipmentDetailManager.EquipmentDetailStatus.Current
+                });
 
             comparedEquipmentTransform.gameObject.SetActive(true);
+            var infoObject = new EquipmentDetailManager.Info
+            {
+                Type = _currentEquippedOn.ToString().ToLower(),
+                SidekickId = _currentEquippedOn == EquippedOn.Sidekick ? SidekickId : null
+            };
+            
+            Debug.Log($"[EquipmentComparisonManager] Creating Info object - Type: {infoObject.Type}, SidekickId: {infoObject.SidekickId}");
+            
             _comparedEquipmentDetailManager.Init(_comparedEquipment,
                 new List<EquipmentDetailManager.EquipmentDetailStatus>
                 {
@@ -97,11 +111,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     EquipmentDetailManager.EquipmentDetailStatus.Forge,
                     EquipmentDetailManager.EquipmentDetailStatus.Dismantle
                 },
-                new EquipmentDetailManager.Info
-                {
-                    Type = _currentEquippedOn.ToString().ToLower(),
-                    SidekickId = _currentEquippedOn == EquippedOn.Sidekick ? SidekickId : null
-                });
+                infoObject);
         }
     }
 }

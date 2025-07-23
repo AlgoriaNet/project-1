@@ -47,7 +47,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 new List<EquipmentDetailManager.EquipmentDetailStatus>
                 {
                     EquipmentDetailManager.EquipmentDetailStatus.Current
-                });
+                },
+                null); // Add the missing third parameter
             popUpBox.SetActive(true);
         }
     }

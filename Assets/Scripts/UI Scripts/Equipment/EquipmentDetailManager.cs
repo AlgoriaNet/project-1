@@ -77,21 +77,44 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 detailStatus == EquipmentDetailStatus.Dismantle));
 
             // Assign sprite to the Image based on resourcesPath
-            Sprite itemSprite = Resources.Load<Sprite>($"UILoading/Equipment/{_equipment.Name}");
-            equipmentName.text = _equipment.Name;
-            background.color = ItemLoader.quantityColor[_equipment.Quality];
-            icon.sprite = itemSprite;
-            icon.color = Color.white;
-            attack.text = _equipment.Attack.ToString();
-
-            for (int i = 0; i < extraNames.Count; i++)
+            if (_equipment?.Name != null)
             {
-                if(i < _equipment.NearbyAttributes.Count)
+                Sprite itemSprite = Resources.Load<Sprite>($"UILoading/Equipment/{_equipment.Name}");
+                icon.sprite = itemSprite;
+                equipmentName.text = _equipment.Name;
+                background.color = ItemLoader.quantityColor[_equipment.Quality];
+                icon.color = Color.white;
+            }
+            else
+            {
+                Debug.LogWarning("[EquipmentDetailManager] Equipment or equipment name is null");
+                icon.sprite = null;
+                equipmentName.text = "No Equipment";
+                background.color = Color.gray;
+                icon.color = Color.white;
+            }
+            if (_equipment != null)
+            {
+                attack.text = _equipment.Attack.ToString();
+
+                for (int i = 0; i < extraNames.Count; i++)
                 {
-                    extraNames[i].text = _equipment.NearbyAttributes.Keys.ToArray()[i];
-                    extraValues[i].text = _equipment.NearbyAttributes.Values.ToArray()[i].ToString();
+                    if(i < _equipment.NearbyAttributes.Count)
+                    {
+                        extraNames[i].text = _equipment.NearbyAttributes.Keys.ToArray()[i];
+                        extraValues[i].text = _equipment.NearbyAttributes.Values.ToArray()[i].ToString();
+                    }
+                    else
+                    {
+                        extraNames[i].text = "";
+                        extraValues[i].text = "";
+                    }
                 }
-                else
+            }
+            else
+            {
+                attack.text = "0";
+                for (int i = 0; i < extraNames.Count; i++)
                 {
                     extraNames[i].text = "";
                     extraValues[i].text = "";
@@ -101,10 +124,16 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         public void OnReplace()
         {
-            Debug.Log("OnReplace");
+            Debug.Log($"[EquipmentDetailManager] OnReplace called");
+            Debug.Log($"[EquipmentDetailManager] _info null: {_info == null}");
+            Debug.Log($"[EquipmentDetailManager] _info.Type: {_info?.Type}");
+            Debug.Log($"[EquipmentDetailManager] _info.SidekickId: {_info?.SidekickId}");
+            Debug.Log($"[EquipmentDetailManager] _equipment null: {_equipment == null}");
+            Debug.Log($"[EquipmentDetailManager] _equipment.Id: {_equipment?.Id}");
+            
             if (_info == null)
             {
-                //todo 提示Error
+                Debug.LogError("[EquipmentDetailManager] ❌ Replace button clicked but _info is null! Cannot proceed with replace operation.");
                 return;
             }
 
@@ -114,6 +143,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 sidekickId = _info.SidekickId,
                 equipmentId = _equipment.Id
             };
+            
+            Debug.Log($"[EquipmentDetailManager] Replace API params - type: {_info.Type}, sidekickId: {_info.SidekickId}, equipmentId: {_equipment.Id}");
             _equipmentApi.Action("replace", apiParams, SetProfileFromServer);
         }
 

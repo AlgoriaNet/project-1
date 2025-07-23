@@ -29,6 +29,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         
         private void OnDetail()
         {
+            // Open EquipmentDetailBox for both empty and equipped slots
+            Debug.Log($"[EquipmentColumnManager] Equipment slot clicked - equipment: {(_equipment != null ? _equipment.Name : "NULL")}");
             EquipmentDetailBox.Instance.Init(_equipment);
         }
     }

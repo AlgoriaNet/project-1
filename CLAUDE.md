@@ -1,6 +1,6 @@
-# Frontend-Backend Data Synchronization Guide
+# Claude Agent Guide
 
-## Critical Architecture Patterns (Lessons from 100-hour debugging session)
+## Critical Architecture Patterns
 
 ### ❌ ANTI-PATTERN: Split Data Operations
 **Never do this:**
@@ -116,8 +116,50 @@ Before implementing any data update feature:
 - [ ] Add comprehensive logging throughout the pipeline
 - [ ] Verify UI updates immediately without additional API calls
 
+## Unity Console Logging System
+
+### Console to File Script
+- **Location**: `Assets/Scripts/AIDebug/ConsoleToFile.cs`
+- **Log Output Path**: `Assets/Logs/console.log`
+- **Behavior**: Automatically captures all Unity console output (Debug.Log, Debug.LogError, etc.) to file
+- **Active When**: Editor mode or Development builds only
+- **Format**: `[HH:mm:ss] LogType: Message`
+- **Clear Policy**: Log file is cleared on game start in Editor mode
+
+### Usage for Claude Agents
+```bash
+# To read current Unity console logs:
+cat "/Volumes/WD_SSD/UnityProjects/project-1-equip/Assets/Logs/console.log"
+
+# To monitor logs in real-time:
+tail -f "/Volumes/WD_SSD/UnityProjects/project-1-equip/Assets/Logs/console.log"
+```
+
+### Debug Logging Best Practices
+- All debug logs automatically saved to file for analysis
+- Use descriptive log messages with context
+- Include timestamps for timing analysis
+- Log complete API responses during development
+- Add component/system prefixes: `[PlayerProfile]`, `[API]`, `[WebSocket]`
+
 ---
 
 **Remember**: If you need to make a second API call to "refresh" data after a primary operation, your architecture is wrong. Fix the primary operation to return complete data instead.
 
-**Time Investment**: Spend 2 hours on proper API design to save 100 hours of debugging later.
+## Project Structure
+- **API Reference**: See `API_REFERENCE.md` for all endpoints
+- **Console Logs**: `Assets/Logs/console.log` (auto-captured)
+- **Development History**: See `DEVELOPMENT_HISTORY.md` for implementation context
+- **Documentation Rules**: See `DOC_RULES.md` for update guidelines
+
+## Key Scripts
+- `Assets/Scripts/utils/Config.cs` - API configuration
+- `Assets/Scripts/AuthService.cs` - API pattern reference  
+- `Assets/Scripts/AIDebug/ConsoleToFile.cs` - Console logging
+
+## Agent Guidelines
+- Fix bugs freely
+- Update documentation after changes
+- Use atomic API responses (never split operations)
+- Log complete responses during development
+- Follow existing patterns in codebase

@@ -381,6 +381,76 @@ const result = await fetch(`/api/allies/${allyId}/level_up`, {method: 'POST'});
 
 ---
 
-*Last Updated: 2025-01-10*
-*Session Duration: ~3 hours*
-*Status: Level Up Costs System Complete*
+## Session: 2025-01-22 - Allies Equipment Selection Implementation
+
+**Agent**: Claude
+**Duration**: 1 hour  
+**Context**: Implementing equipment selection/comparison functionality for Allies menu to match Hero menu behavior
+
+### Changes Made
+
+#### 1. Equipment Selection for Allies Menu
+**File Modified**: `/Assets/Scripts/UI Scripts/Allies Menu/AlliesBlockSetup.cs`
+
+**Changes**:
+- Fixed equipment block click handlers to use `Sidekick` context instead of `Hero`
+- Added proper sidekick ID detection for equipment comparison
+- Added reflection-based access to current ally information from AlliesGridSetup
+
+**Key Implementation**:
+```csharp
+// OLD - Incorrect Hero context:
+EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id);
+
+// NEW - Correct Sidekick context:
+int currentSidekickId = GetCurrentSidekickId();
+EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment?.Id, currentSidekickId);
+```
+
+#### 2. Current Sidekick Detection System
+**Methods Added**:
+- `GetCurrentSidekickId()` - Determines which ally is currently selected in Step 2
+- `GetCurrentAllyNameFromGridSetup()` - Uses reflection to access private fields from AlliesGridSetup
+- `GetAllyBaseIdFromName()` - Converts ally name to base_id format for PlayerProfile lookup
+
+**Logic Flow**:
+1. Get current ally name from AlliesGridSetup using reflection
+2. Convert ally name to base_id (e.g., "Aurelia" → "4")  
+3. Look up sidekick in PlayerProfile data by base_id
+4. Return sidekick.id for equipment comparison context
+
+### Technical Details
+
+**Context Detection**: 
+- Allies menu equipment now properly uses `EquippedOn.Sidekick` context
+- Sidekick ID is dynamically determined based on currently selected ally
+- Falls back to ID 0 if detection fails
+
+**Data Flow**:
+- User clicks equipment in Allies Step 2 → Right Panel → Grid → Block_n
+- System detects current ally from AlliesGridSetup.currentAllyName
+- Converts ally name to sidekick ID via PlayerProfile lookup
+- Passes sidekick context to EquipmentComparisonManager
+- Comparison popup shows current vs selected equipment for that specific sidekick
+
+### Files Modified
+- `/Assets/Scripts/UI Scripts/Allies Menu/AlliesBlockSetup.cs` - Equipment selection implementation
+- Added LINQ using statement for FirstOrDefault operations
+
+### Integration Notes
+- Uses existing EquipmentComparisonManager with Sidekick context support
+- Maintains same UI/UX pattern as Hero menu equipment selection
+- Equipment can now be equipped/replaced specifically for the selected ally
+- Replace button will dress the selected equipment on the current sidekick
+
+### Testing Requirements
+- Verify equipment popup shows in Allies menu when clicking pack items
+- Confirm comparison shows current ally's equipped item vs selected item  
+- Test replace functionality equips item to correct sidekick
+- Validate proper sidekick ID detection across different allies
+
+---
+
+*Last Updated: 2025-01-22*
+*Session Duration: ~3 hours*  
+*Status: Allies Equipment Selection Complete*

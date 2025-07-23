@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System; // Required for Exception
 using System.Collections.Generic; // This is required for using Dictionary
+using System.Linq; // Required for FirstOrDefault
 using TMPro;
 using model;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones;
@@ -51,7 +53,8 @@ public class AlliesBlockSetup : MonoBehaviour
     public GridLayoutGroup forgePackGrid; // Assign the GridLayoutGroup of ForgePage's Pack in Inspector
     public GameObject forgeBlock; // Assign ForgePage → Block in Inspector
 
- 
+    // Reference to AlliesGridSetup to get current sidekick information
+    [SerializeField] private AlliesGridSetup alliesGridSetup;
 
     // A dictionary to store the mapping between gem image file names and their localized names
     private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
@@ -206,8 +209,12 @@ public class AlliesBlockSetup : MonoBehaviour
                 itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
                 blockButton.onClick.AddListener(() => 
                 {
-                   // Use Hero equipment comparison since they share the same pack
-                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Hero, equipment?.Id); 
+                    // Get current sidekick ID for Allies equipment comparison
+                    int currentSidekickId = GetCurrentSidekickId();
+                    Debug.Log($"[AlliesBlockSetup] Equipment clicked - using Sidekick context with ID: {currentSidekickId}");
+                    
+                    // Use Sidekick context for Allies menu equipment
+                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment?.Id, currentSidekickId); 
                 });
             }
             else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
@@ -674,6 +681,126 @@ public class AlliesBlockSetup : MonoBehaviour
         }
 
         Debug.Log("✅ ForgePage Block Cleared on Close!");
+    }
+
+    /// <summary>
+    /// Get the current sidekick ID for equipment comparison.
+    /// This uses the AlliesGridSetup to determine which ally is currently selected in Step 2.
+    /// </summary>
+    /// <returns>The current sidekick ID, or 0 if not found</returns>
+    private int GetCurrentSidekickId()
+    {
+        // If AlliesGridSetup is not assigned, try to find it
+        if (alliesGridSetup == null)
+        {
+            alliesGridSetup = FindObjectOfType<AlliesGridSetup>();
+        }
+
+        if (alliesGridSetup == null)
+        {
+            Debug.LogWarning("[AlliesBlockSetup] AlliesGridSetup not found - cannot determine current sidekick ID");
+            return 0;
+        }
+
+        // Get current ally name from AlliesGridSetup
+        string currentAllyName = GetCurrentAllyNameFromGridSetup();
+        if (string.IsNullOrEmpty(currentAllyName))
+        {
+            Debug.LogWarning("[AlliesBlockSetup] Current ally name is empty - using default sidekick ID 0");
+            return 0;
+        }
+
+        // Convert ally name to sidekick ID by looking up in PlayerProfile data
+        if (PlayerProfile.Data?.Sidekick != null)
+        {
+            // Find the sidekick that matches this ally
+            var sidekick = PlayerProfile.Data.Sidekick.FirstOrDefault(s =>
+            {
+                // Match by base_id - convert ally name to base_id format
+                string allyBaseId = GetAllyBaseIdFromName(currentAllyName);
+                return s.base_id == allyBaseId;
+            });
+
+            if (sidekick != null)
+            {
+                Debug.Log($"[AlliesBlockSetup] Found sidekick ID {sidekick.id} for ally {currentAllyName}");
+                if (int.TryParse(sidekick.id, out int sidekickId))
+                {
+                    return sidekickId;
+                }
+                else
+                {
+                    Debug.LogWarning($"[AlliesBlockSetup] Could not parse sidekick ID '{sidekick.id}' to int");
+                    return 0;
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[AlliesBlockSetup] No sidekick found for ally {currentAllyName}");
+            }
+        }
+
+        return 0; // Default to 0 if not found
+    }
+
+    /// <summary>
+    /// Get the current ally name from AlliesGridSetup using reflection to access private fields
+    /// </summary>
+    /// <returns>Current ally name or empty string if not found</returns>
+    private string GetCurrentAllyNameFromGridSetup()
+    {
+        if (alliesGridSetup == null) return "";
+
+        try
+        {
+            // Use reflection to access the private currentAllyName field
+            var currentAllyNameField = typeof(AlliesGridSetup).GetField("currentAllyName", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (currentAllyNameField != null)
+            {
+                string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
+                Debug.Log($"[AlliesBlockSetup] Retrieved current ally name: {currentAllyName}");
+                return currentAllyName ?? "";
+            }
+            else
+            {
+                Debug.LogWarning("[AlliesBlockSetup] Could not access currentAllyName field via reflection");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[AlliesBlockSetup] Error getting current ally name: {ex.Message}");
+        }
+
+        return "";
+    }
+
+    /// <summary>
+    /// Convert ally name to base_id format used in sidekick data
+    /// </summary>
+    /// <param name="allyName">Ally name (e.g., "Aurelia")</param>
+    /// <returns>Base ID (e.g., "4" for index 04_Aurelia)</returns>
+    private string GetAllyBaseIdFromName(string allyName)
+    {
+        // Character names matching the file names (same as in AlliesGridSetup)
+        string[] characterNames = {
+            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
+            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
+            "Lucien", "Ugra", "Eleanor", "Nyx"
+        };
+
+        for (int i = 0; i < characterNames.Length; i++)
+        {
+            if (characterNames[i] == allyName)
+            {
+                // Convert 0-based index to 1-based base_id (e.g., index 3 -> base_id "4")
+                return (i + 1).ToString();
+            }
+        }
+
+        Debug.LogWarning($"[AlliesBlockSetup] Unknown ally name: {allyName}");
+        return "0";
     }
 
 

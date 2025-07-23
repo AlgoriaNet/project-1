@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using model;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu;
 
 public class AlliesGridSetup : MonoBehaviour
 {
@@ -35,6 +36,9 @@ public class AlliesGridSetup : MonoBehaviour
     
     // Reference to UpgradePanelManager for loading ally upgrade levels
     public UpgradePanelManager upgradePanelManager;
+    
+    // Reference to AlliesEquipments for loading ally equipment display
+    public AlliesEquipments alliesEquipments;
 
     // Step 2 LevelUp/StarUp UI components
     public Image itemImage; // Single image that switches between shard/skillbook
@@ -429,6 +433,12 @@ public class AlliesGridSetup : MonoBehaviour
             upgradePanelManager.LoadUpgradePanelsForAlly($"{index}_{name}");
         }
         
+        // Load equipment display for the selected ally
+        if (alliesEquipments != null)
+        {
+            alliesEquipments.InitForCurrentAlly();
+        }
+        
         // CRITICAL FIX: Ensure UpgradePanelManager mode is synced after navigation
         // This must happen after RefreshLowerSectionForCurrentAlly() to ensure proper mode sync
         if (upgradePanelManager != null)
@@ -558,6 +568,12 @@ public class AlliesGridSetup : MonoBehaviour
         if (upgradePanelManager != null)
         {
             upgradePanelManager.LoadUpgradePanelsForAlly($"{index}_{name}");
+        }
+        
+        // Load equipment display for the selected ally
+        if (alliesEquipments != null)
+        {
+            alliesEquipments.InitForCurrentAlly();
         }
         
         // Sync UpgradePanelManager mode after navigation
