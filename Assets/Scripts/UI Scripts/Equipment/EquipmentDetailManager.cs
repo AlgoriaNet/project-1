@@ -23,7 +23,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             Compare,
             Forge,
             Replace,
-            Dismantle
+            Dismantle,
+            Equip
         }
         
         [NonSerialized] public List<EquipmentDetailStatus> Status;
@@ -35,6 +36,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [SerializeField] public Button forgeButton;
         [SerializeField] public Button replaceButton;
         [SerializeField] public Button demountButton;
+        [SerializeField] public Button equipButton;
         [SerializeField] public GameObject extraStatsNames;
         [SerializeField] public GameObject extraStatsValues;
         [NonSerialized] private Equipment _equipment;
@@ -62,6 +64,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 replaceButton.onClick.AddListener(OnReplace);
             if (demountButton != null)
                 demountButton.onClick.AddListener(OnDismantle);
+            if (equipButton != null)
+                equipButton.onClick.AddListener(OnEquip);
         }
 
         public void Init(Equipment equipment, List<EquipmentDetailStatus> status, [CanBeNull] Info info = null)
@@ -75,6 +79,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 detailStatus == EquipmentDetailStatus.Replace));
             demountButton.gameObject.SetActive(status.Exists(detailStatus =>
                 detailStatus == EquipmentDetailStatus.Dismantle));
+            if (equipButton != null)
+                equipButton.gameObject.SetActive(status.Exists(detailStatus =>
+                    detailStatus == EquipmentDetailStatus.Equip));
 
             // Assign sprite to the Image based on resourcesPath
             if (_equipment?.Name != null)
@@ -200,6 +207,41 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Debug.LogError("EquipmentForgeManager.Instance is null!");
             }
+        }
+
+        public void OnEquip()
+        {
+            Debug.Log($"[EquipmentDetailManager] OnEquip called - equipment: {_equipment?.Name}");
+            Debug.Log($"[EquipmentDetailManager] _info null: {_info == null}");
+            Debug.Log($"[EquipmentDetailManager] _info.Type: {_info?.Type}");
+            Debug.Log($"[EquipmentDetailManager] _info.SidekickId: {_info?.SidekickId}");
+            Debug.Log($"[EquipmentDetailManager] _equipment null: {_equipment == null}");
+            Debug.Log($"[EquipmentDetailManager] _equipment.Id: {_equipment?.Id}");
+            
+            if (_equipment == null)
+            {
+                Debug.LogError("[EquipmentDetailManager] OnEquip: No equipment to equip!");
+                return;
+            }
+
+            if (_info == null)
+            {
+                Debug.LogError("[EquipmentDetailManager] ❌ Equip button clicked but _info is null! Cannot proceed with equip operation.");
+                return;
+            }
+
+            var apiParams = new
+            {
+                type = _info.Type,
+                sidekickId = _info.SidekickId,
+                equipmentId = _equipment.Id
+            };
+            
+            Debug.Log($"[EquipmentDetailManager] Equip API params - type: {_info.Type}, sidekickId: {_info.SidekickId}, equipmentId: {_equipment.Id}");
+            Debug.Log($"[EquipmentDetailManager] Using Replace API for equipping to empty slot");
+            
+            // Use the existing Replace API - it handles both replace and equip scenarios
+            _equipmentApi.Action("replace", apiParams, SetProfileFromServer);
         }
 
         private void SetProfileFromServer(JObject obj)

@@ -85,8 +85,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             Debug.Log($"[EquipmentComparisonManager] UpdateUi - comparedEquipment: {(_comparedEquipment != null ? $"Found ID {_comparedEquipment.Id}" : "NULL")}");
             Debug.Log($"[EquipmentComparisonManager] UpdateUi - currentEquippedOn: {_currentEquippedOn}, SidekickId: {SidekickId}");
             
-            // Always show EquipmentDetail (1) - even for empty slots
-            Debug.Log($"[EquipmentComparisonManager] Always activating currentEquipmentTransform - equipment: {(_currentEquipment != null ? $"ID {_currentEquipment.Id}" : "NULL")}");
+            // Show current equipment panel (should always have equipment now due to proper routing)
+            Debug.Log($"[EquipmentComparisonManager] Activating currentEquipmentTransform - equipment: {(_currentEquipment != null ? $"ID {_currentEquipment.Id}" : "NULL")}");
             currentEquipmentTransform.gameObject.SetActive(true);
             _currentEquipmentDetailManager.Init(_currentEquipment,
                 new List<EquipmentDetailManager.EquipmentDetailStatus>

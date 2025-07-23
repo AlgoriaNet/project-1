@@ -213,8 +213,21 @@ public class AlliesBlockSetup : MonoBehaviour
                     int currentSidekickId = GetCurrentSidekickId();
                     Debug.Log($"[AlliesBlockSetup] Equipment clicked - using Sidekick context with ID: {currentSidekickId}");
                     
-                    // Use Sidekick context for Allies menu equipment
-                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment?.Id, currentSidekickId); 
+                    // Check if there's currently equipped equipment for this part and sidekick
+                    Equipment currentEquipment = GetCurrentlyEquippedForSidekick(equipment.Part, currentSidekickId);
+                    
+                    if (currentEquipment != null)
+                    {
+                        // Equipment slot is occupied - show comparison page
+                        Debug.Log($"[AlliesBlockSetup] Slot occupied by equipment ID {currentEquipment.Id} - showing comparison");
+                        EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment?.Id, currentSidekickId);
+                    }
+                    else
+                    {
+                        // Equipment slot is empty - show single equipment detail for equipping
+                        Debug.Log($"[AlliesBlockSetup] Slot empty - showing single detail for equipping");
+                        EquipmentDetailBox.Instance.InitForEquipping(equipment, EquipmentComparisonManager.EquippedOn.Sidekick, currentSidekickId);
+                    }
                 });
             }
             else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
@@ -741,6 +754,27 @@ public class AlliesBlockSetup : MonoBehaviour
         }
 
         return 0; // Default to 0 if not found
+    }
+
+    /// <summary>
+    /// Check if there's currently equipped equipment for a specific part and sidekick
+    /// </summary>
+    /// <param name="equipmentPart">The equipment part to check (e.g., "Helm", "Chest")</param>
+    /// <param name="sidekickId">The sidekick ID to check equipment for</param>
+    /// <returns>The currently equipped Equipment, or null if no equipment is equipped</returns>
+    private Equipment GetCurrentlyEquippedForSidekick(string equipmentPart, int sidekickId)
+    {
+        if (PlayerProfile.Data?.Player?.Equipments == null)
+        {
+            return null;
+        }
+
+        // Find equipment that matches the part and is equipped to this sidekick
+        Equipment currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
+            equipment.Part == equipmentPart && equipment.EquipWithSidekickId == sidekickId);
+
+        Debug.Log($"[AlliesBlockSetup] Checking equipped {equipmentPart} for sidekick {sidekickId}: {(currentEquipment != null ? $"Found ID {currentEquipment.Id}" : "None")}");
+        return currentEquipment;
     }
 
     /// <summary>

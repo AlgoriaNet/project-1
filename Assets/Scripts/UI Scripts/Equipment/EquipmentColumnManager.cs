@@ -25,13 +25,28 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             _equipment = equipment;
             background.color = ItemLoader.quantityColor[equipment.Quality];
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
+            icon.color = Color.white;
+        }
+
+        public void ClearIcon()
+        {
+            _equipment = null;
+            icon.sprite = null;
+            icon.color = Color.clear;
         }
         
         private void OnDetail()
         {
-            // Open EquipmentDetailBox for both empty and equipped slots
-            Debug.Log($"[EquipmentColumnManager] Equipment slot clicked - equipment: {(_equipment != null ? _equipment.Name : "NULL")}");
-            EquipmentDetailBox.Instance.Init(_equipment);
+            // Only open EquipmentDetailBox if equipment exists (not for empty slots)
+            if (_equipment != null)
+            {
+                Debug.Log($"[EquipmentColumnManager] Equipment slot clicked - equipment: {_equipment.Name}");
+                EquipmentDetailBox.Instance.Init(_equipment);
+            }
+            else
+            {
+                Debug.Log($"[EquipmentColumnManager] Empty equipment slot clicked - no action (should be handled by AlliesEquipments for empty slots)");
+            }
         }
     }
 }

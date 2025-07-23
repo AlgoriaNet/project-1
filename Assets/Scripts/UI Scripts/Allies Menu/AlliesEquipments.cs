@@ -192,10 +192,13 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             if (slotTransform == null) return;
             
             EquipmentColumnManager columnManager = slotTransform.GetComponent<EquipmentColumnManager>();
-            if (columnManager != null && columnManager.detailButton != null)
+            if (columnManager != null)
             {
-                columnManager.detailButton.onClick.RemoveAllListeners();
-                // Hide or reset the visual state as needed
+                columnManager.ClearIcon();
+                if (columnManager.detailButton != null)
+                {
+                    columnManager.detailButton.onClick.RemoveAllListeners();
+                }
             }
         }
 

@@ -195,6 +195,7 @@ public class HeroBlockSetup : MonoBehaviour
                     {
                         // Detect context based on active panels
                         EquipmentComparisonManager.EquippedOn context = EquipmentComparisonManager.EquippedOn.Hero;
+                        int contextId = 0; // Hero uses 0, Sidekick uses actual ID
                         
                         Debug.Log($"[HeroBlockSetup] Context Detection - allyStep2Panel null: {allyStep2Panel == null}");
                         if (allyStep2Panel != null)
@@ -210,14 +211,29 @@ public class HeroBlockSetup : MonoBehaviour
                         if (allyStep2Panel != null && allyStep2Panel.activeInHierarchy)
                         {
                             context = EquipmentComparisonManager.EquippedOn.Sidekick;
-                            Debug.Log("[HeroBlockSetup] Detected Ally context - using Sidekick");
+                            contextId = GetCurrentSidekickIdFromAllies(); // Get sidekick ID for Ally context
+                            Debug.Log($"[HeroBlockSetup] Detected Ally context - using Sidekick with ID: {contextId}");
                         }
                         else
                         {
                             Debug.Log("[HeroBlockSetup] Detected Hero context - using Hero");
                         }
                         
-                        EquipmentComparisonManager.Instance.Init(context, equipment?.Id); 
+                        // Check if there's currently equipped equipment for this part and context
+                        Equipment currentEquipment = GetCurrentlyEquippedForContext(equipment.Part, context, contextId);
+                        
+                        if (currentEquipment != null)
+                        {
+                            // Equipment slot is occupied - show comparison page
+                            Debug.Log($"[HeroBlockSetup] Slot occupied by equipment ID {currentEquipment.Id} - showing comparison");
+                            EquipmentComparisonManager.Instance.Init(context, equipment?.Id, contextId);
+                        }
+                        else
+                        {
+                            // Equipment slot is empty - show single equipment detail for equipping
+                            Debug.Log($"[HeroBlockSetup] Slot empty - showing single detail for equipping");
+                            EquipmentDetailBox.Instance.InitForEquipping(equipment, context, contextId);
+                        }
                     });
                 }
                 
@@ -388,5 +404,61 @@ public class HeroBlockSetup : MonoBehaviour
             return;
         }
         Debug.LogWarning("[HeroBlockSetup] equipmentTabButton not assigned!");
+    }
+
+    /// <summary>
+    /// Get the current sidekick ID when in Ally context by finding AlliesBlockSetup
+    /// </summary>
+    /// <returns>The current sidekick ID, or 0 if not found</returns>
+    private int GetCurrentSidekickIdFromAllies()
+    {
+        // Find AlliesBlockSetup in the scene and use its method
+        AlliesBlockSetup alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+        if (alliesBlockSetup != null)
+        {
+            // Use reflection to call the private GetCurrentSidekickId method
+            var method = alliesBlockSetup.GetType().GetMethod("GetCurrentSidekickId", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (method != null)
+            {
+                return (int)method.Invoke(alliesBlockSetup, null);
+            }
+        }
+        
+        Debug.LogWarning("[HeroBlockSetup] Could not get current sidekick ID from AlliesBlockSetup");
+        return 0;
+    }
+
+    /// <summary>
+    /// Check if there's currently equipped equipment for a specific part and context
+    /// </summary>
+    /// <param name="equipmentPart">The equipment part to check (e.g., "Helm", "Chest")</param>
+    /// <param name="context">The context (Hero or Sidekick)</param>
+    /// <param name="contextId">The context ID (0 for Hero, sidekick ID for Sidekick)</param>
+    /// <returns>The currently equipped Equipment, or null if no equipment is equipped</returns>
+    private Equipment GetCurrentlyEquippedForContext(string equipmentPart, EquipmentComparisonManager.EquippedOn context, int contextId)
+    {
+        if (PlayerProfile.Data?.Player?.Equipments == null)
+        {
+            return null;
+        }
+
+        Equipment currentEquipment = null;
+        
+        if (context == EquipmentComparisonManager.EquippedOn.Hero)
+        {
+            // Find equipment that matches the part and is equipped to Hero
+            currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
+                equipment.Part == equipmentPart && equipment.EquipWithHeroId > 0);
+        }
+        else // Sidekick context
+        {
+            // Find equipment that matches the part and is equipped to this sidekick
+            currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
+                equipment.Part == equipmentPart && equipment.EquipWithSidekickId == contextId);
+        }
+
+        Debug.Log($"[HeroBlockSetup] Checking equipped {equipmentPart} for {context} {contextId}: {(currentEquipment != null ? $"Found ID {currentEquipment.Id}" : "None")}");
+        return currentEquipment;
     }
 }

@@ -46,9 +46,37 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             _currentEquipmentDetailManager.Init(equipment,
                 new List<EquipmentDetailManager.EquipmentDetailStatus>
                 {
-                    EquipmentDetailManager.EquipmentDetailStatus.Current
+                    EquipmentDetailManager.EquipmentDetailStatus.Current,
+                    EquipmentDetailManager.EquipmentDetailStatus.Forge // Show Forge button for equipped items (upper group)
                 },
                 null); // Add the missing third parameter
+            popUpBox.SetActive(true);
+        }
+
+        /// <summary>
+        /// Initialize equipment detail box for equipping to an empty slot
+        /// Shows Replace button for equipping functionality
+        /// </summary>
+        /// <param name="equipment">The equipment to show</param>
+        /// <param name="context">The context (Hero or Sidekick)</param>
+        /// <param name="contextId">The context ID (0 for Hero, sidekick ID for Sidekick)</param>
+        public void InitForEquipping(Equipment equipment, EquipmentComparisonManager.EquippedOn context, int contextId)
+        {
+            var infoObject = new EquipmentDetailManager.Info
+            {
+                Type = context.ToString().ToLower(),
+                SidekickId = context == EquipmentComparisonManager.EquippedOn.Sidekick ? contextId : null
+            };
+
+            Debug.Log($"[EquipmentDetailBox] InitForEquipping - equipment: {equipment?.Name}, context: {context}, contextId: {contextId}");
+
+            _currentEquipmentDetailManager.Init(equipment,
+                new List<EquipmentDetailManager.EquipmentDetailStatus>
+                {
+                    EquipmentDetailManager.EquipmentDetailStatus.Current,
+                    EquipmentDetailManager.EquipmentDetailStatus.Equip // Show Equip button for empty slots
+                },
+                infoObject);
             popUpBox.SetActive(true);
         }
     }
