@@ -207,6 +207,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             dismantlePackGrid.constraintCount = 5;
             dismantlePackGrid.cellSize = new Vector2(blockWidth, blockWidth);
             dismantlePackGrid.spacing = new Vector2(spacingX, spacingY);
+            dismantlePackGrid.childAlignment = TextAnchor.UpperLeft; // Align items to the left instead of center
             dismantlePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
             dismantlePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
         }
