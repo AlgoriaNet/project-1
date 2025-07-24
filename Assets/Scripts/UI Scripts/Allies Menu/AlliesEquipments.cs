@@ -121,16 +121,18 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             // Initialize the equipment display
             columnManager.Init(equipment, new List<Gemstone>());
             
-            // Override the click handler to use Sidekick context for comparison
+            // Set up click handler to open EquipmentDetailBox (same as Hero menu behavior)
             if (columnManager.detailButton != null)
             {
                 columnManager.detailButton.onClick.RemoveAllListeners();
                 columnManager.detailButton.onClick.AddListener(() => 
                 {
-                    Debug.Log($"[AlliesEquipments] Equipment clicked - opening comparison for sidekick {sidekickId}, equipment {equipment.Id}");
-                    EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment.Id, sidekickId);
+                    Debug.Log($"[AlliesEquipments] Equipped {equipment.Name} clicked - opening EquipmentDetailBox");
+                    EquipmentDetailBox.Instance.Init(equipment);
                 });
             }
+            
+            Debug.Log($"[AlliesEquipments] Loading equipment: {equipment.Part} - {equipment.Name}");
         }
 
         /// <summary>

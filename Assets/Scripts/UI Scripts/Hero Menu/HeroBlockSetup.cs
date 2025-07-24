@@ -144,6 +144,7 @@ public class HeroBlockSetup : MonoBehaviour
         grid.spacing = new Vector2(spacingX, spacingY);
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = blocksPerRow;
+        grid.childAlignment = TextAnchor.UpperLeft; // Align items to the left instead of center
 
         // Apply padding to the grid
         grid.padding.left = Mathf.RoundToInt(leftPadding);
