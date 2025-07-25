@@ -5,10 +5,9 @@ using System.Collections;
 using System.Linq; // For LINQ operations
 using model; // For IEnumerator and coroutines
 using TMPro;
-using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // For EquipmentDismantleManager
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // For EquipmentDismantleManager and GemMergePageManager
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu; // For AlliesEquipments
-using WebSocket; // For EquipmentWebSocketApi
-using Newtonsoft.Json.Linq; // For JObject handling
+using EquipmentUtils; // For AutoEquipUtility
 
 public class ItemLoader : MonoBehaviour
 {
@@ -84,16 +83,16 @@ public class ItemLoader : MonoBehaviour
             {
                 case ItemType.Equipment:
                     actionButton.gameObject.SetActive(true); // Ensure the button is active
-                    actionButtonText.text = "Auto Equip";
+                    actionButtonText.text = "Dismantle";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenAutoEquipPage); // Placeholder for Auto Equip action
+                    actionButton.onClick.AddListener(OpenDismantlePage); // Changed from Auto Equip to Dismantle
                     break;
 
                 case ItemType.Gem:
                     actionButton.gameObject.SetActive(true); // Ensure the button is active
-                    actionButtonText.text = "Auto Embed";
+                    actionButtonText.text = "Auto Merge";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenAutoEmbedPage); // Placeholder for Auto Embed action
+                    actionButton.onClick.AddListener(OpenGemMergePage); // Changed from Auto Embed to Auto Merge
                     break;
             }
         }
@@ -125,7 +124,7 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenAutoEquipPage()
     {
-        Debug.Log("[ItemLoader] ✅ Auto Equip button clicked - starting auto equip process");
+        Debug.Log("[ItemLoader] ✅ Auto Equip button clicked - starting auto equip process for Ally");
         
         // Get current sidekick ID from AlliesGridSetup
         int currentSidekickId = GetCurrentSidekickId();
@@ -137,78 +136,11 @@ public class ItemLoader : MonoBehaviour
         
         Debug.Log($"[ItemLoader] Auto equipping for sidekick ID: {currentSidekickId}");
         
-        // Check all equipment slots for upgrades or empty slots
-        string[] equipmentSlots = { "Helm", "Shoulder", "Chest", "Pants", "Gloves", "Boots" };
-        List<(string slotType, Equipment currentEquipment, Equipment bestEquipment)> upgradeActions = new List<(string, Equipment, Equipment)>();
-        
-        foreach (string slot in equipmentSlots)
-        {
-            Equipment currentEquipment = GetCurrentlyEquippedForSidekick(slot, currentSidekickId);
-            Equipment bestEquipment = FindBestEquipmentInPack(slot, currentEquipment);
-            
-            if (bestEquipment != null)
-            {
-                if (currentEquipment == null)
-                {
-                    Debug.Log($"[ItemLoader] Found empty slot: {slot} - will equip {bestEquipment.Name}");
-                    upgradeActions.Add((slot, null, bestEquipment));
-                }
-                else if (IsEquipmentBetter(bestEquipment, currentEquipment))
-                {
-                    Debug.Log($"[ItemLoader] Found upgrade for {slot}: {currentEquipment.Name} -> {bestEquipment.Name}");
-                    upgradeActions.Add((slot, currentEquipment, bestEquipment));
-                }
-                else
-                {
-                    Debug.Log($"[ItemLoader] No upgrade available for {slot}: {currentEquipment.Name} is already the best");
-                }
-            }
-            else
-            {
-                if (currentEquipment == null)
-                {
-                    Debug.Log($"[ItemLoader] No equipment available for empty slot: {slot}");
-                }
-                else
-                {
-                    Debug.Log($"[ItemLoader] No better equipment available for {slot}: {currentEquipment.Name}");
-                }
-            }
-        }
-        
-        if (upgradeActions.Count == 0)
-        {
-            Debug.Log("[ItemLoader] No equipment upgrades or empty slots to fill");
-            return;
-        }
-        
-        Debug.Log($"[ItemLoader] Found {upgradeActions.Count} equipment actions to perform");
-        
-        // Track pending operations for UI refresh
-        int pendingOperations = upgradeActions.Count;
-        
-        // Perform all upgrade actions
-        foreach (var action in upgradeActions)
-        {
-            if (action.currentEquipment != null)
-            {
-                Debug.Log($"[ItemLoader] Upgrading {action.slotType}: {action.currentEquipment.Name} -> {action.bestEquipment.Name}");
-            }
-            else
-            {
-                Debug.Log($"[ItemLoader] Equipping to empty {action.slotType}: {action.bestEquipment.Name}");
-            }
-            
-            AutoEquipSingleItem(action.bestEquipment, currentSidekickId, () => {
-                pendingOperations--;
-                if (pendingOperations <= 0)
-                {
-                    // All operations completed - refresh UI
-                    Debug.Log("[ItemLoader] All auto equip operations completed - refreshing UI");
-                    StartCoroutine(RefreshEquipmentUIAfterAutoEquip());
-                }
-            });
-        }
+        // Use the shared AutoEquipUtility for allies
+        AutoEquipUtility.AutoEquipAll(AutoEquipUtility.EquipContext.Ally, currentSidekickId, () => {
+            Debug.Log("[ItemLoader] Auto equip completed - refreshing Ally UI");
+            StartCoroutine(RefreshEquipmentUIAfterAutoEquip());
+        });
     }
 
     private void OpenAutoEmbedPage()
@@ -219,11 +151,20 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenDismantlePage()
     {
-        // Use the new EquipmentDismantleManager instead of HeroBlockSetup
+        // Use EquipmentDismantleManager with appropriate context
         if (EquipmentDismantleManager.Instance != null)
         {
-            EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Hero);
-            Debug.Log("Opening Dismantle Page via EquipmentDismantleManager...");
+            // Determine context based on which menu is active
+            if (menuController.IsMenuActive(0)) // Allies Menu
+            {
+                EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Ally);
+                Debug.Log("[ItemLoader] Opening Dismantle Page for Allies via EquipmentDismantleManager...");
+            }
+            else // Hero Menu
+            {
+                EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Hero);
+                Debug.Log("[ItemLoader] Opening Dismantle Page for Hero via EquipmentDismantleManager...");
+            }
         }
         else
         {
@@ -233,14 +174,15 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenGemMergePage()
     {
-        // Call OpenGemMergePage in HeroMenuPopup
-        if (heroMenuPopup != null)
+        // Use the independent GemMergePageManager for both Hero and Allies menus
+        if (GemMergePageManager.Instance != null)
         {
-            heroMenuPopup.OpenGemMergePage();
+            GemMergePageManager.Instance.OpenGemMergePage();
+            Debug.Log("[ItemLoader] Opening Gem Merge Page via GemMergePageManager");
         }
         else
         {
-            Debug.LogError("HeroMenuPopup is not assigned!");
+            Debug.LogError("[ItemLoader] GemMergePageManager.Instance not found - cannot open gem merge page");
         }
     }
 
@@ -562,181 +504,7 @@ public class ItemLoader : MonoBehaviour
         return "0";
     }
 
-    /// <summary>
-    /// Check if there's currently equipped equipment for a specific part and sidekick
-    /// </summary>
-    private Equipment GetCurrentlyEquippedForSidekick(string equipmentPart, int sidekickId)
-    {
-        if (PlayerProfile.Data?.Player?.Equipments == null)
-        {
-            return null;
-        }
 
-        Equipment currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
-            equipment.Part == equipmentPart && equipment.EquipWithSidekickId == sidekickId);
-
-        return currentEquipment;
-    }
-
-    /// <summary>
-    /// Find the best available equipment in pack for a specific slot type
-    /// Priority: Higher type number (Helm_05 > Helm_03 > Helm_01)
-    /// Secondary: Equipment ID for same type (placeholder for power values)
-    /// </summary>
-    private Equipment FindBestEquipmentInPack(string slotType, Equipment currentEquipment = null)
-    {
-        List<Equipment> packEquipments = PlayerProfile.Data.GetEquipmentsInPack();
-        if (packEquipments == null || packEquipments.Count == 0)
-        {
-            return null;
-        }
-
-        // Filter equipment by slot type
-        List<Equipment> suitableEquipments = packEquipments.Where(eq => eq.Part == slotType).ToList();
-        
-        if (suitableEquipments.Count == 0)
-        {
-            return null;
-        }
-
-        Debug.Log($"[ItemLoader] Found {suitableEquipments.Count} {slotType} equipment(s) in pack");
-
-        // Sort by equipment ranking: Primary = type number, Secondary = equipment ID
-        Equipment bestEquipment = suitableEquipments.OrderByDescending(eq => GetEquipmentTypeNumber(eq.Name))
-                                                   .ThenByDescending(eq => eq.Id) // Placeholder for power value ranking
-                                                   .First();
-
-        // If there's no current equipment, return the best from pack
-        if (currentEquipment == null)
-        {
-            Debug.Log($"[ItemLoader] Selected best {slotType} for empty slot: {bestEquipment.Name} (ID: {bestEquipment.Id}, Type: {GetEquipmentTypeNumber(bestEquipment.Name)})");
-            return bestEquipment;
-        }
-
-        // If there's current equipment, only return if pack equipment is better
-        if (IsEquipmentBetter(bestEquipment, currentEquipment))
-        {
-            Debug.Log($"[ItemLoader] Found better {slotType}: {bestEquipment.Name} (Type: {GetEquipmentTypeNumber(bestEquipment.Name)}) > {currentEquipment.Name} (Type: {GetEquipmentTypeNumber(currentEquipment.Name)})");
-            return bestEquipment;
-        }
-
-        Debug.Log($"[ItemLoader] No better {slotType} found in pack than currently equipped {currentEquipment.Name}");
-        return null;
-    }
-
-    /// <summary>
-    /// Extract the type number from equipment name (e.g., "Helm_05" returns 5)
-    /// </summary>
-    private int GetEquipmentTypeNumber(string equipmentName)
-    {
-        if (string.IsNullOrEmpty(equipmentName))
-            return 0;
-
-        string[] parts = equipmentName.Split('_');
-        if (parts.Length >= 2 && int.TryParse(parts[1], out int typeNumber))
-        {
-            return typeNumber;
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Compare two equipment items to determine if one is better than the other
-    /// Priority: Higher type number (Helm_05 > Helm_03 > Helm_01)
-    /// For same type equipment, they are considered equal (not better)
-    /// </summary>
-    private bool IsEquipmentBetter(Equipment candidate, Equipment current)
-    {
-        if (candidate == null || current == null)
-            return false;
-
-        int candidateType = GetEquipmentTypeNumber(candidate.Name);
-        int currentType = GetEquipmentTypeNumber(current.Name);
-
-        // Primary comparison: type number - only higher type is considered better
-        if (candidateType > currentType)
-            return true;
-
-        // For same or lower type, candidate is not better
-        return false;
-    }
-
-    /// <summary>
-    /// Auto equip a single equipment item to the current sidekick
-    /// </summary>
-    private void AutoEquipSingleItem(Equipment equipment, int sidekickId, System.Action onComplete = null)
-    {
-        if (equipment == null)
-        {
-            Debug.LogError("[ItemLoader] Cannot auto equip - equipment is null");
-            onComplete?.Invoke();
-            return;
-        }
-
-        EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
-        if (equipmentApi == null)
-        {
-            Debug.LogError("[ItemLoader] EquipmentWebSocketApi.Instance is null - cannot auto equip");
-            onComplete?.Invoke();
-            return;
-        }
-
-        var apiParams = new
-        {
-            type = "sidekick",
-            sidekickId = sidekickId,
-            equipmentId = equipment.Id
-        };
-
-        Debug.Log($"[ItemLoader] Auto equip API call - type: sidekick, sidekickId: {sidekickId}, equipmentId: {equipment.Id}");
-        
-        // Use the dedicated Equip API for auto equipping
-        equipmentApi.Action("equip", apiParams, (response) => {
-            Debug.Log($"[ItemLoader] Auto equip response received for {equipment.Name}");
-            
-            // Update PlayerProfile from server response (same as EquipmentDetailManager)
-            UpdatePlayerProfileFromResponse(response, equipment.Name);
-            
-            // Call completion callback
-            onComplete?.Invoke();
-        });
-    }
-
-    /// <summary>
-    /// Update PlayerProfile from server response (copied from EquipmentDetailManager)
-    /// </summary>
-    private void UpdatePlayerProfileFromResponse(Newtonsoft.Json.Linq.JObject response, string equipmentName)
-    {
-        if (response == null)
-        {
-            Debug.LogError($"[ItemLoader] ❌ Server response is null for {equipmentName}!");
-            return;
-        }
-        
-        // Check for the correct response structure: response["player_profile"]["Player"]
-        if (response["player_profile"] == null)
-        {
-            Debug.LogError($"[ItemLoader] ❌ Server response missing 'player_profile' field for {equipmentName}. Response keys: {string.Join(", ", response.Properties().Select(p => p.Name))}");
-            return;
-        }
-        
-        if (response["player_profile"]["Player"] == null)
-        {
-            Debug.LogError($"[ItemLoader] ❌ Server response missing 'Player' field in player_profile for {equipmentName}. player_profile keys: {string.Join(", ", response["player_profile"].Cast<Newtonsoft.Json.Linq.JProperty>().Select(p => p.Name))}");
-            return;
-        }
-        
-        try
-        {
-            PlayerProfile.Data.SetPlayer(response["player_profile"]["Player"].ToObject<model.Player>());
-            Debug.Log($"[ItemLoader] ✅ Player profile updated successfully from server response for {equipmentName}");
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"[ItemLoader] ❌ Error updating player profile for {equipmentName}: {ex.Message}");
-        }
-    }
 
     /// <summary>
     /// Refresh the equipment UI after auto equip operations complete

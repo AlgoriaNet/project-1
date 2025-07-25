@@ -34,8 +34,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [SerializeField] public Image icon;
         [SerializeField] public TextMeshProUGUI attack;
         [SerializeField] public Button forgeButton;
-        [SerializeField] public Button replaceButton;
-        [SerializeField] public Button demountButton;
+        // [SerializeField] public Button replaceButton;
+        // [SerializeField] public Button demountButton;
         [SerializeField] public Button equipButton;
         [SerializeField] public GameObject extraStatsNames;
         [SerializeField] public GameObject extraStatsValues;
@@ -63,10 +63,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             if (forgeButton != null)
                 forgeButton.onClick.AddListener(OnForge);
-            if (replaceButton != null)
-                replaceButton.onClick.AddListener(OnReplace);
-            if (demountButton != null)
-                demountButton.onClick.AddListener(OnDismantle);
+            // if (replaceButton != null)
+            //     replaceButton.onClick.AddListener(OnReplace);
+            // if (demountButton != null)
+            //     demountButton.onClick.AddListener(OnDismantle);
             // Don't add equipButton listener here - it will be added in Init() to prevent conflicts
             // if (equipButton != null)
             //     equipButton.onClick.AddListener(OnEquip);
@@ -93,10 +93,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
             currentTag.gameObject.SetActive(
                 status.Exists(detailStatus => detailStatus == EquipmentDetailStatus.Current));
-            replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
-                detailStatus == EquipmentDetailStatus.Replace));
-            demountButton.gameObject.SetActive(status.Exists(detailStatus =>
-                detailStatus == EquipmentDetailStatus.Dismantle));
+            // replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
+            //     detailStatus == EquipmentDetailStatus.Replace));
+            // demountButton.gameObject.SetActive(status.Exists(detailStatus =>
+            //     detailStatus == EquipmentDetailStatus.Dismantle));
             if (equipButton != null)
                 equipButton.gameObject.SetActive(status.Exists(detailStatus =>
                     detailStatus == EquipmentDetailStatus.Equip));
@@ -106,7 +106,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Sprite itemSprite = Resources.Load<Sprite>($"UILoading/Equipment/{_equipment.Name}");
                 icon.sprite = itemSprite;
-                equipmentName.text = _equipment.Name;
+                equipmentName.text = !string.IsNullOrEmpty(_equipment.DisplayName) 
+                    ? _equipment.DisplayName 
+                    : _equipment.Name;
                 background.color = ItemLoader.quantityColor[_equipment.Quality];
                 icon.color = Color.white;
             }
@@ -219,7 +221,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     Debug.Log("[EquipmentDetailManager] Using Hero context (default)");
                 }
                 
-                EquipmentForgeManager.Instance.OpenForgePage(context);
+                EquipmentForgeManager.Instance.OpenForgePage(_equipment, context);
             }
             else
             {

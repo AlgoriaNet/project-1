@@ -168,3 +168,224 @@ Store item metadata in ScriptableObjects or JSON configuration files within the 
 - All item types display correctly in both the main "Other" tab and the `OtherDetailBox` popup
 - Error logging is included for missing sprites
 - The system gracefully handles unknown item types by defaulting to "shard"
+
+---
+
+# Equipment and Gemstone Data Structures
+
+## Equipment Data Structure
+
+Equipment items use the `Equipment` model class with comprehensive data for combat, enhancement, and management.
+
+### Equipment Model (Assets/Scripts/model/Equipment.cs)
+
+```csharp
+public class Equipment : ApplicationModel
+{
+    // Core Identity
+    public int Id;                              // Unique equipment ID
+    public string Name;                         // Equipment name (e.g., "Helm_05", "Chest_03")
+    public int Quality;                         // Quality: 1=Common, 2=Uncommon, 3=Rare, 4=Epic, 5=Legendary, 6=Mythic
+    public string Part;                         // Equipment slot: "Helm", "Shoulder", "Chest", "Pants", "Gloves", "Boots"
+    public string Description;                  // Equipment description text
+
+    // Combat Stats
+    [JsonProperty("base_atk")]
+    public int BaseAtk;                         // Base attack value
+    [JsonProperty("growth_atk")]
+    public int GrowthAtk;                       // Attack gained per intensify level
+    public int Attack => BaseAtk + IntensifyLevel * GrowthAtk;  // Calculated total attack
+
+    // Enhancement System
+    [JsonProperty("intensify_level")]
+    public int IntensifyLevel = 0;              // Current enhancement level (0-10+)
+    [JsonProperty("nearby_attributes")]
+    public Dictionary<string, int> NearbyAttributes;  // Additional stats (Critical, Defense, Health, etc.)
+    [JsonProperty("additional_attributes")]
+    public string AdditionalAttributes;         // Special attributes as string
+
+    // Equipment Status
+    [JsonProperty("equip_with_hero_id")]
+    public int? EquipWithHeroId = 0;           // ID if equipped to hero (null/0 if not)
+    [JsonProperty("equip_with_sidekick_id")]
+    public int? EquipWithSidekickId = 0;       // ID if equipped to sidekick (null/0 if not)
+    
+    // Utility Methods
+    public bool IsEquipped() => EquipWithHeroId != 0 || EquipWithSidekickId != 0;
+}
+```
+
+### Example Equipment: "Helm_05" (Legendary Helmet)
+
+```csharp
+Equipment exampleHelm = {
+    // Core Identity
+    Id = 1234,
+    Name = "Helm_05",                          // Equipment name (type_tier)
+    Quality = 5,                               // Legendary quality
+    Part = "Helm",                             // Helmet slot
+    Description = "Legendary helmet forged with ancient magic",
+
+    // Combat Stats  
+    BaseAtk = 50,                              // Base attack value
+    GrowthAtk = 8,                             // +8 attack per enhancement level
+    Attack = 98,                               // Calculated: 50 + (6 * 8) = 98
+
+    // Enhancement Data
+    IntensifyLevel = 6,                        // Enhanced 6 times
+    
+    // Additional Attributes
+    NearbyAttributes = {
+        "Critical" = 15,                       // +15 Critical Hit
+        "Defense" = 22,                        // +22 Defense  
+        "Health" = 180,                        // +180 Health Points
+        "Speed" = 8                            // +8 Speed
+    },
+    AdditionalAttributes = "Fire Resistance +10%",
+
+    // Equipment Status
+    EquipWithHeroId = null,                    // Not equipped to hero
+    EquipWithSidekickId = 42,                  // Equipped to sidekick ID 42
+    IsEquipped() = true                        // Method returns true
+}
+```
+
+### Equipment UI Integration
+
+- **Icon Loading**: `Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}")` → "UILoading/Equipment/Helm_05"
+- **Quality Color**: `ItemLoader.quantityColor[equipment.Quality]` → Legendary gold background
+- **Attack Display**: `equipment.Attack.ToString()` → Shows calculated total "98"
+- **Enhancement Level**: `equipment.IntensifyLevel` → Shows current level "6"
+- **Additional Stats**: Iterates through `NearbyAttributes` dictionary for UI display
+
+---
+
+## Gemstone Data Structure
+
+Gemstones use the `Gemstone` model class with focused stat bonuses and inlay system.
+
+### Gemstone Model (Assets/Scripts/model/Gemstone.cs)
+
+```csharp
+public class Gemstone : ApplicationModel
+{
+    // Core Identity
+    [JsonProperty("id")]
+    public int Id { get; set; }                 // Unique gemstone ID
+    [JsonProperty("name")]
+    public string Name { get; set; }            // Gem name/type
+    [JsonProperty("level")]
+    public int Level { get; set; }              // Gem level (1-7+, determines quality)
+    [JsonProperty("quality")]
+    public int? Quality { get; set; }           // Quality tier (usually matches level)
+    [JsonProperty("description")]
+    public string Description { get; set; }      // Gem description
+    [JsonProperty("part")]
+    public string Part { get; set; }            // Equipment part compatibility ("Helm", "Chest", etc.)
+
+    // Gem Stats & Effects
+    [JsonProperty("entry_id")]
+    public int EntryId { get; set; }            // Stat type ID (maps to attack, defense, etc.)
+    [JsonProperty("entry_value")]
+    public double EntryValue { get; set; }      // Stat value (supports decimals for percentages)
+
+    // Inlay Status
+    [JsonProperty("inlay_with_hero_id")]
+    public int? InlayWithHeroId { get; set; }   // ID if inlaid into hero equipment
+    [JsonProperty("inlay_with_sidekick_id")]
+    public int? InlayWithSidekickId { get; set; } // ID if inlaid into sidekick equipment
+    [JsonProperty("is_locked")]
+    public bool IsLocked { get; set; }          // Lock status (prevents removal/use)
+}
+```
+
+### Example Gemstone: Level 5 "Legendary Gem" for Helmet
+
+```csharp
+Gemstone exampleGem = {
+    // Core Identity
+    Id = 5678,
+    Name = "Fire Ruby",
+    Level = 5,                                  // Level 5 = Legendary
+    Quality = 5,                                // Matches level
+    Part = "Helm",                              // For helmet equipment
+    Description = "A fiery gem that increases attack power",
+
+    // Gem Stats & Effects
+    EntryId = 101,                              // Stat type (attack, defense, etc.)
+    EntryValue = 45.5,                          // +45.5 attack (double precision)
+
+    // Inlay Status  
+    InlayWithHeroId = null,                     // Not inlaid into hero equipment
+    InlayWithSidekickId = 42,                   // Inlaid into sidekick 42's equipment
+    IsLocked = false                            // Can be removed/used
+}
+```
+
+### Gemstone Level to Quality Mapping
+
+The game uses a localization system for gem quality names:
+
+```csharp
+private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
+{
+    { "Gem_01", "Common Gem" },        // Level 1 - Gray
+    { "Gem_02", "Superior Gem" },      // Level 2 - Green  
+    { "Gem_03", "Rare Gem" },          // Level 3 - Blue
+    { "Gem_04", "Epic Gem" },          // Level 4 - Purple
+    { "Gem_05", "Legendary Gem" },     // Level 5 - Orange/Gold
+    { "Gem_06", "Mythic Gem" },        // Level 6 - Red
+    { "Gem_07", "Ultimate Gem" }       // Level 7 - Rainbow/Special
+};
+```
+
+### Gemstone UI Integration
+
+- **Gem Icon**: `Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gemstone.Level:D2}")` → "UILoading/Gem/Stone/Gem_05"
+- **Gem Name**: Uses localization → "Gem_05" becomes "Legendary Gem"  
+- **Part Icon**: `Resources.Load<Sprite>($"UILoading/Gem/Part/{gemstone.Part}")` → Equipment part icon
+- **Level Display**: `gemstone.Level.ToString()` → Shows "5"
+- **Stat Value**: `gemstone.EntryValue.ToString()` → Shows "45.5"
+- **Quality Color**: Based on level for background colors
+
+### Key Differences: Equipment vs Gemstones
+
+| Aspect | Equipment | Gemstones |
+|--------|-----------|-----------|
+| **Primary Purpose** | Direct combat items | Stat enhancement for equipment |
+| **Attachment** | Equipped to character | Inlaid into equipment |
+| **Stats** | Multiple attributes (BaseAtk, NearbyAttributes, etc.) | Single focused stat (EntryValue) |
+| **Enhancement** | IntensifyLevel system | Level-based quality tiers |
+| **Complexity** | Complex with multiple stat systems | Simple focused bonuses |
+| **Slot System** | 6 equipment slots per character | Part-specific inlay compatibility |
+
+---
+
+## Data Usage Patterns
+
+### Equipment Access
+```csharp
+// Get hero's equipped items
+List<Equipment> heroEquipments = PlayerProfile.Data.GetHeroEquipments();
+
+// Get sidekick's equipped items  
+List<Equipment> sidekickEquipments = PlayerProfile.Data.GetSidekickEquipments(sidekickId);
+
+// Get unequipped items in pack
+List<Equipment> packEquipments = PlayerProfile.Data.GetEquipmentsInPack();
+```
+
+### Gemstone Access
+```csharp
+// Get hero's gemstones for specific part
+List<Gemstone> heroGems = PlayerProfile.Data.GetHeroGemstones("Helm");
+
+// Get sidekick's gemstones for specific part
+List<Gemstone> sidekickGems = PlayerProfile.Data.GetSidekickGemstones(sidekickId, "Helm");
+
+// Get unslotted gems in pack
+List<Gemstone> packGems = PlayerProfile.Data.GetGemstonesInPack();
+```
+
+### Equipment Quality Colors
+Equipment and gemstone UI uses `ItemLoader.quantityColor[]` array for quality-based background colors matching their tier levels.

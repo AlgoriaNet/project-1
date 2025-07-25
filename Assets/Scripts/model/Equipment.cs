@@ -31,6 +31,8 @@ namespace model
         public int? EquipWithSidekickId = 0;
         public string Description;
         public string Name;
+        [JsonProperty("display_name")]
+        public string DisplayName;
         public int Quality;
         public string Part;
         [JsonProperty("base_atk")]

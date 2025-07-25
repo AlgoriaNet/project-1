@@ -27,6 +27,21 @@ public class LoadButtonController : MonoBehaviour
                 buttonImages[i].color = new Color(buttonImages[i].color.r, buttonImages[i].color.g, buttonImages[i].color.b, 0f);
             }
         }
+        
+        // Update the Orange button text when tabs change
+        UpdateOrangeButtonText();
+    }
+    
+    /// <summary>
+    /// Update the Orange button text via SwitchPanels when tabs change
+    /// </summary>
+    private void UpdateOrangeButtonText()
+    {
+        SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
+        if (switchPanels != null)
+        {
+            switchPanels.UpdateButtonText();
+        }
     }
 
     private void Start()

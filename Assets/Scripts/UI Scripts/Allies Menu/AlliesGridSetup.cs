@@ -363,6 +363,9 @@ public class AlliesGridSetup : MonoBehaviour
         lowerGroup.SetActive(true);
         Board.SetActive(true);
         Pack.SetActive(false);
+        
+        // Reset Orange button text to default when entering Step 2
+        ResetOrangeButtonText();
 
         // Construct and load illustration
         string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{index}_{name}";
@@ -698,6 +701,9 @@ public class AlliesGridSetup : MonoBehaviour
         lowerGroup.SetActive(true);
         Board.SetActive(true);
         Pack.SetActive(false);
+        
+        // Reset Orange button text to default when entering Step 2
+        ResetOrangeButtonText();
 
         // Load ally illustration
         string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{allyIndex}_{allyName}";
@@ -783,6 +789,9 @@ public class AlliesGridSetup : MonoBehaviour
         lowerGroup.SetActive(true);
         Board.SetActive(true);
         Pack.SetActive(false);
+        
+        // Reset Orange button text to default when entering Step 2
+        ResetOrangeButtonText();
 
         // Load ally illustration
         string illustrationPath = $"UILoading/CharacterImages/Stand_Illustration/P_{allyIndex}_{allyName}";
@@ -1391,5 +1400,22 @@ public class AlliesGridSetup : MonoBehaviour
             parent = parent.parent;
         }
         return path;
+    }
+    
+    /// <summary>
+    /// Reset the Orange button text to default "Go to Pack" when entering Step 2
+    /// </summary>
+    private void ResetOrangeButtonText()
+    {
+        SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
+        if (switchPanels != null)
+        {
+            // Force reset to default text since Board is visible by default in Step 2
+            if (switchPanels.buttonText != null)
+            {
+                switchPanels.buttonText.text = "Go to Pack";
+                Debug.Log("[AlliesGridSetup] Reset Orange button text to 'Go to Pack' for Step 2");
+            }
+        }
     }
 }

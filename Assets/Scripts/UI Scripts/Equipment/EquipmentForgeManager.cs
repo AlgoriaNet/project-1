@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 using model;
 using TMPro;
 
@@ -48,6 +49,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         }
         
         private ForgeContext currentContext;
+        private Equipment currentSelectedEquipment; // Store the equipment selected for forging
         
         // Grid layout variables (copied from HeroBlockSetup)
         private float blockWidth;
@@ -76,6 +78,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public void OpenForgePageFromAlly()
         {
             OpenForgePage(ForgeContext.Ally);
+        }
+        
+        public void OpenForgePage(Equipment selectedEquipment, ForgeContext context = ForgeContext.Hero)
+        {
+            currentSelectedEquipment = selectedEquipment; // Store the selected equipment
+            OpenForgePage(context);
         }
         
         public void OpenForgePage(ForgeContext context = ForgeContext.Hero)
@@ -133,15 +141,27 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 return;
             }
 
-            // Get the selected equipment from EquipmentComparisonManager
             Equipment selectedEquipment = null;
-            if (EquipmentComparisonManager.Instance != null && EquipmentComparisonManager.Instance.ComparedEquippedId > 0)
+            
+            // First, check if we have a stored selected equipment
+            if (currentSelectedEquipment != null)
+            {
+                selectedEquipment = currentSelectedEquipment;
+                Debug.Log($"✅ Using stored selected equipment: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
+            }
+            // If no stored equipment, try to get from EquipmentComparisonManager
+            else if (EquipmentComparisonManager.Instance != null && EquipmentComparisonManager.Instance.ComparedEquippedId > 0)
             {
                 selectedEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment => 
                     equipment.Id == EquipmentComparisonManager.Instance.ComparedEquippedId);
+                
+                if (selectedEquipment != null)
+                {
+                    Debug.Log($"✅ Using equipment from comparison manager: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
+                }
             }
 
-            // If no equipment is selected, use the equipped helm as default (same as HeroEquipments.cs)
+            // If still no equipment is selected, use the equipped helm as default
             if (selectedEquipment == null)
             {
                 var heroEquipments = PlayerProfile.Data.GetHeroEquipments();
@@ -198,12 +218,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipImage.color = Color.clear; // Hide if no sprite found
             }
 
-            // Set equipment name (extract equipment type from name, e.g., "Chest" from "Chest_06")
-            string equipmentDisplayName = equipment.Name;
-            if (equipment.Name.Contains("_"))
-            {
-                equipmentDisplayName = equipment.Name.Split('_')[0]; // Get "Chest" from "Chest_06"
-            }
+            // Set equipment display name (use descriptive name from backend)
+            string equipmentDisplayName = !string.IsNullOrEmpty(equipment.DisplayName) 
+                ? equipment.DisplayName 
+                : equipment.Name; // Fallback to technical name if display name missing
             equipNameText.text = equipmentDisplayName;
 
             // Set background color based on equipment quality
@@ -218,7 +236,160 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 Debug.LogWarning("⚠️ No background Image component found on ForgeBlock for quality color");
             }
 
+            // Update level progression display
+            UpdateLevelProgressionDisplay(equipment);
+            
             Debug.Log($"✅ ForgePage Block Updated Successfully with {equipment.Name} (ID: {equipment.Id}, Quality: {equipment.Quality})!");
+        }
+        
+        /// <summary>
+        /// Update the level progression display elements (Level X -> Level Y, Attack +X -> Attack +Y)
+        /// </summary>
+        private void UpdateLevelProgressionDisplay(Equipment equipment)
+        {
+            // Find level and attack text elements in the Board hierarchy
+            // Based on Unity hierarchy: Board -> LevelText_1, LevelText_2, AttackText_1, AttackText_2
+            
+            // Find current and next level displays
+            TextMeshProUGUI currentLevelText = FindTextComponent("LevelText_1");
+            TextMeshProUGUI nextLevelText = FindTextComponent("LevelText_2");
+            
+            // Find current and next attack displays  
+            TextMeshProUGUI currentAttackText = FindTextComponent("AttackText_1");
+            TextMeshProUGUI nextAttackText = FindTextComponent("AttackText_2");
+            
+            // Update level displays
+            if (currentLevelText != null)
+            {
+                int currentLevel = equipment.IntensifyLevel + 1; // Display as 1-based (0 -> Level 1)
+                currentLevelText.text = $"Level {currentLevel}";
+                Debug.Log($"✅ Updated LevelText_1: Level {currentLevel} (IntensifyLevel: {equipment.IntensifyLevel})");
+            }
+            else
+            {
+                Debug.LogError("❌ LevelText_1 not found in Board hierarchy!");
+            }
+            
+            if (nextLevelText != null)
+            {
+                int nextLevel = equipment.IntensifyLevel + 2; // Next level
+                nextLevelText.text = $"Level {nextLevel}";
+                Debug.Log($"✅ Updated LevelText_2: Level {nextLevel} (IntensifyLevel: {equipment.IntensifyLevel})");
+            }
+            else
+            {
+                Debug.LogError("❌ LevelText_2 not found in Board hierarchy!");
+            }
+            
+            // Update attack displays - DEBUG EQUIPMENT STATS
+            Debug.Log($"🔍 Equipment Stats Debug: {equipment.Name} - BaseAtk: {equipment.BaseAtk}, GrowthAtk: {equipment.GrowthAtk}, IntensifyLevel: {equipment.IntensifyLevel}, Attack: {equipment.Attack}");
+            
+            if (currentAttackText != null)
+            {
+                int currentAttack = equipment.Attack; // Already calculated: BaseAtk + IntensifyLevel * GrowthAtk
+                currentAttackText.text = $"Attack +{currentAttack}";
+                Debug.Log($"✅ Updated AttackText_1: Attack +{currentAttack} (using equipment.Attack property)");
+            }
+            else
+            {
+                Debug.LogError("❌ AttackText_1 not found in Board hierarchy!");
+            }
+            
+            if (nextAttackText != null)
+            {
+                int nextAttack = equipment.BaseAtk + (equipment.IntensifyLevel + 1) * equipment.GrowthAtk;
+                nextAttackText.text = $"Attack +{nextAttack}";
+                Debug.Log($"✅ Updated AttackText_2: Attack +{nextAttack} (calculated: {equipment.BaseAtk} + ({equipment.IntensifyLevel} + 1) * {equipment.GrowthAtk})");
+            }
+            else
+            {
+                Debug.LogError("❌ AttackText_2 not found in Board hierarchy!");
+            }
+        }
+        
+        /// <summary>
+        /// Helper method to find text components in the correct Board hierarchy
+        /// Structure: ForgePage -> EnhancePanel/UpgradePanel -> Board -> LevelText/AttackText -> LevelText_1/AttackText_1 etc.
+        /// </summary>
+        private TextMeshProUGUI FindTextComponent(string componentName)
+        {
+            // Need to find the ForgePage first, then the correct panel
+            Transform forgePageTransform = forgePage.transform;
+            
+            // Try both EnhancePanel and UpgradePanel to see which one is active or contains the component
+            string[] panelNames = { "EnhancePanel", "UpgradePanel" };
+            
+            foreach (string panelName in panelNames)
+            {
+                Transform panelTransform = forgePageTransform.Find(panelName);
+                if (panelTransform == null) continue;
+                
+                // Find Board within the panel
+                Transform boardTransform = panelTransform.Find("Board");
+                if (boardTransform == null) continue;
+                
+                // Determine the container based on component name
+                string containerName = "";
+                if (componentName.StartsWith("Level"))
+                {
+                    containerName = "LevelText";
+                }
+                else if (componentName.StartsWith("Attack"))
+                {
+                    containerName = "AttackText";
+                }
+                
+                if (string.IsNullOrEmpty(containerName)) continue;
+                
+                // Find the container within Board
+                Transform containerTransform = boardTransform.Find(containerName);
+                if (containerTransform == null) continue;
+                
+                // Finally, find the actual text component within the container
+                TextMeshProUGUI textComponent = containerTransform.Find(componentName)?.GetComponent<TextMeshProUGUI>();
+                if (textComponent != null)
+                {
+                    Debug.Log($"✅ Found {componentName} in {panelName}/Board/{containerName}");
+                    return textComponent;
+                }
+            }
+            
+            // If not found, provide detailed debugging
+            Debug.LogError($"❌ Could not find {componentName} in any panel. Debugging hierarchy:");
+            
+            foreach (string panelName in panelNames)
+            {
+                Transform panelTransform = forgePageTransform.Find(panelName);
+                if (panelTransform != null)
+                {
+                    Debug.LogError($"  Found {panelName}");
+                    Transform boardTransform = panelTransform.Find("Board");
+                    if (boardTransform != null)
+                    {
+                        Debug.LogError($"    Found Board in {panelName}");
+                        for (int i = 0; i < boardTransform.childCount; i++)
+                        {
+                            Transform container = boardTransform.GetChild(i);
+                            Debug.LogError($"      Container {i}: {container.name}");
+                            for (int j = 0; j < container.childCount; j++)
+                            {
+                                Transform textChild = container.GetChild(j);
+                                Debug.LogError($"        Text Component {j}: {textChild.name}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError($"    ❌ Board not found in {panelName}");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"  ❌ {panelName} not found");
+                }
+            }
+            
+            return null;
         }
         
         public void LoadForgePagePack()
@@ -238,15 +409,27 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Get the correct source based on current context
             Transform sourcePanel = currentContext == ForgeContext.Hero ? heroSourceContentPanel : allySourceContentPanel;
             
-            // Clone each item from the appropriate source Pack
+            // Clone each item from the appropriate source Pack and add forge-specific click handlers
             if (sourcePanel != null)
             {
+                // Get equipment data to associate with cloned items
+                List<Equipment> packEquipments = PlayerProfile.Data.GetEquipmentsInPack();
+                int itemIndex = 0;
+                
                 foreach (Transform item in sourcePanel)
                 {
                     GameObject newItem = Instantiate(item.gameObject, forgePackContent);
                     newItem.name = item.name; // Keep the same name
+                    
+                    // Add forge-specific click handler if this is an equipment item
+                    if (itemIndex < packEquipments.Count)
+                    {
+                        Equipment equipment = packEquipments[itemIndex];
+                        AddForgePackClickHandler(newItem, equipment);
+                        itemIndex++;
+                    }
                 }
-                Debug.Log($"✅ ForgePage Pack Loaded Successfully from {currentContext} source!");
+                Debug.Log($"✅ ForgePage Pack Loaded Successfully from {currentContext} source with {itemIndex} equipment click handlers!");
             }
             else
             {
@@ -257,6 +440,121 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (forgePackGrid != null)
             {
                 StartCoroutine(DelayedSetupForgePackGrid());
+            }
+        }
+        
+        /// <summary>
+        /// Add click handler to a forge pack item that updates the selected equipment and refreshes the top block
+        /// </summary>
+        private void AddForgePackClickHandler(GameObject packItem, Equipment equipment)
+        {
+            // Get or add Button component
+            Button button = packItem.GetComponent<Button>();
+            if (button == null)
+            {
+                button = packItem.AddComponent<Button>();
+            }
+            
+            // Remove existing listeners to avoid conflicts
+            button.onClick.RemoveAllListeners();
+            
+            // Add new click handler for forge page
+            button.onClick.AddListener(() => {
+                Debug.Log($"[ForgeManager] Pack equipment clicked: {equipment.Name} (ID: {equipment.Id})");
+                
+                // Perform equipment swap: move clicked equipment up, previous equipment down
+                SwapEquipmentInForge(equipment, packItem);
+                
+                Debug.Log($"[ForgeManager] Equipment swap completed with {equipment.Name}");
+            });
+        }
+        
+        /// <summary>
+        /// Swap equipment: move clicked pack equipment to top block, move previous top equipment to pack
+        /// </summary>
+        private void SwapEquipmentInForge(Equipment newEquipment, GameObject clickedPackItem)
+        {
+            // Store the previously selected equipment for swapping down
+            Equipment previousEquipment = currentSelectedEquipment;
+            
+            // Update the top block with new equipment
+            currentSelectedEquipment = newEquipment;
+            LoadSelectedEquipmentToForgeBlock(newEquipment);
+            
+            // If there was a previous equipment, update the clicked pack item to show it
+            if (previousEquipment != null)
+            {
+                Debug.Log($"[ForgeManager] Swapping {previousEquipment.Name} down to pack position");
+                UpdatePackItemDisplay(clickedPackItem, previousEquipment);
+                
+                // Update the click handler of the pack item to use the previous equipment
+                UpdatePackItemClickHandler(clickedPackItem, previousEquipment);
+            }
+            else
+            {
+                Debug.Log("[ForgeManager] No previous equipment to swap down");
+            }
+        }
+        
+        /// <summary>
+        /// Update a pack item's visual display to show different equipment
+        /// </summary>
+        private void UpdatePackItemDisplay(GameObject packItem, Equipment equipment)
+        {
+            // Update the equipment image
+            Image itemImage = packItem.transform.Find("Image")?.GetComponent<Image>();
+            if (itemImage != null)
+            {
+                string imagePath = $"UILoading/Equipment/{equipment.Name}";
+                Sprite equipmentSprite = Resources.Load<Sprite>(imagePath);
+                if (equipmentSprite != null)
+                {
+                    itemImage.sprite = equipmentSprite;
+                    itemImage.color = Color.white;
+                    Debug.Log($"✅ Updated pack item image: {imagePath}");
+                }
+            }
+            
+            // Update the background color based on quality
+            Image backgroundImage = packItem.GetComponent<Image>();
+            if (backgroundImage != null)
+            {
+                Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
+                backgroundImage.color = qualityColor;
+                Debug.Log($"✅ Updated pack item quality color: Quality {equipment.Quality}");
+            }
+            
+            // Update equipment part icon if it exists
+            Image partImage = packItem.transform.Find("Part")?.GetComponent<Image>();
+            if (partImage != null)
+            {
+                Sprite partSprite = Resources.Load<Sprite>($"UILoading/Equipment/Part/{equipment.Part}");
+                if (partSprite != null)
+                {
+                    partImage.sprite = partSprite;
+                    Debug.Log($"✅ Updated pack item part: {equipment.Part}");
+                }
+            }
+            
+            Debug.Log($"✅ Pack item display updated with {equipment.Name}");
+        }
+        
+        /// <summary>
+        /// Update a pack item's click handler to use different equipment data
+        /// </summary>
+        private void UpdatePackItemClickHandler(GameObject packItem, Equipment equipment)
+        {
+            Button button = packItem.GetComponent<Button>();
+            if (button != null)
+            {
+                // Remove old click handler and add new one with updated equipment
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => {
+                    Debug.Log($"[ForgeManager] Updated pack equipment clicked: {equipment.Name} (ID: {equipment.Id})");
+                    SwapEquipmentInForge(equipment, packItem);
+                });
+                
+                Debug.Log($"✅ Updated pack item click handler for {equipment.Name}");
             }
         }
         
@@ -313,6 +611,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             forgePackGrid.constraintCount = 5;
             forgePackGrid.cellSize = new Vector2(blockWidth, blockWidth);
             forgePackGrid.spacing = new Vector2(spacingX, spacingY);
+            forgePackGrid.childAlignment = TextAnchor.UpperLeft; // Align items to the left instead of center
             forgePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
             forgePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
         }

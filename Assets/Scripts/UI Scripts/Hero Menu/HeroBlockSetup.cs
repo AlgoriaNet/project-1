@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using model;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // This is required for using Dictionary
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu; // For HeroEquipments
 using TMPro;
+using EquipmentUtils; // For AutoEquipUtility
 using Debug = UnityEngine.Debug;
 
 public class HeroBlockSetup : MonoBehaviour
@@ -23,6 +25,10 @@ public class HeroBlockSetup : MonoBehaviour
     private float spacingY;
     public GameObject heroStep2Panel; // Reference to Hero Step 2 Panel
     public GameObject allyStep2Panel; // Reference to Ally Step 2 Panel
+
+    [Header("Auto Action Button")]
+    public Button autoActionButton;           // Auto action button component
+    public TextMeshProUGUI autoActionText;    // Auto action button text component
 
     [SerializeField]
     private ItemLoader itemLoader;
@@ -254,9 +260,58 @@ public class HeroBlockSetup : MonoBehaviour
                 }
             }
         }
+        
+        // Update auto action button based on current tab
+        UpdateAutoActionButton();
+    }
+    
+    /// <summary>
+    /// Update the auto action button text and functionality based on the current tab
+    /// </summary>
+    private void UpdateAutoActionButton()
+    {
+        if (autoActionButton == null || autoActionText == null)
+        {
+            return; // If not assigned in Inspector, skip silently
+        }
+        
+        switch (itemLoader.currentItemType)
+        {
+            case ItemLoader.ItemType.Equipment:
+                autoActionButton.gameObject.SetActive(true);
+                autoActionText.text = "Auto Equip";
+                
+                // Remove existing listeners and add auto equip functionality
+                autoActionButton.onClick.RemoveAllListeners();
+                autoActionButton.onClick.AddListener(() => {
+                    Debug.Log("[HeroBlockSetup] Auto Equip clicked - starting auto equip process for Hero");
+                    AutoEquipUtility.AutoEquipAll(AutoEquipUtility.EquipContext.Hero, 0, () => {
+                        Debug.Log("[HeroBlockSetup] Auto equip completed - refreshing Hero UI");
+                        StartCoroutine(RefreshHeroUIAfterAutoEquip());
+                    });
+                });
+                break;
+                
+            case ItemLoader.ItemType.Gem:
+                autoActionButton.gameObject.SetActive(true);
+                autoActionText.text = "Auto Embed";
+                
+                // Remove existing listeners and add auto embed functionality
+                autoActionButton.onClick.RemoveAllListeners();
+                autoActionButton.onClick.AddListener(() => {
+                    Debug.Log("[HeroBlockSetup] Auto Embed clicked - function will be implemented later");
+                    // TODO: Implement auto embed functionality
+                });
+                break;
+                
+            case ItemLoader.ItemType.Other:
+            default:
+                // Hide button for Other tab and unsupported types
+                autoActionButton.gameObject.SetActive(false);
+                break;
+        }
     }
 
- 
     // Call this when the 'Other' tab is selected to refresh the UI
     public void OnOtherTabSelected()
     {
@@ -283,7 +338,7 @@ public class HeroBlockSetup : MonoBehaviour
         var typeMap = new Dictionary<string, string>(); // key: fileName, value: "shard" or "skillbook"
         foreach (var kvp in otherItemsRaw)
         {
-            string rawKey = kvp.Key;
+            string rawKey = kvp.Key.Trim();
             int qnty = kvp.Value;
             if (excludeKeys.Contains(rawKey)) continue;
 
@@ -461,5 +516,36 @@ public class HeroBlockSetup : MonoBehaviour
 
         Debug.Log($"[HeroBlockSetup] Checking equipped {equipmentPart} for {context} {contextId}: {(currentEquipment != null ? $"Found ID {currentEquipment.Id}" : "None")}");
         return currentEquipment;
+    }
+
+    /// <summary>
+    /// Refresh the Hero UI after auto equip operations complete
+    /// </summary>
+    private System.Collections.IEnumerator RefreshHeroUIAfterAutoEquip()
+    {
+        // Wait one frame since PlayerProfile is now updated immediately from server responses
+        yield return null;
+        
+        Debug.Log("[HeroBlockSetup] Starting Hero UI refresh after auto equip");
+        
+        // Find and refresh the Hero equipment display
+        var heroEquipments = FindObjectOfType<HeroEquipments>();
+        if (heroEquipments != null)
+        {
+            Debug.Log("[HeroBlockSetup] Calling Hero equipment refresh method");
+            // Call the Init() method directly since we know it exists
+            heroEquipments.Init();
+            Debug.Log("[HeroBlockSetup] Refreshed Hero equipment UI after auto equip");
+        }
+        else
+        {
+            Debug.LogWarning("[HeroBlockSetup] HeroEquipments component not found - skipping equipment UI refresh");
+        }
+        
+        // Refresh the item pack display to reflect equipment that was moved from pack
+        Debug.Log("[HeroBlockSetup] Refreshing Hero item pack display after auto equip");
+        UpdateTotalBlocks();
+        
+        Debug.Log("[HeroBlockSetup] Hero UI refresh completed after auto equip");
     }
 }

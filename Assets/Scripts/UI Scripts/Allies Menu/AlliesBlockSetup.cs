@@ -645,6 +645,7 @@ public class AlliesBlockSetup : MonoBehaviour
             forgePackGrid.constraintCount = 5; // Match LowerGroup settings
             forgePackGrid.cellSize = new Vector2(blockWidth, blockWidth); 
             forgePackGrid.spacing = new Vector2(spacingX, spacingY);
+            forgePackGrid.childAlignment = TextAnchor.UpperLeft; // Align items to the left instead of center
             forgePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
             forgePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
         }
