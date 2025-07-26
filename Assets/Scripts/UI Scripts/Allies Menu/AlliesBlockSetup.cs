@@ -31,10 +31,13 @@ public class AlliesBlockSetup : MonoBehaviour
 
     public GameObject step3Panel; // Add reference to Step 3 panel
     public Button closeButton; // Reference to the Close Button on Step 3
+    // DEAD CODE: Equipment pages duplicated EquipmentComparison functionality
+    /*
     public GameObject equipmentPages; // Assign EquipmentPages in Inspector
-    public GameObject gemPages;       // Assign GemPages in Inspector
     public GameObject page1;  
-    public GameObject page2;  
+    public GameObject page2;
+    */
+    public GameObject gemPages;       // Assign GemPages in Inspector  
     public GameObject page3; 
     public GameObject page4;   
 
@@ -256,20 +259,20 @@ public class AlliesBlockSetup : MonoBehaviour
         // Call the appropriate page logic based on the item type
         if (itemLoader.currentItemType == ItemLoader.ItemType.Equipment)
         {
-            equipmentPages.SetActive(true);
+            // DEAD CODE: Equipment pages now handled by EquipmentComparison system
+            // Equipment interactions go through EquipmentComparisonManager or EquipmentDetailBox
             gemPages.SetActive(false);
-            OpenPage2(blockItem); // Delegate to OpenPage2
-            OpenPage1(blockItem); // Add call for OpenPage1
         }
         else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
         {
-            equipmentPages.SetActive(false);
             gemPages.SetActive(true);
             OpenPage3(blockItem); // Delegate to OpenPage3
             OpenPage4(blockItem);
         }
     }
 
+    // DEAD CODE: Equipment pages duplicated EquipmentComparison functionality
+    /*
     private void OpenPage2(GameObject blockItem)
     {
         // Get the Image component from the BlockItem's child (Image)
@@ -288,7 +291,10 @@ public class AlliesBlockSetup : MonoBehaviour
             SetPageBlockValues(blockTransform, imageFileName, equipmentName, rankValue);
         }
     }
+    */
 
+    // DEAD CODE: Equipment pages duplicated EquipmentComparison functionality
+    /*
     private void OpenPage1(GameObject blockItem)
     {
         // Get the Image component from the BlockItem's child (Image)
@@ -356,7 +362,10 @@ public class AlliesBlockSetup : MonoBehaviour
             }
         }
     }
+    */
 
+    // DEAD CODE: Equipment pages duplicated EquipmentComparison functionality
+    /*
     private void SetPageBlockValues(Transform pageBlock, string imageFileName, string equipmentName, string rankValue)
     {
         if (pageBlock != null)
@@ -382,6 +391,7 @@ public class AlliesBlockSetup : MonoBehaviour
             }
         }
     }
+    */
 
     private void OpenPage3(GameObject blockItem)
     {
