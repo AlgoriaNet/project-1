@@ -39,6 +39,8 @@ public class AlliesBlockSetup : MonoBehaviour
     public GameObject page4;   
 
 
+    // DEAD CODE: Forge UI variables - equipment functionality migrated to PopupBox system
+    /*
     public GameObject ForgePage; 
     public GameObject CommonPage; 
     public Button enhanceButton;
@@ -52,6 +54,7 @@ public class AlliesBlockSetup : MonoBehaviour
     public Transform forgePackContent; // Assign in Inspector: "ForgePage/Pack/Scroll View/Viewport/Content"
     public GridLayoutGroup forgePackGrid; // Assign the GridLayoutGroup of ForgePage's Pack in Inspector
     public GameObject forgeBlock; // Assign ForgePage → Block in Inspector
+    */
 
     // Reference to AlliesGridSetup to get current sidekick information
     [SerializeField] private AlliesGridSetup alliesGridSetup;
@@ -625,6 +628,8 @@ public class AlliesBlockSetup : MonoBehaviour
     }
     */
 
+    // DEAD CODE: Equipment functionality has migrated to PopupBox system
+    /*
     public void LoadForgePagePack()
     {
         if (forgePackContent == null)
@@ -660,7 +665,10 @@ public class AlliesBlockSetup : MonoBehaviour
 
         Debug.Log("✅ ForgePage Pack Loaded Successfully!");
     }
+    */
 
+    // DEAD CODE: Equipment functionality has migrated to PopupBox system
+    /*
     private void ToggleEnhanceUpgrade(bool isEnhance)
     {
         Debug.Log($"[AlliesBlockSetup] ToggleEnhanceUpgrade called - isEnhance: {isEnhance}");
@@ -685,7 +693,10 @@ public class AlliesBlockSetup : MonoBehaviour
             upgradeButton.transform.Find("GreyButton")?.gameObject.SetActive(isEnhance);
         }
     }
+    */
 
+    // DEAD CODE: Equipment functionality has migrated to PopupBox system
+    /*
     public void CloseForgePage()
     {
         ForgePage.SetActive(false);
@@ -705,6 +716,7 @@ public class AlliesBlockSetup : MonoBehaviour
 
         Debug.Log("✅ ForgePage Block Cleared on Close!");
     }
+    */
 
     /// <summary>
     /// Get the current sidekick ID for equipment comparison.
