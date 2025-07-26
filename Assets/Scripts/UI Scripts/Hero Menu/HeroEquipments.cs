@@ -30,22 +30,28 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu
                 switch (equipment.Part)
                 {
                     case "Helm":
-                        helmTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var helmGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        helmTransform.GetComponent<EquipmentColumnManager>().Init(equipment, helmGems);
                         break;
                     case "Shoulder":
-                        shoulderTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var shoulderGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        shoulderTransform.GetComponent<EquipmentColumnManager>().Init(equipment, shoulderGems);
                         break;
                     case "Chest":
-                        chestTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var chestGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        chestTransform.GetComponent<EquipmentColumnManager>().Init(equipment, chestGems);
                         break;
                     case "Pants":
-                        pantsTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var pantsGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        pantsTransform.GetComponent<EquipmentColumnManager>().Init(equipment, pantsGems);
                         break;
                     case "Gloves":
-                        glovesTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var glovesGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        glovesTransform.GetComponent<EquipmentColumnManager>().Init(equipment, glovesGems);
                         break;
                     case "Boots":
-                        bootsTransform.GetComponent<EquipmentColumnManager>().Init(equipment, new List<Gemstone>());
+                        var bootsGems = PlayerProfile.Data.GetHeroGemstones(equipment.Part) ?? new List<Gemstone>();
+                        bootsTransform.GetComponent<EquipmentColumnManager>().Init(equipment, bootsGems);
                         break;
                 }
             }
