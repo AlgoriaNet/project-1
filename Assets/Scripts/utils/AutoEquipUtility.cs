@@ -278,28 +278,43 @@ namespace EquipmentUtils
                 return;
             }
             
-            // Check for the correct response structure: response["player_profile"]["Player"]
-            if (response["player_profile"] == null)
+            // Check if response indicates success
+            if (response["success"]?.Value<bool>() == true)
             {
-                Debug.LogError($"[AutoEquipUtility] ❌ Server response missing 'player_profile' field for {equipmentName}. Response keys: {string.Join(", ", response.Properties().Select(p => p.Name))}");
+                Debug.Log($"[AutoEquipUtility] ✅ Equipment {equipmentName} equipped successfully");
                 return;
             }
             
-            if (response["player_profile"]["Player"] == null)
+            // Check if response has error
+            if (response["error"] != null)
             {
-                Debug.LogError($"[AutoEquipUtility] ❌ Server response missing 'Player' field in player_profile for {equipmentName}. player_profile keys: {string.Join(", ", response["player_profile"].Cast<JProperty>().Select(p => p.Name))}");
+                Debug.LogWarning($"[AutoEquipUtility] ⚠️ Server returned error for {equipmentName}: {response["error"]}");
                 return;
             }
             
-            try
+            // Fallback: Check for the legacy response structure: response["player_profile"]["Player"]
+            if (response["player_profile"] != null)
             {
-                PlayerProfile.Data.SetPlayer(response["player_profile"]["Player"].ToObject<Player>());
-                Debug.Log($"[AutoEquipUtility] ✅ Player profile updated successfully from server response for {equipmentName}");
+                if (response["player_profile"]["Player"] == null)
+                {
+                    Debug.LogError($"[AutoEquipUtility] ❌ Server response missing 'Player' field in player_profile for {equipmentName}. player_profile keys: {string.Join(", ", response["player_profile"].Cast<JProperty>().Select(p => p.Name))}");
+                    return;
+                }
+                
+                try
+                {
+                    PlayerProfile.Data.SetPlayer(response["player_profile"]["Player"].ToObject<Player>());
+                    Debug.Log($"[AutoEquipUtility] ✅ Player profile updated successfully from server response for {equipmentName}");
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[AutoEquipUtility] ❌ Error updating player profile for {equipmentName}: {ex.Message}");
+                }
+                return;
             }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"[AutoEquipUtility] ❌ Error updating player profile for {equipmentName}: {ex.Message}");
-            }
+            
+            // If we get here, the response structure is unexpected
+            Debug.LogWarning($"[AutoEquipUtility] ⚠️ Unexpected server response structure for {equipmentName}. Response keys: {string.Join(", ", response.Properties().Select(p => p.Name))}");
         }
     }
 }

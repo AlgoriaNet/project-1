@@ -34,8 +34,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [SerializeField] public Image icon;
         [SerializeField] public TextMeshProUGUI attack;
         [SerializeField] public Button forgeButton;
-        // [SerializeField] public Button replaceButton;
-        // [SerializeField] public Button demountButton;
+        [SerializeField] public Button replaceButton;
+        [SerializeField] public Button dismantleButton;
         [SerializeField] public Button equipButton;
         [SerializeField] public GameObject extraStatsNames;
         [SerializeField] public GameObject extraStatsValues;
@@ -63,10 +63,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             if (forgeButton != null)
                 forgeButton.onClick.AddListener(OnForge);
-            // if (replaceButton != null)
-            //     replaceButton.onClick.AddListener(OnReplace);
-            // if (demountButton != null)
-            //     demountButton.onClick.AddListener(OnDismantle);
+            if (replaceButton != null)
+                replaceButton.onClick.AddListener(OnReplace);
+            if (dismantleButton != null)
+                dismantleButton.onClick.AddListener(OnDismantle);
             // Don't add equipButton listener here - it will be added in Init() to prevent conflicts
             // if (equipButton != null)
             //     equipButton.onClick.AddListener(OnEquip);
@@ -93,10 +93,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
             currentTag.gameObject.SetActive(
                 status.Exists(detailStatus => detailStatus == EquipmentDetailStatus.Current));
-            // replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
-            //     detailStatus == EquipmentDetailStatus.Replace));
-            // demountButton.gameObject.SetActive(status.Exists(detailStatus =>
-            //     detailStatus == EquipmentDetailStatus.Dismantle));
+            if (replaceButton != null)
+                replaceButton.gameObject.SetActive(status.Exists(detailStatus =>
+                    detailStatus == EquipmentDetailStatus.Replace));
+            if (dismantleButton != null)
+                dismantleButton.gameObject.SetActive(status.Exists(detailStatus =>
+                    detailStatus == EquipmentDetailStatus.Dismantle));
             if (equipButton != null)
                 equipButton.gameObject.SetActive(status.Exists(detailStatus =>
                     detailStatus == EquipmentDetailStatus.Equip));
