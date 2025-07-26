@@ -118,9 +118,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 return;
             }
 
-            // Initialize the equipment display with actual gems for this equipment part
-            var gems = PlayerProfile.Data.GetSidekickGemstones(sidekickId, equipment.Part) ?? new List<Gemstone>();
-            columnManager.Init(equipment, gems);
+            // Initialize the equipment display
+            columnManager.Init(equipment, new List<Gemstone>());
             
             // Set up click handler to open EquipmentDetailBox (same as Hero menu behavior)
             if (columnManager.detailButton != null)
