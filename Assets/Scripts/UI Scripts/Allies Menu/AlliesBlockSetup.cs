@@ -584,6 +584,9 @@ public class AlliesBlockSetup : MonoBehaviour
     */
 
 
+    // DEAD CODE: Equipment functionality has migrated to PopupBox system
+    // This method is no longer called - equipment interactions now use EquipmentDetailBox.Instance
+    /*
     // This Loading block data method will be only triggered manualy by the button on the Page_1
     public void LoadForgePageData()
     {
@@ -620,6 +623,7 @@ public class AlliesBlockSetup : MonoBehaviour
 
         Debug.Log("✅ ForgePage Block Updated Successfully!");
     }
+    */
 
     public void LoadForgePagePack()
     {
