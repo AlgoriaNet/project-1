@@ -560,6 +560,9 @@ public class AlliesBlockSetup : MonoBehaviour
         Debug.Log("Step 3 closed!");
     }
 
+    // DEAD CODE: Equipment functionality has migrated to PopupBox system
+    // This method is no longer called - equipment interactions now use EquipmentDetailBox.Instance
+    /*
     public void OpenForgePage()
     {
         ForgePage.SetActive(true);
@@ -578,6 +581,7 @@ public class AlliesBlockSetup : MonoBehaviour
         // Set default state
         ToggleEnhanceUpgrade(true);
     }
+    */
 
 
     // This Loading block data method will be only triggered manualy by the button on the Page_1
