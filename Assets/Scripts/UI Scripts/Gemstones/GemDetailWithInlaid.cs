@@ -37,8 +37,25 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             {
                 _gems = PlayerProfile.Data.GetHeroGemstones(gemstone.Part);
             }
-            inlayGemstones.Init(_gems);
+            // Use the new dot-reading method instead of the old data-based method
+            inlayGemstones.InitFromDots(gemstone.Part, sidekickId);
             popup.SetActive(true);
+        }
+        
+        /// <summary>
+        /// Public method to refresh the InlayGemstones UI
+        /// </summary>
+        public void RefreshInlayGemstones(string equipmentPart, int? sidekickId)
+        {
+            if (inlayGemstones != null)
+            {
+                Debug.Log($"[GemDetailWithInlaid] Refreshing InlayGemstones for {equipmentPart}");
+                inlayGemstones.InitFromDots(equipmentPart, sidekickId);
+            }
+            else
+            {
+                Debug.LogWarning($"[GemDetailWithInlaid] inlayGemstones is null, cannot refresh");
+            }
         }
     }
 }
