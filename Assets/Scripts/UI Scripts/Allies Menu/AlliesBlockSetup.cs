@@ -244,7 +244,10 @@ public class AlliesBlockSetup : MonoBehaviour
                 itemLoader.LoadGemItems(newBlock.transform, gemstone);
                 blockButton.onClick.AddListener(() => 
                 {
-                    GemDetailWithInlaid.Instance.Init(gemstone, null); 
+                    // Get current sidekick ID for Allies gem embedding
+                    int currentSidekickId = GetCurrentSidekickId();
+                    Debug.Log($"[AlliesBlockSetup] Gem clicked - using Sidekick context with ID: {currentSidekickId}");
+                    GemDetailWithInlaid.Instance.Init(gemstone, currentSidekickId); 
                 });
             }
         }
