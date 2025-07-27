@@ -36,5 +36,17 @@ namespace model
 
         [JsonProperty("entry_value")]
         public double EntryValue { get; set; }
+
+        [JsonProperty("equipment_id")]
+        public int? EquipmentId { get; set; }
+
+        [JsonProperty("slot_number")]
+        public int? SlotNumber { get; set; }
+
+        [JsonProperty("is_in_inventory")]
+        public bool IsInInventory { get; set; }
+
+        [JsonProperty("is_embedded")]
+        public bool IsEmbedded { get; set; }
     }
 }

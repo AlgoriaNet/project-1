@@ -69,15 +69,8 @@ namespace model
             if (this.Player == null)
                 return;
                 
-            // Player.Gemstones = gems;
-            if (this.Player.Gemstones == null)
-            {
-                this.Player.Gemstones = new List<Gemstone>();
-            }
-            if (gems != null)
-            {
-                this.Player.Gemstones.AddRange(gems);
-            }
+            // Replace the gems list completely instead of adding to it
+            this.Player.Gemstones = gems ?? new List<Gemstone>();
             NotifyListeners("Gemstones");
             NotifyListeners("Bag");
         }
@@ -121,9 +114,11 @@ namespace model
         
         public List<Gemstone> GetGemstonesInPack()
         {
-            List<Gemstone> gemstones = Player.Gemstones?.FindAll(gemstone => gemstone.InlayWithHeroId == null && gemstone.InlayWithSidekickId == null);
+            // Use new backend embedding fields instead of old InlayWith fields
+            List<Gemstone> gemstones = Player.Gemstones?.FindAll(gemstone => 
+                gemstone.IsInInventory == true && gemstone.IsEmbedded == false);
             gemstones?.Sort((a, b) => b.Level.CompareTo(a.Level));
-            return gemstones;
+            return gemstones ?? new List<Gemstone>();
         }
 
         // copilot agent 2025-06-29: Add or update an item in ItemsJson (for shards, skillbooks, etc.)

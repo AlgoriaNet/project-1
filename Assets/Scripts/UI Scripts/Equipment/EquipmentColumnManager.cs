@@ -26,7 +26,73 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             background.color = ItemLoader.quantityColor[equipment.Quality];
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
             icon.color = Color.white;
-            Debug.Log($"[EquipmentColumnManager] Initialized equipment {equipment.Name} with quality {equipment.Quality} color");
+
+            // Initialize gems/dots from equipment embedded gems data
+            InitializeGemSlots(equipment);
+        }
+
+        /// <summary>
+        /// Initialize gem slots (dots) from equipment embedded gems data
+        /// </summary>
+        private void InitializeGemSlots(Equipment equipment)
+        {
+            if (gems == null || gems.Count == 0)
+            {
+                Debug.LogWarning($"[EquipmentColumnManager] No gem slots configured for {equipment?.Name}");
+                return;
+            }
+
+            // Initialize all gem slots with default Dot_00 first
+            Sprite defaultDotSprite = Resources.Load<Sprite>("UILoading/Gem/Dots/Dot_00");
+            for (int i = 0; i < gems.Count; i++)
+            {
+                if (gems[i] != null)
+                {
+                    gems[i].sprite = defaultDotSprite;
+                    gems[i].color = Color.white;
+                }
+            }
+
+            // Populate gem slots from equipment embedded gems data
+            if (equipment?.EmbeddedGems != null && equipment.EmbeddedGems.Count > 0)
+            {
+                Debug.Log($"[EquipmentColumnManager] Initializing {equipment.EmbeddedGems.Count} embedded gems for {equipment.Name}");
+                
+                foreach (var embeddedGem in equipment.EmbeddedGems)
+                {
+                    if (embeddedGem.gem == null || embeddedGem.is_empty)
+                    {
+                        continue; // Skip empty slots
+                    }
+                    
+                    int slotIndex = embeddedGem.slot - 1; // Convert 1-based to 0-based
+                    if (slotIndex >= 0 && slotIndex < gems.Count)
+                    {
+                        // Load the appropriate dot sprite based on gem level
+                        string dotSpriteName = $"Dot_{embeddedGem.gem.Level:D2}";
+                        Sprite dotSprite = Resources.Load<Sprite>($"UILoading/Gem/Dots/{dotSpriteName}");
+                        
+                        if (dotSprite != null)
+                        {
+                            gems[slotIndex].sprite = dotSprite;
+                            gems[slotIndex].color = Color.white;
+                            Debug.Log($"[EquipmentColumnManager] Set slot {embeddedGem.slot} with {dotSpriteName} for gem {embeddedGem.gem.Name}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[EquipmentColumnManager] Could not load dot sprite: {dotSpriteName}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[EquipmentColumnManager] Invalid slot number {embeddedGem.slot} for equipment {equipment.Name}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log($"[EquipmentColumnManager] No embedded gems found for {equipment?.Name}");
+            }
         }
 
         public void ClearIcon()
@@ -36,7 +102,20 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             icon.color = Color.clear;
             // Reset background color to white for empty slots
             background.color = Color.white;
-            Debug.Log($"[EquipmentColumnManager] Cleared equipment slot - background reset to white");
+
+            // Reset gem slots to default Dot_00
+            if (gems != null)
+            {
+                Sprite defaultDotSprite = Resources.Load<Sprite>("UILoading/Gem/Dots/Dot_00");
+                for (int i = 0; i < gems.Count; i++)
+                {
+                    if (gems[i] != null)
+                    {
+                        gems[i].sprite = defaultDotSprite;
+                        gems[i].color = Color.white;
+                    }
+                }
+            }
         }
         
         private void OnDetail()
@@ -44,13 +123,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Only open EquipmentDetailBox if equipment exists (not for empty slots)
             if (_equipment != null)
             {
-                Debug.Log($"[EquipmentColumnManager] Equipment slot clicked - equipment: {_equipment.Name}");
                 EquipmentDetailBox.Instance.Init(_equipment);
             }
-            else
-            {
-                Debug.Log($"[EquipmentColumnManager] Empty equipment slot clicked - no action (should be handled by AlliesEquipments for empty slots)");
-            }
+            // else: do nothing for empty slot (handled elsewhere)
         }
     }
 }

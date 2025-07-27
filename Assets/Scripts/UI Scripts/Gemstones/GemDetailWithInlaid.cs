@@ -23,7 +23,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             {
                 Destroy(gameObject);
             }
-            PlayerProfile.Data.AddListener((arg0 => popup.SetActive(false)), "Bag");
+            // Removed automatic popup closing on "Bag" changes to allow embedding feedback
+            // PlayerProfile.Data.AddListener((arg0 => popup.SetActive(false)), "Bag");
         }
 
         public void Init(Gemstone gemstone, int? sidekickId)
@@ -37,8 +38,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             {
                 _gems = PlayerProfile.Data.GetHeroGemstones(gemstone.Part);
             }
-            // Use the new dot-reading method instead of the old data-based method
-            inlayGemstones.InitFromDots(gemstone.Part, sidekickId);
+            // Use the new data-driven method
+            RefreshInlayGemstones(gemstone.Part, sidekickId);
             popup.SetActive(true);
         }
         
@@ -49,8 +50,34 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         {
             if (inlayGemstones != null)
             {
-                Debug.Log($"[GemDetailWithInlaid] Refreshing InlayGemstones for {equipmentPart}");
-                inlayGemstones.InitFromDots(equipmentPart, sidekickId);
+                Debug.Log($"[GemDetailWithInlaid] Refreshing InlayGemstones for {equipmentPart} using data-driven approach");
+                
+                // Find the equipment from player data
+                Equipment targetEquipment = null;
+                if (sidekickId != null)
+                {
+                    // For Allies - find equipment equipped to this sidekick
+                    targetEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
+                        equipment.Part == equipmentPart && equipment.EquipWithSidekickId == sidekickId);
+                }
+                else
+                {
+                    // For Hero - find equipment equipped to hero
+                    targetEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
+                        equipment.Part == equipmentPart && equipment.EquipWithHeroId > 0);
+                }
+                
+                if (targetEquipment != null)
+                {
+                    // Use new data-driven approach instead of UI parsing
+                    inlayGemstones.InitFromEquipmentData(targetEquipment);
+                }
+                else
+                {
+                    Debug.LogWarning($"[GemDetailWithInlaid] No equipped {equipmentPart} found for character");
+                    // Fallback to old method if equipment not found
+                    inlayGemstones.InitFromDots(equipmentPart, sidekickId);
+                }
             }
             else
             {

@@ -78,7 +78,6 @@ public class LineupController : MonoBehaviour
                 unlockedAllies.Add((index, characterNames[i]));
             }
         }
-        Debug.Log($"[LineupController] Unlocked Allies Count: {unlockedAllies.Count}");
     }
 
     private void AdjustGridForFivePerRow()
@@ -249,7 +248,7 @@ public class LineupController : MonoBehaviour
                 selectedAlly = null;
             }
             
-            Debug.Log($"🔄 Slot {slotButton.name} cleared! Ally is now unselected.");
+            // ...
             return;
         }
 
@@ -305,8 +304,7 @@ public class LineupController : MonoBehaviour
         SaveLineup();
         
         var currentLineup = lineupDictionary.Values.Select(go => go.name.Split('_')[1]).ToList();
-        Debug.Log($"[LineupController][AGENT] Current lineup at CloseLineup: {string.Join(", ", currentLineup)}");
-        Debug.Log($"[LineupController][AGENT] About to call UpdateDeploymentToBackend()");
+        // ...
         
         UpdateDeploymentToBackend();
     }
@@ -360,7 +358,7 @@ public class LineupController : MonoBehaviour
                         baseId = numericId.ToString(); // Remove zero-padding
                     }
                     currentlyDeployedBaseIds.Add(baseId);
-                    Debug.Log($"[LineupController] Ally index {allyIndex} - original base_id: '{originalBaseId}' -> converted: '{baseId}'");
+                    // ...
                 }
                 else
                 {
@@ -372,7 +370,7 @@ public class LineupController : MonoBehaviour
                         fallbackBaseId = numericId.ToString(); // Remove zero-padding
                     }
                     currentlyDeployedBaseIds.Add(fallbackBaseId);
-                    Debug.Log($"[LineupController] Using fallback base_id: '{allyIndex}' -> '{fallbackBaseId}'");
+                    // ...
                 }
             }
         }
@@ -401,8 +399,7 @@ public class LineupController : MonoBehaviour
             }
         }
 
-        Debug.Log($"[LineupController][AGENT] Currently deployed base_ids: [{string.Join(", ", currentlyDeployedBaseIds)}]");
-        Debug.Log($"[LineupController][AGENT] Originally deployed base_ids: [{string.Join(", ", originallyDeployedBaseIds)}]");
+        // ...
 
         // Check if there are any changes
         bool hasChanges = !currentlyDeployedBaseIds.SequenceEqual(originallyDeployedBaseIds.OrderBy(x => x).ToList()) ||
@@ -410,24 +407,18 @@ public class LineupController : MonoBehaviour
 
         if (hasChanges)
         {
-            Debug.Log($"[LineupController][AGENT] Deployment changes detected. Sending complete lineup to backend.");
             SendCompleteDeploymentUpdate(currentlyDeployedBaseIds);
-        }
-        else
-        {
-            Debug.Log("[LineupController][AGENT] No deployment changes detected. No backend update sent.");
         }
     }
 
     // REPLACE THE EXISTING SendCompleteDeploymentUpdate METHOD with this:
     private void SendCompleteDeploymentUpdate(List<string> deployedBaseIds)
     {
-        Debug.Log($"[LineupController][AGENT] Sending complete deployment update to backend: deployed_ids=[{string.Join(", ", deployedBaseIds)}]");
-        Debug.Log($"[LineupController][AGENT] WebSocketManager.Instance is null? {WebSocketManager.Instance == null}");
+        // ...
         
         if (WebSocketManager.Instance != null)
         {
-            Debug.Log($"[LineupController][AGENT] Calling WebSocketManager.Instance.Action with deployed_ids array length: {deployedBaseIds.Count}");
+            // ...
             WebSocketManager.Instance.Action(
                 "PlayerChannel",
                 "update_sidekick_deployment",
@@ -435,7 +426,7 @@ public class LineupController : MonoBehaviour
                     deployed_ids = deployedBaseIds.ToArray()  // Now sending actual base_ids from sidekick records
                 }
             );
-            Debug.Log($"[LineupController][AGENT] WebSocket Action call completed");
+            // ...
         }
         else
         {
@@ -458,7 +449,7 @@ public class LineupController : MonoBehaviour
         string savedData = PlayerPrefs.GetString("SavedLineup");
         string[] savedAllies = savedData.Split(',');
 
-        Debug.Log($"📂 Loading Saved Lineup: {savedData}");
+        // ...
 
         foreach (string entry in savedAllies)
         {
@@ -505,7 +496,7 @@ public class LineupController : MonoBehaviour
         PlayerPrefs.SetString("SavedLineup", string.Join(",", lineupData));
         PlayerPrefs.Save();
 
-        Debug.Log($"💾 Saved Lineup: {string.Join(", ", lineupData)}");
+        // ...
     }
 
     private bool IsAllyUnlocked(string allyName)
@@ -562,7 +553,7 @@ public class LineupController : MonoBehaviour
             }
         }
 
-        Debug.Log($"[LineupController][AGENT] originalDeployment at OpenLineup: {string.Join(", ", originalDeployment.Select(kvp => $"id={kvp.Key}:is_deployed={kvp.Value}"))}");
+        // ...
 
         // Remove old listeners and add new ones
         slot1.onClick.RemoveAllListeners();
@@ -577,12 +568,7 @@ public class LineupController : MonoBehaviour
 
         if (AreAllSlotsEmpty())
         {
-            Debug.Log("🔄 Slots are empty! Restoring lineup from saved data.");
             LoadLineup();
-        }
-        else
-        {
-            Debug.Log("✅ Lineup is still intact, no need to reload.");
         }
         
         // Ensure allies in slots are dimmed in the grid
@@ -626,7 +612,7 @@ public class LineupController : MonoBehaviour
             }
         }
         
-        Debug.Log("[LineupController][AGENT] AutoDeploy complete. Current lineup: " + string.Join(", ", lineupDictionary.Values.Select(go => go.name)));
+        // ...
     }
     
     private void ClearAllSelections()
@@ -656,6 +642,6 @@ public class LineupController : MonoBehaviour
         officiallySelectedAllies.Clear();
         selectedAlly = null;
         
-        Debug.Log("[LineupController][AGENT] All selections cleared for AutoDeploy");
+        // ...
     }
 }

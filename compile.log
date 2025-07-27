@@ -1,0 +1,49 @@
+Unity Editor version:    2022.3.10f1 (ff3792e53c62)
+Branch:                  2022.3/staging
+Build type:              Release
+Batch mode:              YES
+macOS version:           Version 14.7.6 (Build 23H626)
+Darwin version:          23.6.0
+Architecture:            arm64
+Running under Rosetta:   NO
+Available memory:        8192 MB
+[Licensing::Module] Trying to connect to existing licensing client channel...
+[Licensing::IpcConnector] Successfully connected to the License Client on channel: "LicenseClient-mabelzhang" at "2025-07-27T09:31:31.139976Z"
+[Licensing::Client] Error: Code 10 while verifying Licensing Client signature (process Id: 62229, path: "/Applications/Unity Hub.app/Contents/Frameworks/UnityLicensingClient_V1.app/Contents/MacOS/Unity.Licensing.Client")
+[Licensing::Module] Error: LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.17.0+aa6cfba
+  Session Id:              51a77880bc7d4d50a563aec7d7ffcc49
+  Correlation Id:          9e9d4557732ada57fe606f6164498fda
+  External correlation Id: 8876730396238593084
+  Machine Id:              +d0AYT1kDK2U8a4iRULRj4FbnsE=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-mabelzhang" (connect: 0.00s, validation: 0.02s, handshake: 0.63s)
+[Licensing::IpcConnector] Successfully connected to the License Notification on channel: "LicenseClient-mabelzhang-notifications" at "2025-07-27T09:31:31.79237Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully updated license
+[Licensing::Client] Successfully resolved entitlements
+[Licensing::Module] Serial number assigned to: "ewogICJzdWJzR3JvdXAiIDogInVuaXR5IGVkaXRvciIsCiAgIm5hbWVzcGFjZSIgOiAidW5pdHlfZWRpdG9yIiwKICAidHlwZSIgOiAiRURJVE9SIiwKICAidGFnIiA6ICJVbml0eVBlcnNvbmFsXXXX"
+Pro License: NO
+Launching external process: /Applications/Unity/Hub/Editor/2022.3.10f1/Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager
+
+COMMAND LINE ARGUMENTS:
+/Applications/Unity/Hub/Editor/2022.3.10f1/Unity.app/Contents/MacOS/Unity
+-batchmode
+-quit
+-projectPath
+.
+-logFile
+compile.log
+Successfully changed project path to: /Volumes/WD_SSD/UnityProjects/project-1-equip
+/Volumes/WD_SSD/UnityProjects/project-1-equip
+It looks like another Unity instance is running with this project open.
+
+Multiple Unity instances cannot open the same project.
+
+Project: /Volumes/WD_SSD/UnityProjects/project-1-equip
+Fatal Error! It looks like another Unity instance is running with this project open.
+
+Multiple Unity instances cannot open the same project.
+
+Project: /Volumes/WD_SSD/UnityProjects/project-1-equip
+[Package Manager] Server::Kill -- Server was shutdown

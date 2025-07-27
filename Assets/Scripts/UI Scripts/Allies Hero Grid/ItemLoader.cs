@@ -65,11 +65,27 @@ public class ItemLoader : MonoBehaviour
 
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
-            FindObjectOfType<AlliesBlockSetup>()?.UpdateTotalBlocks();
+            var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+            if (alliesBlockSetup != null)
+            {
+                alliesBlockSetup.UpdateTotalBlocks();
+            }
+            else
+            {
+                Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when switching to Allies Menu");
+            }
         }
         else if (menuController.IsMenuActive(1)) // Hero Menu
         {
-            FindObjectOfType<HeroBlockSetup>()?.UpdateTotalBlocks();
+            var heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
+            if (heroBlockSetup != null)
+            {
+                heroBlockSetup.UpdateTotalBlocks();
+            }
+            else
+            {
+                Debug.LogWarning("[ItemLoader] HeroBlockSetup not found when switching to Hero Menu");
+            }
         }
     }
 
@@ -222,11 +238,35 @@ public class ItemLoader : MonoBehaviour
 
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
-            contentPanel = FindObjectOfType<AlliesBlockSetup>()?.contentPanel;
+            var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+            if (alliesBlockSetup != null)
+            {
+                contentPanel = alliesBlockSetup.contentPanel;
+            }
+            else
+            {
+                Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when populating items");
+                return;
+            }
         }
         else if (menuController.IsMenuActive(1)) // Hero Menu
         {
-            contentPanel = FindObjectOfType<HeroBlockSetup>()?.contentPanel;
+            var heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
+            if (heroBlockSetup != null)
+            {
+                contentPanel = heroBlockSetup.contentPanel;
+            }
+            else
+            {
+                Debug.LogWarning("[ItemLoader] HeroBlockSetup not found when populating items");
+                return;
+            }
+        }
+
+        if (contentPanel == null)
+        {
+            Debug.LogWarning("[ItemLoader] contentPanel is null - cannot populate items");
+            return;
         }
 
         // Iterate over each block in the contentPanel
@@ -534,7 +574,15 @@ public class ItemLoader : MonoBehaviour
         
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
-            FindObjectOfType<AlliesBlockSetup>()?.UpdateTotalBlocks();
+            var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+            if (alliesBlockSetup != null)
+            {
+                alliesBlockSetup.UpdateTotalBlocks();
+            }
+            else
+            {
+                Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when refreshing after auto equip");
+            }
         }
     }
     

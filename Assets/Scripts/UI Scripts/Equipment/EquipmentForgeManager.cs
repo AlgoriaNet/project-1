@@ -92,17 +92,14 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (heroMenu != null && heroMenu.activeInHierarchy)
             {
                 currentContext = ForgeContext.Hero;
-                Debug.Log("[ForgeManager] HeroMenu is active - using Hero context");
             }
             else if (allyMenu != null && allyMenu.activeInHierarchy)
             {
                 currentContext = ForgeContext.Ally;
-                Debug.Log("[ForgeManager] AllyMenu is active - using Ally context");
             }
             else
             {
                 currentContext = context; // fallback to passed context
-                Debug.Log($"[ForgeManager] No menu detected as active - using fallback context: {context}");
             }
             
             forgePage.SetActive(true);
@@ -147,18 +144,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (currentSelectedEquipment != null)
             {
                 selectedEquipment = currentSelectedEquipment;
-                Debug.Log($"✅ Using stored selected equipment: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
             }
             // If no stored equipment, try to get from EquipmentComparisonManager
             else if (EquipmentComparisonManager.Instance != null && EquipmentComparisonManager.Instance.ComparedEquippedId > 0)
             {
                 selectedEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment => 
                     equipment.Id == EquipmentComparisonManager.Instance.ComparedEquippedId);
-                
-                if (selectedEquipment != null)
-                {
-                    Debug.Log($"✅ Using equipment from comparison manager: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
-                }
             }
 
             // If still no equipment is selected, use the equipped helm as default
@@ -166,12 +157,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 var heroEquipments = PlayerProfile.Data.GetHeroEquipments();
                 selectedEquipment = heroEquipments.Find(equipment => equipment.Part == "Helm");
-                
-                if (selectedEquipment != null)
-                {
-                    Debug.Log($"✅ No equipment selected - using equipped helm as default: {selectedEquipment.Name} (ID: {selectedEquipment.Id})");
-                }
-                else
+                if (selectedEquipment == null)
                 {
                     Debug.LogError("❌ No equipped helm available for forging!");
                     return;
@@ -210,7 +196,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 equipImage.sprite = equipmentSprite;
                 equipImage.color = Color.white; // Ensure visibility
-                Debug.Log($"✅ Loaded equipment image: {imagePath}");
             }
             else
             {
@@ -229,7 +214,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
                 backgroundImage.color = qualityColor;
-                Debug.Log($"✅ Set equipment quality color: Quality {equipment.Quality} = {qualityColor}");
             }
             else
             {
@@ -238,8 +222,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
             // Update level progression display
             UpdateLevelProgressionDisplay(equipment);
-            
-            Debug.Log($"✅ ForgePage Block Updated Successfully with {equipment.Name} (ID: {equipment.Id}, Quality: {equipment.Quality})!");
         }
         
         /// <summary>
@@ -263,7 +245,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 int currentLevel = equipment.IntensifyLevel + 1; // Display as 1-based (0 -> Level 1)
                 currentLevelText.text = $"Level {currentLevel}";
-                Debug.Log($"✅ Updated LevelText_1: Level {currentLevel} (IntensifyLevel: {equipment.IntensifyLevel})");
             }
             else
             {
@@ -274,21 +255,16 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 int nextLevel = equipment.IntensifyLevel + 2; // Next level
                 nextLevelText.text = $"Level {nextLevel}";
-                Debug.Log($"✅ Updated LevelText_2: Level {nextLevel} (IntensifyLevel: {equipment.IntensifyLevel})");
             }
             else
             {
                 Debug.LogError("❌ LevelText_2 not found in Board hierarchy!");
             }
             
-            // Update attack displays - DEBUG EQUIPMENT STATS
-            Debug.Log($"🔍 Equipment Stats Debug: {equipment.Name} - BaseAtk: {equipment.BaseAtk}, GrowthAtk: {equipment.GrowthAtk}, IntensifyLevel: {equipment.IntensifyLevel}, Attack: {equipment.Attack}");
-            
             if (currentAttackText != null)
             {
                 int currentAttack = equipment.Attack; // Already calculated: BaseAtk + IntensifyLevel * GrowthAtk
                 currentAttackText.text = $"Attack +{currentAttack}";
-                Debug.Log($"✅ Updated AttackText_1: Attack +{currentAttack} (using equipment.Attack property)");
             }
             else
             {
@@ -299,7 +275,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 int nextAttack = equipment.BaseAtk + (equipment.IntensifyLevel + 1) * equipment.GrowthAtk;
                 nextAttackText.text = $"Attack +{nextAttack}";
-                Debug.Log($"✅ Updated AttackText_2: Attack +{nextAttack} (calculated: {equipment.BaseAtk} + ({equipment.IntensifyLevel} + 1) * {equipment.GrowthAtk})");
             }
             else
             {
@@ -349,45 +324,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 TextMeshProUGUI textComponent = containerTransform.Find(componentName)?.GetComponent<TextMeshProUGUI>();
                 if (textComponent != null)
                 {
-                    Debug.Log($"✅ Found {componentName} in {panelName}/Board/{containerName}");
                     return textComponent;
                 }
             }
             
             // If not found, provide detailed debugging
-            Debug.LogError($"❌ Could not find {componentName} in any panel. Debugging hierarchy:");
-            
-            foreach (string panelName in panelNames)
-            {
-                Transform panelTransform = forgePageTransform.Find(panelName);
-                if (panelTransform != null)
-                {
-                    Debug.LogError($"  Found {panelName}");
-                    Transform boardTransform = panelTransform.Find("Board");
-                    if (boardTransform != null)
-                    {
-                        Debug.LogError($"    Found Board in {panelName}");
-                        for (int i = 0; i < boardTransform.childCount; i++)
-                        {
-                            Transform container = boardTransform.GetChild(i);
-                            Debug.LogError($"      Container {i}: {container.name}");
-                            for (int j = 0; j < container.childCount; j++)
-                            {
-                                Transform textChild = container.GetChild(j);
-                                Debug.LogError($"        Text Component {j}: {textChild.name}");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogError($"    ❌ Board not found in {panelName}");
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"  ❌ {panelName} not found");
-                }
-            }
+            Debug.LogError($"❌ Could not find {componentName} in any panel.");
             
             return null;
         }
@@ -429,7 +371,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         itemIndex++;
                     }
                 }
-                Debug.Log($"✅ ForgePage Pack Loaded Successfully from {currentContext} source with {itemIndex} equipment click handlers!");
+                // ...
             }
             else
             {
@@ -460,12 +402,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             // Add new click handler for forge page
             button.onClick.AddListener(() => {
-                Debug.Log($"[ForgeManager] Pack equipment clicked: {equipment.Name} (ID: {equipment.Id})");
-                
                 // Perform equipment swap: move clicked equipment up, previous equipment down
                 SwapEquipmentInForge(equipment, packItem);
-                
-                Debug.Log($"[ForgeManager] Equipment swap completed with {equipment.Name}");
             });
         }
         
@@ -484,15 +422,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // If there was a previous equipment, update the clicked pack item to show it
             if (previousEquipment != null)
             {
-                Debug.Log($"[ForgeManager] Swapping {previousEquipment.Name} down to pack position");
                 UpdatePackItemDisplay(clickedPackItem, previousEquipment);
-                
                 // Update the click handler of the pack item to use the previous equipment
                 UpdatePackItemClickHandler(clickedPackItem, previousEquipment);
-            }
-            else
-            {
-                Debug.Log("[ForgeManager] No previous equipment to swap down");
             }
         }
         
@@ -511,7 +443,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 {
                     itemImage.sprite = equipmentSprite;
                     itemImage.color = Color.white;
-                    Debug.Log($"✅ Updated pack item image: {imagePath}");
                 }
             }
             
@@ -521,7 +452,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
                 backgroundImage.color = qualityColor;
-                Debug.Log($"✅ Updated pack item quality color: Quality {equipment.Quality}");
             }
             
             // Update equipment part icon if it exists
@@ -532,11 +462,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 if (partSprite != null)
                 {
                     partImage.sprite = partSprite;
-                    Debug.Log($"✅ Updated pack item part: {equipment.Part}");
                 }
             }
             
-            Debug.Log($"✅ Pack item display updated with {equipment.Name}");
+            // ...
         }
         
         /// <summary>
@@ -550,11 +479,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 // Remove old click handler and add new one with updated equipment
                 button.onClick.RemoveAllListeners();
                 button.onClick.AddListener(() => {
-                    Debug.Log($"[ForgeManager] Updated pack equipment clicked: {equipment.Name} (ID: {equipment.Id})");
                     SwapEquipmentInForge(equipment, packItem);
                 });
-                
-                Debug.Log($"✅ Updated pack item click handler for {equipment.Name}");
             }
         }
         
@@ -588,13 +514,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 if (parentRect != null && parentRect.rect.width > 10f)
                 {
                     panelWidth = parentRect.rect.width;
-                    Debug.Log($"[ForgeManager] Using parent width: {panelWidth}");
                 }
                 else
                 {
                     // Last resort fallback - use a standard screen proportion
                     panelWidth = Screen.width * 0.8f;
-                    Debug.Log($"[ForgeManager] Using screen-based fallback width: {panelWidth}");
                 }
             }
             
@@ -605,7 +529,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             spacingX = blockWidth * 0.125f;
             spacingY = blockWidth * 0.125f;
             
-            Debug.Log($"[ForgeManager] Grid setup - panelWidth: {panelWidth}, blockWidth: {blockWidth}, context: {currentContext}");
+            // ...
             
             forgePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             forgePackGrid.constraintCount = 5;
@@ -639,12 +563,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Return to the correct panel based on context
             if (currentContext == ForgeContext.Hero)
             {
-                Debug.Log("[ForgeManager]Returning to Hero Step 2 Panel.");
                 heroStep2Panel.SetActive(true);
             }
             else
             {
-                Debug.Log("[ForgeManager]Returning to Ally Step 2 Panel.");
                 allyStep2Panel.SetActive(true);
                 heroStep2Panel.SetActive(true);
             }
@@ -669,8 +591,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 backgroundImage.color = Color.white; // Reset to default white background
             }
-
-            Debug.Log($"✅ ForgePage Block Cleared on Close! Returned to {currentContext} panel.");
         }
     }
 }

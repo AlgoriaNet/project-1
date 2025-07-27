@@ -39,6 +39,8 @@ namespace model
         public int BaseAtk;
         [JsonProperty("growth_atk")]
         public int GrowthAtk;
+        [JsonProperty("embedded_gems")]
+        public List<EmbeddedGemSlot> EmbeddedGems = new List<EmbeddedGemSlot>();
 
         public bool IsEquipped()
         {
@@ -46,5 +48,28 @@ namespace model
         }
         
         public int Attack => BaseAtk + IntensifyLevel * GrowthAtk;
+        
+        public int GetFirstEmptyGemSlot()
+        {
+            if (EmbeddedGems == null || EmbeddedGems.Count == 0)
+                return 1; // First slot if no data
+                
+            for (int i = 0; i < EmbeddedGems.Count; i++)
+            {
+                if (EmbeddedGems[i].is_empty || EmbeddedGems[i].gem == null)
+                {
+                    return i + 1; // Return 1-based slot number
+                }
+            }
+            return -1; // No empty slots
+        }
+    }
+    
+    [System.Serializable]
+    public class EmbeddedGemSlot
+    {
+        public int slot;
+        [CanBeNull] public Gemstone gem;
+        public bool is_empty;
     }
 }

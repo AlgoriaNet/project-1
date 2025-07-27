@@ -118,13 +118,11 @@ public class HeroBlockSetup : MonoBehaviour
         {
             var equipments = PlayerProfile.Data.GetEquipmentsInPack();
             totalBlocks = equipments?.Count ?? 0;
-            Debug.Log($"[HeroBlockSetup] Equipment count: {totalBlocks}");
         }
         else if (itemLoader.currentItemType == ItemLoader.ItemType.Gem)
         {
             var gemstones = PlayerProfile.Data.GetGemstonesInPack();
             totalBlocks = gemstones?.Count ?? 0;
-            Debug.Log($"[HeroBlockSetup] Gemstone count: {totalBlocks}");
         }
 
         // Update the grid layout dynamically to match the number of blocks
@@ -176,7 +174,7 @@ public class HeroBlockSetup : MonoBehaviour
             Destroy(child.gameObject); // Clear previous blocks
         }
         
-        Debug.Log($"[HeroBlockSetup] Creating {totalBlocks} blocks for {itemLoader.currentItemType}");
+        // ...
 
         for (int i = 0; i < totalBlocks; i++)
         {
@@ -196,7 +194,7 @@ public class HeroBlockSetup : MonoBehaviour
                 if (i < equipments.Count)
                 {
                     Equipment equipment = equipments[i];
-                    Debug.Log($"[HeroBlockSetup] Loading equipment block {i}: {equipment?.Name}");
+                    // ...
                     itemLoader.LoadEquipmentItems(newBlock.transform, equipment);
                     blockButton.onClick.AddListener(() => 
                     {
@@ -204,26 +202,12 @@ public class HeroBlockSetup : MonoBehaviour
                         EquipmentComparisonManager.EquippedOn context = EquipmentComparisonManager.EquippedOn.Hero;
                         int contextId = 0; // Hero uses 0, Sidekick uses actual ID
                         
-                        Debug.Log($"[HeroBlockSetup] Context Detection - allyStep2Panel null: {allyStep2Panel == null}");
-                        if (allyStep2Panel != null)
-                        {
-                            Debug.Log($"[HeroBlockSetup] Context Detection - allyStep2Panel active: {allyStep2Panel.activeInHierarchy}");
-                        }
-                        Debug.Log($"[HeroBlockSetup] Context Detection - heroStep2Panel null: {heroStep2Panel == null}");
-                        if (heroStep2Panel != null)
-                        {
-                            Debug.Log($"[HeroBlockSetup] Context Detection - heroStep2Panel active: {heroStep2Panel.activeInHierarchy}");
-                        }
+                        // ...
                         
                         if (allyStep2Panel != null && allyStep2Panel.activeInHierarchy)
                         {
                             context = EquipmentComparisonManager.EquippedOn.Sidekick;
                             contextId = GetCurrentSidekickIdFromAllies(); // Get sidekick ID for Ally context
-                            Debug.Log($"[HeroBlockSetup] Detected Ally context - using Sidekick with ID: {contextId}");
-                        }
-                        else
-                        {
-                            Debug.Log("[HeroBlockSetup] Detected Hero context - using Hero");
                         }
                         
                         // Check if there's currently equipped equipment for this part and context
@@ -232,13 +216,11 @@ public class HeroBlockSetup : MonoBehaviour
                         if (currentEquipment != null)
                         {
                             // Equipment slot is occupied - show comparison page
-                            Debug.Log($"[HeroBlockSetup] Slot occupied by equipment ID {currentEquipment.Id} - showing comparison");
                             EquipmentComparisonManager.Instance.Init(context, equipment?.Id, contextId);
                         }
                         else
                         {
                             // Equipment slot is empty - show single equipment detail for equipping
-                            Debug.Log($"[HeroBlockSetup] Slot empty - showing single detail for equipping");
                             EquipmentDetailBox.Instance.InitForEquipping(equipment, context, contextId);
                         }
                     });
@@ -251,7 +233,7 @@ public class HeroBlockSetup : MonoBehaviour
                 if (i < gemstones.Count)
                 {
                     Gemstone gemstone = gemstones[i];
-                    Debug.Log($"[HeroBlockSetup] Loading gem block {i}: Gem_{gemstone?.Level:D2}");
+                    // ...
                     itemLoader.LoadGemItems(newBlock.transform, gemstone);
                     blockButton.onClick.AddListener(() => 
                     {
@@ -315,7 +297,7 @@ public class HeroBlockSetup : MonoBehaviour
     // Call this when the 'Other' tab is selected to refresh the UI
     public void OnOtherTabSelected()
     {
-        Debug.Log("[OtherTab] Selected. Updating Others tab UI.");
+        // ...
         UpdateOthersTab();
     }
 
@@ -323,7 +305,7 @@ public class HeroBlockSetup : MonoBehaviour
     public void UpdateOthersTab()
     {
         var otherItemsRaw = model.PlayerProfile.Data.GetOtherItemsInPack();
-        Debug.Log($"[OtherTab] ItemsJson count: {otherItemsRaw?.Count ?? 0}");
+        // ...
         if (otherItemsRaw == null || otherItemsRaw.Count == 0)
         {
             Debug.LogWarning("[OtherTab] ItemsJson is empty! Add test data or check server sync.");
@@ -367,7 +349,7 @@ public class HeroBlockSetup : MonoBehaviour
         foreach (Transform child in contentPanel)
             Destroy(child.gameObject);
 
-        Debug.Log($"[OtherTab] Creating blocks for {grouped.Count} grouped items");
+        // ...
 
         // 4. Create blocks for each grouped item (skip items with quantity 0)
         int blocksCreated = 0;
@@ -380,7 +362,6 @@ public class HeroBlockSetup : MonoBehaviour
             // Skip items with quantity 0 - they should not appear in the pack
             if (totalQnty <= 0)
             {
-                Debug.Log($"[OtherTab] Skipping {fileName} with quantity {totalQnty}");
                 continue;
             }
 
@@ -419,7 +400,6 @@ public class HeroBlockSetup : MonoBehaviour
             
             blockButton.onClick.AddListener(() => 
             {
-                Debug.Log($"[OtherTab] Block clicked: {capturedFileName}");
                 if (OtherDetailBox.Instance != null)
                 {
                     OtherDetailBox.Instance.Init(capturedFileName, capturedQuantity, capturedType);
@@ -432,6 +412,7 @@ public class HeroBlockSetup : MonoBehaviour
         }
         
         Debug.Log($"[OtherTab] UpdateOthersTab complete: {blocksCreated} blocks created from {grouped.Count} total items");
+        // ...
     }
 
     // Helper: match GachaController logic for image path

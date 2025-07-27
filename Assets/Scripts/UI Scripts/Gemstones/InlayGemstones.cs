@@ -9,8 +9,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
     public class InlayGemstones : MonoBehaviour
     {
         private List<Gemstone> _gemstones;
-        [SerializeField] private List<Image> images;
-        [SerializeField] private List<TextMeshProUGUI> descriptions;
+        [SerializeField] public List<Image> images;
+        [SerializeField] public List<TextMeshProUGUI> descriptions;
         
         
         public void Init(List<Gemstone> gemstones)
@@ -28,6 +28,112 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                     images[i].sprite = null;
                     descriptions[i].text = "";
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Initialize using equipment data instead of UI parsing (NEW DATA-DRIVEN APPROACH)
+        /// </summary>
+        public void InitFromEquipmentData(Equipment equipment)
+        {
+            Debug.Log($"[InlayGemstones] InitFromEquipmentData called for equipment: {equipment?.Name}");
+            
+            if (equipment?.EmbeddedGems == null)
+            {
+                Debug.Log($"[InlayGemstones] No embedded gems data for equipment {equipment?.Name}");
+                ClearAllSlots();
+                return;
+            }
+            
+            // Update UI from equipment embedded gems data
+            for (int i = 0; i < 5; i++) // Always 5 slots
+            {
+                if (i < images.Count)
+                {
+                    if (i < equipment.EmbeddedGems.Count && !equipment.EmbeddedGems[i].is_empty && equipment.EmbeddedGems[i].gem != null)
+                    {
+                        // Slot has gem - display it
+                        var gem = equipment.EmbeddedGems[i].gem;
+                        images[i].sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gem.Level:D2}");
+                        descriptions[i].text = gem.Description ?? $"Gem Level {gem.Level}";
+                        Debug.Log($"[InlayGemstones] Loaded embedded gem: {gem.Name} for slot {i + 1}");
+                    }
+                    else
+                    {
+                        // Empty slot
+                        images[i].sprite = null;
+                        descriptions[i].text = "";
+                        Debug.Log($"[InlayGemstones] Slot {i + 1} is empty");
+                    }
+                }
+            }
+        }
+        
+        private void ClearAllSlots()
+        {
+            for (int i = 0; i < images.Count; i++)
+            {
+                images[i].sprite = null;
+                descriptions[i].text = "";
+            }
+        }
+        
+        /// <summary>
+        /// Direct update using GameObject hierarchy - bypasses serialized arrays
+        /// </summary>
+        public void UpdateSlotDirectly(int slotNumber, Gemstone gem)
+        {
+            Debug.Log($"[InlayGemstones] UpdateSlotDirectly called for slot {slotNumber}, gem: {gem?.Name}");
+            
+            // Find the InlayGems GameObject (parent of this component)
+            Transform inlayGemsTransform = transform;
+            
+            // Find Group_{slotNumber} (1-based)
+            Transform groupTransform = inlayGemsTransform.Find($"Group_{slotNumber}");
+            if (groupTransform == null)
+            {
+                Debug.LogError($"[InlayGemstones] Could not find Group_{slotNumber} in InlayGems");
+                return;
+            }
+            
+            // Find Image under Group_{slotNumber}
+            Transform imageTransform = groupTransform.Find("Image");
+            if (imageTransform == null)
+            {
+                Debug.LogError($"[InlayGemstones] Could not find Image under Group_{slotNumber}");
+                return;
+            }
+            
+            Image slotImage = imageTransform.GetComponent<Image>();
+            if (slotImage == null)
+            {
+                Debug.LogError($"[InlayGemstones] No Image component found on Group_{slotNumber}/Image");
+                return;
+            }
+            
+            if (gem != null)
+            {
+                // Load and set gem sprite
+                Sprite gemSprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gem.Level:D2}");
+                slotImage.sprite = gemSprite;
+                Debug.Log($"[InlayGemstones] ✅ Updated slot {slotNumber} with gem {gem.Name} (Level {gem.Level})");
+                
+                // Also update description if there's a text component
+                Transform textTransform = groupTransform.Find("Text");
+                if (textTransform != null)
+                {
+                    var textComponent = textTransform.GetComponent<TMPro.TextMeshProUGUI>();
+                    if (textComponent != null)
+                    {
+                        textComponent.text = gem.Description ?? $"Gem Level {gem.Level}";
+                    }
+                }
+            }
+            else
+            {
+                // Clear slot
+                slotImage.sprite = null;
+                Debug.Log($"[InlayGemstones] ✅ Cleared slot {slotNumber}");
             }
         }
         
