@@ -21,7 +21,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                 if (i < gemstones.Count)
                 {
                     images[i].sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gemstones[i].Level:D2}");
-                    descriptions[i].text = gemstones[i].Description;
+                    descriptions[i].text = gemstones[i].EffectDescription;
                 }
                 else
                 {
@@ -55,8 +55,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                         // Slot has gem - display it
                         var gem = equipment.EmbeddedGems[i].gem;
                         images[i].sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gem.Level:D2}");
-                        descriptions[i].text = gem.Description ?? $"Gem Level {gem.Level}";
-                        Debug.Log($"[InlayGemstones] Loaded embedded gem: {gem.Name} for slot {i + 1}");
+                        descriptions[i].text = gem.EffectDescription ?? $"Gem Level {gem.Level}";
+                        Debug.Log($"[InlayGemstones] Loaded embedded gem: {gem.EffectName} for slot {i + 1}");
                     }
                     else
                     {
@@ -83,7 +83,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         /// </summary>
         public void UpdateSlotDirectly(int slotNumber, Gemstone gem)
         {
-            Debug.Log($"[InlayGemstones] UpdateSlotDirectly called for slot {slotNumber}, gem: {gem?.Name}");
+            Debug.Log($"[InlayGemstones] UpdateSlotDirectly called for slot {slotNumber}, gem: {gem?.EffectName}");
             
             // Find the InlayGems GameObject (parent of this component)
             Transform inlayGemsTransform = transform;
@@ -116,7 +116,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                 // Load and set gem sprite
                 Sprite gemSprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gem.Level:D2}");
                 slotImage.sprite = gemSprite;
-                Debug.Log($"[InlayGemstones] ✅ Updated slot {slotNumber} with gem {gem.Name} (Level {gem.Level})");
+                Debug.Log($"[InlayGemstones] ✅ Updated slot {slotNumber} with gem {gem.EffectName} (Level {gem.Level})");
                 
                 // Also update description if there's a text component
                 Transform textTransform = groupTransform.Find("Text");
@@ -125,7 +125,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                     var textComponent = textTransform.GetComponent<TMPro.TextMeshProUGUI>();
                     if (textComponent != null)
                     {
-                        textComponent.text = gem.Description ?? $"Gem Level {gem.Level}";
+                        textComponent.text = gem.EffectDescription ?? $"Gem Level {gem.Level}";
                     }
                 }
             }

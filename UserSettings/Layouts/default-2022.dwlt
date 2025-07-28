@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1419
     height: 767
   m_ShowMode: 4
-  m_Title: Console
+  m_Title: Simulator
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -119,7 +119,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 41
+  controlID: 19
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 42
+  controlID: 20
   draggingID: 0
 --- !u!114 &7
 MonoBehaviour:
@@ -171,7 +171,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 43
+  controlID: 21
   draggingID: 0
 --- !u!114 &8
 MonoBehaviour:
@@ -244,8 +244,8 @@ MonoBehaviour:
     y: 473
     width: 1012
     height: 244
-  m_MinSize: {x: 101, y: 121}
-  m_MaxSize: {x: 4001, y: 4021}
+  m_MinSize: {x: 100, y: 100}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 16}
   m_Panes:
   - {fileID: 15}
@@ -262,7 +262,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 1
   m_Script: {fileID: 12006, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: InspectorWindow
+  m_Name: SimulatorWindow
   m_EditorClassIdentifier: 
   m_Children: []
   m_Position:
@@ -271,14 +271,14 @@ MonoBehaviour:
     y: 0
     width: 407
     height: 717
-  m_MinSize: {x: 276, y: 71}
+  m_MinSize: {x: 201, y: 221}
   m_MaxSize: {x: 4001, y: 4021}
-  m_ActualView: {fileID: 17}
+  m_ActualView: {fileID: 12}
   m_Panes:
   - {fileID: 17}
   - {fileID: 12}
-  m_Selected: 0
-  m_LastSelected: 1
+  m_Selected: 1
+  m_LastSelected: 0
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -329,7 +329,7 @@ MonoBehaviour:
   m_UseMipMap: 0
   m_SimulatorState:
     controlPanelVisible: 0
-    controlPanelWidth: NaN
+    controlPanelWidth: 0
     controlPanelFoldoutKeys:
     - UnityEditor.AdaptivePerformance.Editor.AdaptivePerformanceUIExtension
     - UnityEditor.DeviceSimulation.ApplicationSettingsPlugin
@@ -343,7 +343,7 @@ MonoBehaviour:
     - '{"m_SerializationStates":{"thermalFoldout":false,"performanceFoldout":false,"developerFoldout":false,"indexerFoldout":false,"scalersFoldout":false,"deviceSettingsFoldout":false}}'
     - '{}'
     - '{}'
-    scale: 25
+    scale: 22
     fitToScreenEnabled: 0
     rotationDegree: 0
     highlightSafeAreaEnabled: 0
@@ -387,10 +387,10 @@ MonoBehaviour:
     m_OverlaysVisible: 1
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 265.49323}
-      m_SelectedIDs: 76c60000
-      m_LastClickedID: 50806
-      m_ExpandedIDs: a2ebffffdcebffffe0ebffff3cedffff56edffff70edffff8aedffffa4edffffacedffffdcfaffffc29a0000a6a5000012a90000ceba000076c6000080d000005cd80000
+      scrollPos: {x: 0, y: 0}
+      m_SelectedIDs: 28efffff
+      m_LastClickedID: -4312
+      m_ExpandedIDs: 5eefffff72efffff12fbffff249000008c910000709600002c98000002a100004eb10000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -783,9 +783,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 690.2576, y: 1769.1505, z: -2.1495173}
+    m_Target: {x: 853.49854, y: 1758.8717, z: -4.6907234}
     speed: 2
-    m_Value: {x: 690.2576, y: 1769.1505, z: -2.1495173}
+    m_Value: {x: 853.49854, y: 1758.8717, z: -4.6907234}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -835,9 +835,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 215.81752
+    m_Target: 469.94534
     speed: 2
-    m_Value: 215.81752
+    m_Value: 469.94534
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -924,7 +924,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 280}
     m_SelectedIDs: 52f10000
     m_LastClickedID: 61778
-    m_ExpandedIDs: 000000002ef0000030f0000032f00000fcf0000054f1000056f1000000ca9a3b
+    m_ExpandedIDs: 0000000026f0000028f000002af00000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -952,7 +952,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000002ef0000030f0000032f00000
+    m_ExpandedIDs: 0000000026f0000028f000002af00000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1082,7 +1082,7 @@ MonoBehaviour:
     m_CachedPref: -160
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
-  m_LastInspectedObjectInstanceID: -1
+  m_LastInspectedObjectInstanceID: -4312
   m_LastVerticalScrollValue: 0
   m_GlobalObjectId: 
   m_InspectorMode: 0

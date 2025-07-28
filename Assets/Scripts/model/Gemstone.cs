@@ -7,11 +7,11 @@ namespace model
         [JsonProperty("id")]
         public int Id { get; set; }
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+        [JsonProperty("effect_name")]
+        public string EffectName { get; set; }
 
-        [JsonProperty("description")]
-        public string Description { get; set; }
+        [JsonProperty("effect_description")]
+        public string EffectDescription { get; set; }
 
         [JsonProperty("part")]
         public string Part { get; set; }
@@ -19,8 +19,8 @@ namespace model
         [JsonProperty("level")]
         public int Level { get; set; }
 
-        [JsonProperty("quality")]
-        public int? Quality { get; set; } // 使用 int? 表示可能为 null
+        [JsonProperty("level_name")]
+        public string LevelName { get; set; } // Level name corresponding to gem tier
 
         [JsonProperty("is_locked")]
         public bool IsLocked { get; set; }

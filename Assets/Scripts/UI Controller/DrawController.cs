@@ -97,7 +97,7 @@ namespace UI_Controller
                         Debug.Log($"  ID={gem.Id}");
                         Debug.Log($"  Level={gem.Level}");
                         Debug.Log($"  Part={gem.Part}");
-                        Debug.Log($"  Name={gem.Name}");
+                        Debug.Log($"  EffectName={gem.EffectName}");
                     }
                 }
 

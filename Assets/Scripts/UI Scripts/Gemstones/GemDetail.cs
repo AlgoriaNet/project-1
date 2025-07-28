@@ -17,7 +17,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         [SerializeField] private TextMeshProUGUI description;
         [SerializeField] private TextMeshProUGUI level;
         [SerializeField] private TextMeshProUGUI part;
-        [SerializeField] private TextMeshProUGUI value;
         [SerializeField] Button inlayButton;
         private Gemstone _gemstone;
         private int? _sidekickId;
@@ -33,17 +32,17 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         {
             _gemstone = gemstone;
             _sidekickId = sidekickId;
-            name.text = gemstone.Name;
+            name.text = gemstone.LevelName ?? "Unknown Gem";
             icon.sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gemstone.Level:D2}");
-            description.text = gemstone.Description;
+            description.text = gemstone.EffectDescription ?? "No description available";
             level.text = gemstone.Level.ToString();
-            value.text = gemstone.EntryValue.ToString(CultureInfo.InvariantCulture);
+            // value field removed - no longer needed since description is descriptive
             part.text = gemstone.Part;
         }
         
         private void OnInlay()
         {
-            Debug.Log($"[GemDetail] Embed button clicked for {_gemstone.Name} (Part: {_gemstone.Part})");
+            Debug.Log($"[GemDetail] Embed button clicked for {_gemstone.EffectName} (Part: {_gemstone.Part})");
             
             // Find the equipment that matches this gem's part
             Equipment targetEquipment = FindEquipmentForPart(_gemstone.Part);
@@ -236,7 +235,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         /// </summary>
         private void EmbedGemInSlot(Equipment equipment, int dotSlot)
         {
-            Debug.Log($"[GemDetail] Embedding {_gemstone.Name} (ID: {_gemstone.Id}) into equipment ID {equipment.Id} slot {dotSlot}");
+            Debug.Log($"[GemDetail] Embedding {_gemstone.EffectName} (ID: {_gemstone.Id}) into equipment ID {equipment.Id} slot {dotSlot}");
             
             // Gem should always be embeddable since pack filtering now excludes embedded gems
             Debug.Log($"[GemDetail] 🔍 Embedding gem {_gemstone.Id} - should be in_inventory=true, is_embedded=false");
@@ -412,7 +411,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         /// </summary>
         private void UpdateInlayGemSlotDirectly(int slotNumber, Gemstone gem)
         {
-            Debug.Log($"[GemDetail] UpdateInlayGemSlotDirectly called for slot {slotNumber}, gem: {gem?.Name}");
+            Debug.Log($"[GemDetail] UpdateInlayGemSlotDirectly called for slot {slotNumber}, gem: {gem?.EffectName}");
             
             if (GemDetailWithInlaid.Instance == null)
             {
@@ -457,7 +456,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                 // Update description if available
                 if (arrayIndex < inlayComponent.descriptions.Count)
                 {
-                    inlayComponent.descriptions[arrayIndex].text = gem.Description ?? $"Gem Level {gem.Level}";
+                    inlayComponent.descriptions[arrayIndex].text = gem.EffectDescription ?? $"Gem Level {gem.Level}";
                 }
                 
                 Debug.Log($"[GemDetail] ✅ UPDATED slot {slotNumber} with {gemSpriteName} using component arrays");
@@ -473,7 +472,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         /// </summary>
         private void VerifySlotUpdate(int slotNumber, Gemstone gem)
         {
-            Debug.Log($"[GemDetail] 🔍 Verifying slot {slotNumber} update for gem: {gem?.Name}");
+            Debug.Log($"[GemDetail] 🔍 Verifying slot {slotNumber} update for gem: {gem?.EffectName}");
             
             try
             {

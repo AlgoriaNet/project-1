@@ -76,7 +76,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         {
                             gems[slotIndex].sprite = dotSprite;
                             gems[slotIndex].color = Color.white;
-                            Debug.Log($"[EquipmentColumnManager] Set slot {embeddedGem.slot} with {dotSpriteName} for gem {embeddedGem.gem.Name}");
+                            Debug.Log($"[EquipmentColumnManager] Set slot {embeddedGem.slot} with {dotSpriteName} for gem {embeddedGem.gem.EffectName}");
                         }
                         else
                         {

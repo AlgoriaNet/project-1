@@ -7,6 +7,7 @@ using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // This is requi
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu; // For HeroEquipments
 using TMPro;
 using EquipmentUtils; // For AutoEquipUtility
+using GemUtils; // For AutoEmbedUtility
 using Debug = UnityEngine.Debug;
 
 public class HeroBlockSetup : MonoBehaviour
@@ -281,8 +282,11 @@ public class HeroBlockSetup : MonoBehaviour
                 // Remove existing listeners and add auto embed functionality
                 autoActionButton.onClick.RemoveAllListeners();
                 autoActionButton.onClick.AddListener(() => {
-                    Debug.Log("[HeroBlockSetup] Auto Embed clicked - function will be implemented later");
-                    // TODO: Implement auto embed functionality
+                    Debug.Log("[HeroBlockSetup] Auto Embed clicked - starting auto embed process for Hero");
+                    AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Hero, 0, (result) => {
+                        Debug.Log($"[HeroBlockSetup] Auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
+                        StartCoroutine(RefreshHeroUIAfterAutoEmbed(result));
+                    });
                 });
                 break;
                 
@@ -528,5 +532,62 @@ public class HeroBlockSetup : MonoBehaviour
         UpdateTotalBlocks();
         
         Debug.Log("[HeroBlockSetup] Hero UI refresh completed after auto equip");
+    }
+
+    /// <summary>
+    /// Refresh Hero UI after auto embed operation with result feedback
+    /// </summary>
+    private System.Collections.IEnumerator RefreshHeroUIAfterAutoEmbed(AutoEmbedResult result)
+    {
+        // Wait one frame since PlayerProfile is now updated immediately from server responses
+        yield return null;
+        
+        Debug.Log("[HeroBlockSetup] Starting Hero UI refresh after auto embed");
+        
+        // Find and refresh the Hero equipment display to show new embedded gems
+        var heroEquipments = FindObjectOfType<HeroEquipments>();
+        if (heroEquipments != null)
+        {
+            Debug.Log("[HeroBlockSetup] Calling Hero equipment refresh method after auto embed");
+            heroEquipments.Init();
+            Debug.Log("[HeroBlockSetup] Refreshed Hero equipment UI after auto embed");
+        }
+        else
+        {
+            Debug.LogWarning("[HeroBlockSetup] HeroEquipments component not found - skipping equipment UI refresh");
+        }
+        
+        // Refresh the gem pack display to reflect gems that were embedded
+        Debug.Log("[HeroBlockSetup] Refreshing Hero gem pack display after auto embed");
+        UpdateTotalBlocks();
+        
+        // Show result feedback
+        ShowAutoEmbedResult(result);
+        
+        Debug.Log("[HeroBlockSetup] Hero UI refresh completed after auto embed");
+    }
+    
+    /// <summary>
+    /// Show auto embed result feedback to user
+    /// </summary>
+    private void ShowAutoEmbedResult(AutoEmbedResult result)
+    {
+        if (result.TotalEmbedded > 0)
+        {
+            Debug.Log($"[HeroBlockSetup] ✅ Auto Embed Success: {result.TotalEmbedded} gems embedded");
+            // TODO: Show success popup or notification
+        }
+        
+        if (result.FailedEmbeds > 0)
+        {
+            Debug.LogWarning($"[HeroBlockSetup] ⚠️ Auto Embed Partial: {result.FailedEmbeds} gems failed to embed");
+            // TODO: Show warning popup or notification
+        }
+        
+        if (result.TotalAttempted == 0)
+        {
+            Debug.Log("[HeroBlockSetup] ℹ️ Auto Embed: No gems to embed (all equipment slots full or no suitable gems)");
+            // TODO: Show info popup or notification
+        }
     }
 }

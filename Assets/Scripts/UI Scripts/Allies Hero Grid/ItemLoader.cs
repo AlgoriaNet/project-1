@@ -7,7 +7,9 @@ using model; // For IEnumerator and coroutines
 using TMPro;
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox; // For EquipmentDismantleManager and GemMergePageManager
 using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu; // For AlliesEquipments
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu; // For HeroEquipments
 using EquipmentUtils; // For AutoEquipUtility
+using GemUtils; // For AutoEmbedUtility
 
 public class ItemLoader : MonoBehaviour
 {
@@ -108,7 +110,7 @@ public class ItemLoader : MonoBehaviour
                     actionButton.gameObject.SetActive(true); // Ensure the button is active
                     actionButtonText.text = "Auto Merge";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenGemMergePage); // Changed from Auto Embed to Auto Merge
+                    actionButton.onClick.AddListener(OpenGemMergePage); // Auto Merge for Allies
                     break;
             }
         }
@@ -128,7 +130,7 @@ public class ItemLoader : MonoBehaviour
                     actionButton.gameObject.SetActive(true); // Show the button
                     actionButtonText.text = "Auto Merge";
                     actionButton.onClick.RemoveAllListeners(); // Remove any previous listeners
-                    actionButton.onClick.AddListener(OpenGemMergePage); // Add listener for auto merge action
+                    actionButton.onClick.AddListener(OpenGemMergePage); // Auto Merge for Hero
                     break;
 
                 case ItemType.Other:
@@ -161,8 +163,43 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenAutoEmbedPage()
     {
-        // Logic for Auto Embed (to be implemented)
-        Debug.Log("Opening Auto Embed Page...");
+        Debug.Log("[ItemLoader] ✅ Auto Embed button clicked");
+        
+        // Determine context based on which menu is active
+        if (menuController.IsMenuActive(0)) // Allies Menu
+        {
+            Debug.Log("[ItemLoader] Auto Embed starting for Ally");
+            
+            // Get current sidekick ID from AlliesGridSetup
+            int currentSidekickId = GetCurrentSidekickId();
+            if (currentSidekickId == 0)
+            {
+                Debug.LogWarning("[ItemLoader] No current sidekick selected - cannot auto embed");
+                return;
+            }
+            
+            Debug.Log($"[ItemLoader] Auto embedding for sidekick ID: {currentSidekickId}");
+            
+            // Use AutoEmbedUtility for allies
+            AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Ally, currentSidekickId, (result) => {
+                Debug.Log($"[ItemLoader] Ally auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
+                StartCoroutine(RefreshAlliesUIAfterAutoEmbed(result));
+            });
+        }
+        else if (menuController.IsMenuActive(1)) // Hero Menu
+        {
+            Debug.Log("[ItemLoader] Auto Embed starting for Hero");
+            
+            // Use AutoEmbedUtility for hero
+            AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Hero, 0, (result) => {
+                Debug.Log($"[ItemLoader] Hero auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
+                StartCoroutine(RefreshHeroUIAfterAutoEmbed(result));
+            });
+        }
+        else
+        {
+            Debug.LogWarning("[ItemLoader] Unknown menu context for Auto Embed");
+        }
     }
 
     private void OpenDismantlePage()
@@ -583,6 +620,114 @@ public class ItemLoader : MonoBehaviour
             {
                 Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when refreshing after auto equip");
             }
+        }
+    }
+
+    /// <summary>
+    /// Refresh Allies UI after auto embed operation
+    /// </summary>
+    private System.Collections.IEnumerator RefreshAlliesUIAfterAutoEmbed(AutoEmbedResult result)
+    {
+        // Wait just one frame since PlayerProfile is now updated immediately from server responses
+        yield return null;
+        
+        Debug.Log("[ItemLoader] Starting Allies UI refresh after auto embed");
+        
+        // Find and refresh the AlliesEquipments component to show embedded gems
+        var alliesEquipments = FindObjectOfType<AlliesEquipments>();
+        if (alliesEquipments != null)
+        {
+            Debug.Log("[ItemLoader] Calling InitForCurrentAlly to refresh equipment display with embedded gems");
+            alliesEquipments.InitForCurrentAlly();
+            Debug.Log("[ItemLoader] Refreshed Allies equipment UI after auto embed");
+        }
+        else
+        {
+            Debug.LogWarning("[ItemLoader] AlliesEquipments component not found - cannot refresh UI");
+        }
+        
+        // Refresh the gem pack display to reflect gems that were embedded
+        Debug.Log("[ItemLoader] Refreshing Allies gem pack display after auto embed");
+        
+        var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+        if (alliesBlockSetup != null)
+        {
+            alliesBlockSetup.UpdateTotalBlocks();
+        }
+        else
+        {
+            Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when refreshing after auto embed");
+        }
+        
+        // Show result feedback
+        ShowAutoEmbedResult(result, "Allies");
+        
+        Debug.Log("[ItemLoader] Allies UI refresh completed after auto embed");
+    }
+
+    /// <summary>
+    /// Refresh Hero UI after auto embed operation (from ItemLoader)
+    /// </summary>
+    private System.Collections.IEnumerator RefreshHeroUIAfterAutoEmbed(AutoEmbedResult result)
+    {
+        // Wait just one frame since PlayerProfile is now updated immediately from server responses
+        yield return null;
+        
+        Debug.Log("[ItemLoader] Starting Hero UI refresh after auto embed");
+        
+        // Find and refresh the HeroEquipments component to show embedded gems
+        var heroEquipments = FindObjectOfType<HeroEquipments>();
+        if (heroEquipments != null)
+        {
+            Debug.Log("[ItemLoader] Calling Hero equipment refresh method after auto embed");
+            heroEquipments.Init();
+            Debug.Log("[ItemLoader] Refreshed Hero equipment UI after auto embed");
+        }
+        else
+        {
+            Debug.LogWarning("[ItemLoader] HeroEquipments component not found - cannot refresh UI");
+        }
+        
+        // Refresh the gem pack display to reflect gems that were embedded
+        Debug.Log("[ItemLoader] Refreshing Hero gem pack display after auto embed");
+        
+        var heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
+        if (heroBlockSetup != null)
+        {
+            heroBlockSetup.UpdateTotalBlocks();
+        }
+        else
+        {
+            Debug.LogWarning("[ItemLoader] HeroBlockSetup not found when refreshing after auto embed");
+        }
+        
+        // Show result feedback
+        ShowAutoEmbedResult(result, "Hero");
+        
+        Debug.Log("[ItemLoader] Hero UI refresh completed after auto embed");
+    }
+    
+    /// <summary>
+    /// Show auto embed result feedback to user
+    /// </summary>
+    private void ShowAutoEmbedResult(AutoEmbedResult result, string context)
+    {
+        if (result.TotalEmbedded > 0)
+        {
+            Debug.Log($"[ItemLoader] ✅ {context} Auto Embed Success: {result.TotalEmbedded} gems embedded");
+            // TODO: Show success popup or notification
+        }
+        
+        if (result.FailedEmbeds > 0)
+        {
+            Debug.LogWarning($"[ItemLoader] ⚠️ {context} Auto Embed Partial: {result.FailedEmbeds} gems failed to embed");
+            // TODO: Show warning popup or notification
+        }
+        
+        if (result.TotalAttempted == 0)
+        {
+            Debug.Log($"[ItemLoader] ℹ️ {context} Auto Embed: No gems to embed (all equipment slots full or no suitable gems)");
+            // TODO: Show info popup or notification
         }
     }
     
