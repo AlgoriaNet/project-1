@@ -56434,10 +56434,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: GemDetail
       objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.33
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.33
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2937876377287983934, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3731943528965394342, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
       propertyPath: m_SizeDelta.y
       value: 123.76494
       objectReference: {fileID: 0}
+    - target: {fileID: 4002964209106713782, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+      propertyPath: partImage
+      value: 
+      objectReference: {fileID: 1043546777}
     - target: {fileID: 6003720530873315011, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -67971,6 +68007,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1040288221}
   m_CullTransparentMesh: 1
+--- !u!114 &1043546777 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3731036751303799197, guid: b3811a0ccc8cd45c19d185e7cd1cb6d5, type: 3}
+  m_PrefabInstance: {fileID: 877806128}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1045810021
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,6 +13,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
     public class GemDetail : MonoBehaviour
     {
         [SerializeField] private Image icon;
+        [SerializeField] private Image partImage;
         [SerializeField] private TextMeshProUGUI name;
         [SerializeField] private TextMeshProUGUI description;
         [SerializeField] private TextMeshProUGUI level;
@@ -36,8 +37,25 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             icon.sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gemstone.Level:D2}");
             description.text = gemstone.EffectDescription ?? "No description available";
             level.text = gemstone.Level.ToString();
-            // value field removed - no longer needed since description is descriptive
             part.text = gemstone.Part;
+            
+            // Load and display the part image (like in pack display)
+            if (partImage != null)
+            {
+                Sprite partSprite = Resources.Load<Sprite>($"UILoading/Gem/Part/{gemstone.Part}");
+                if (partSprite != null)
+                {
+                    partImage.sprite = partSprite;
+                    partImage.color = Color.white;
+                    Debug.Log($"[GemDetail] Loaded part image for {gemstone.Part}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[GemDetail] Could not load part image: UILoading/Gem/Part/{gemstone.Part}");
+                    partImage.sprite = null;
+                    partImage.color = Color.clear;
+                }
+            }
         }
         
         private void OnInlay()

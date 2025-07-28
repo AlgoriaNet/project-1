@@ -448,6 +448,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   icon: {fileID: 1114688287686323886}
+  partImage: {fileID: 0}
   name: {fileID: 4669189870044788031}
   description: {fileID: 6521657656406421439}
   level: {fileID: 9068909661685703275}
@@ -964,11 +965,11 @@ RectTransform:
   m_Children:
   - {fileID: 5028351852026406329}
   - {fileID: 8903833959563485519}
+  - {fileID: 2937876377287983934}
   - {fileID: 6104050361458083024}
   - {fileID: 6988379088991986197}
   - {fileID: 202304261552118441}
   - {fileID: 176415391063902425}
-  - {fileID: 2937876377287983934}
   m_Father: {fileID: 9218314538366021381}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.1, y: 0.15}
