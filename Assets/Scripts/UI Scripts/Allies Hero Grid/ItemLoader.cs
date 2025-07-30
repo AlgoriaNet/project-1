@@ -37,6 +37,9 @@ public class ItemLoader : MonoBehaviour
     public event OnItemCountChanged ItemCountChanged;
 
     private MenuController menuController; // Declare MenuController variable
+    
+    // Timing tracking for smart tab switch blocking
+    private float lastGemSwitchTime = 0f;
 
     // Action button and its text
     public Button actionButton;
@@ -54,16 +57,29 @@ public class ItemLoader : MonoBehaviour
     {
         Debug.Log($"SwitchItemType called with {itemType} (Before: {currentItemType})");
         
-        // CRITICAL DEBUG: Log the stack trace to find what's calling this
+        // SMART BLOCKING: Only block rapid automatic switches, not user clicks
         if (itemType == ItemType.Equipment && currentItemType == ItemType.Gem)
         {
-            Debug.Log($"🚨 CRITICAL BUG: SwitchItemType switching from Gem to Equipment!");
+            Debug.Log($"🚨 POTENTIAL AUTO-SWITCH: SwitchItemType switching from Gem to Equipment!");
             Debug.Log($"🚨 STACK TRACE: {System.Environment.StackTrace}");
             
-            // TEMPORARY WORKAROUND: Block automatic switch from Gem to Equipment
-            // This prevents the Auto Embed bug while we investigate the root cause
-            Debug.Log($"🛡️ BLOCKING automatic Gem→Equipment switch to preserve Auto Embed functionality!");
-            return; // Don't switch - keep current Gem state
+            // Check if this is a rapid automatic switch (likely within 1 second of switching to Gem)
+            // If user manually clicks Equipment tab, they would typically wait longer than 1 second
+            if (Time.time - lastGemSwitchTime < 1.0f)
+            {
+                Debug.Log($"🛡️ BLOCKING rapid automatic Gem→Equipment switch (within 1 second)!");
+                return; // Block rapid automatic switches
+            }
+            else
+            {
+                Debug.Log($"🟢 ALLOWING Gem→Equipment switch (user likely clicked Equipment tab manually)");
+            }
+        }
+        
+        // Track when we switch to Gem tab for timing-based blocking
+        if (itemType == ItemType.Gem)
+        {
+            lastGemSwitchTime = Time.time;
         }
         
         currentItemType = itemType;

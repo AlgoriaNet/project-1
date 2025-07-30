@@ -94,7 +94,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.65
+  m_fontSize: 23.9
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1345,7 +1345,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 0c63ed59981f94184b00b3fc3a39868a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 92f723d98bc7147c3802e7f3e9e43858, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1407,7 +1407,7 @@ RectTransform:
   m_AnchorMin: {x: 0.3, y: 0}
   m_AnchorMax: {x: 0.7, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: -0.00005340576}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &1716091030534026863
 CanvasRenderer:
@@ -2344,7 +2344,8 @@ MonoBehaviour:
   attack: {fileID: 5032497359951804701}
   forgeButton: {fileID: 949937194408958692}
   replaceButton: {fileID: 9095707103046378784}
-  demountButton: {fileID: 9206054319769607239}
+  dismantleButton: {fileID: 0}
+  equipButton: {fileID: 0}
   extraStatsNames: {fileID: 5109094828834019830}
   extraStatsValues: {fileID: 409325608389306132}
   extraNames:
@@ -3658,7 +3659,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.7
+  m_fontSize: 26.95
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
