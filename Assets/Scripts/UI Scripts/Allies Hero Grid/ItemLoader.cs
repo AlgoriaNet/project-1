@@ -53,6 +53,19 @@ public class ItemLoader : MonoBehaviour
     public void SwitchItemType(ItemType itemType)
     {
         Debug.Log($"SwitchItemType called with {itemType} (Before: {currentItemType})");
+        
+        // CRITICAL DEBUG: Log the stack trace to find what's calling this
+        if (itemType == ItemType.Equipment && currentItemType == ItemType.Gem)
+        {
+            Debug.Log($"🚨 CRITICAL BUG: SwitchItemType switching from Gem to Equipment!");
+            Debug.Log($"🚨 STACK TRACE: {System.Environment.StackTrace}");
+            
+            // TEMPORARY WORKAROUND: Block automatic switch from Gem to Equipment
+            // This prevents the Auto Embed bug while we investigate the root cause
+            Debug.Log($"🛡️ BLOCKING automatic Gem→Equipment switch to preserve Auto Embed functionality!");
+            return; // Don't switch - keep current Gem state
+        }
+        
         currentItemType = itemType;
         Debug.Log($"Updated currentItemType: {currentItemType}");
         
@@ -183,7 +196,7 @@ public class ItemLoader : MonoBehaviour
             // Use AutoEmbedUtility for allies
             AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Ally, currentSidekickId, (result) => {
                 Debug.Log($"[ItemLoader] Ally auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
-                StartCoroutine(RefreshAlliesUIAfterAutoEmbed(result));
+                StartCoroutine(RefreshAlliesUIAfterAutoEmbed(result, currentSidekickId));
             });
         }
         else if (menuController.IsMenuActive(1)) // Hero Menu
@@ -626,20 +639,20 @@ public class ItemLoader : MonoBehaviour
     /// <summary>
     /// Refresh Allies UI after auto embed operation
     /// </summary>
-    private System.Collections.IEnumerator RefreshAlliesUIAfterAutoEmbed(AutoEmbedResult result)
+    private System.Collections.IEnumerator RefreshAlliesUIAfterAutoEmbed(AutoEmbedResult result, int targetSidekickId)
     {
         // Wait just one frame since PlayerProfile is now updated immediately from server responses
         yield return null;
         
-        Debug.Log("[ItemLoader] Starting Allies UI refresh after auto embed");
+        Debug.Log($"[ItemLoader] Starting Allies UI refresh after auto embed for sidekick {targetSidekickId}");
         
-        // Find and refresh the AlliesEquipments component to show embedded gems
+        // Find and refresh the AlliesEquipments component to show embedded gems for the specific sidekick
         var alliesEquipments = FindObjectOfType<AlliesEquipments>();
         if (alliesEquipments != null)
         {
-            Debug.Log("[ItemLoader] Calling InitForCurrentAlly to refresh equipment display with embedded gems");
-            alliesEquipments.InitForCurrentAlly();
-            Debug.Log("[ItemLoader] Refreshed Allies equipment UI after auto embed");
+            Debug.Log($"[ItemLoader] Calling InitForSpecificSidekick({targetSidekickId}) to refresh equipment display with embedded gems");
+            alliesEquipments.InitForSpecificSidekick(targetSidekickId);
+            Debug.Log($"[ItemLoader] Refreshed Allies equipment UI after auto embed for sidekick {targetSidekickId}");
         }
         else
         {

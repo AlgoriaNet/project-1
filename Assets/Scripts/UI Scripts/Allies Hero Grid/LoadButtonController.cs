@@ -52,10 +52,36 @@ public class LoadButtonController : MonoBehaviour
             img.color = new Color(img.color.r, img.color.g, img.color.b, 0f);
         }
 
-        // Highlight Button 1 by default if it exists
-        if (buttons.Length > 0)
+        // Only highlight Button 1 by default if no button is currently active
+        // This prevents automatic switch to Equipment when switching allies
+        if (buttons.Length > 0 && activeButtonIndex == -1)
         {
             ToggleButtonVisibility(0); // Highlight first button (Equipment by default)
+            Debug.Log("[LoadButtonController] First time initialization - setting Equipment as default");
+        }
+        else if (buttons.Length > 0 && activeButtonIndex != -1)
+        {
+            // If a button was already active, restore its visual state without changing the tab
+            Debug.Log($"[LoadButtonController] Reactivated - preserving current tab {activeButtonIndex} instead of switching to Equipment");
+            RestoreActiveButtonVisual();
+        }
+    }
+    
+    /// <summary>
+    /// Restore the visual state of the currently active button without triggering tab switch
+    /// </summary>
+    private void RestoreActiveButtonVisual()
+    {
+        if (activeButtonIndex >= 0 && activeButtonIndex < buttonImages.Length)
+        {
+            // Show only the active button's image
+            buttonImages[activeButtonIndex].color = new Color(
+                buttonImages[activeButtonIndex].color.r, 
+                buttonImages[activeButtonIndex].color.g, 
+                buttonImages[activeButtonIndex].color.b, 1f);
+                
+            // Update the Orange button text when restoring tab state
+            UpdateOrangeButtonText();
         }
     }
 }

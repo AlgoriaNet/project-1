@@ -50,9 +50,25 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 return;
             }
 
+            InitForSpecificSidekick(currentSidekickId);
+        }
+
+        /// <summary>
+        /// Initialize equipment display for a specific sidekick ID
+        /// Used for refreshing equipment after auto embed operations
+        /// </summary>
+        public void InitForSpecificSidekick(int sidekickId)
+        {
+            if (sidekickId == 0)
+            {
+                Debug.LogWarning("[AlliesEquipments] Invalid sidekick ID 0 - clearing equipment display");
+                ClearEquipmentDisplay();
+                return;
+            }
+
             // Get equipments for this specific sidekick
-            List<Equipment> sidekickEquipments = PlayerProfile.Data.GetSidekickEquipments(currentSidekickId);
-            Debug.Log($"[AlliesEquipments] Found {sidekickEquipments.Count} equipments for sidekick {currentSidekickId}");
+            List<Equipment> sidekickEquipments = PlayerProfile.Data.GetSidekickEquipments(sidekickId);
+            Debug.Log($"[AlliesEquipments] Found {sidekickEquipments.Count} equipments for sidekick {sidekickId}");
             
             // Clear existing equipment display
             ClearEquipmentDisplay();
@@ -67,27 +83,27 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 switch (equipment.Part)
                 {
                     case "Helm":
-                        InitEquipmentSlot(helmTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(helmTransform, equipment, sidekickId);
                         hasEquipment[0] = true;
                         break;
                     case "Shoulder":
-                        InitEquipmentSlot(shoulderTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(shoulderTransform, equipment, sidekickId);
                         hasEquipment[1] = true;
                         break;
                     case "Chest":
-                        InitEquipmentSlot(chestTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(chestTransform, equipment, sidekickId);
                         hasEquipment[2] = true;
                         break;
                     case "Pants":
-                        InitEquipmentSlot(pantsTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(pantsTransform, equipment, sidekickId);
                         hasEquipment[3] = true;
                         break;
                     case "Gloves":
-                        InitEquipmentSlot(glovesTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(glovesTransform, equipment, sidekickId);
                         hasEquipment[4] = true;
                         break;
                     case "Boots":
-                        InitEquipmentSlot(bootsTransform, equipment, currentSidekickId);
+                        InitEquipmentSlot(bootsTransform, equipment, sidekickId);
                         hasEquipment[5] = true;
                         break;
                 }
@@ -100,7 +116,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             {
                 if (!hasEquipment[i] && slotTransforms[i] != null)
                 {
-                    InitEmptyEquipmentSlot(slotTransforms[i], equipmentParts[i], currentSidekickId);
+                    InitEmptyEquipmentSlot(slotTransforms[i], equipmentParts[i], sidekickId);
                 }
             }
         }
