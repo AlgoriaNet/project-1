@@ -59,8 +59,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         
         public void Start()
         {
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Start called - adding button listeners");
-            
             if (forgeButton != null)
                 forgeButton.onClick.AddListener(OnForge);
             if (replaceButton != null)
@@ -74,8 +72,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         public void Init(Equipment equipment, List<EquipmentDetailStatus> status, [CanBeNull] Info info = null)
         {
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Init called - equipment: {equipment?.Name}, info.Type: {info?.Type}, info.SidekickId: {info?.SidekickId}");
-            
             _equipment = equipment;
             Status = status;
             _info = info;
@@ -85,7 +81,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 equipButton.onClick.RemoveAllListeners();
                 equipButton.onClick.AddListener(OnEquip);
-                Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] Added OnEquip listener to equipButton");
             }
             else
             {
@@ -116,7 +111,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
             else
             {
-                Debug.LogWarning("[EquipmentDetailManager] Equipment or equipment name is null");
                 icon.sprite = null;
                 equipmentName.text = "No Equipment";
                 background.color = Color.gray;
@@ -152,14 +146,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         }
 
         public void OnReplace()
-        {
-            Debug.Log($"[EquipmentDetailManager] OnReplace called");
-            Debug.Log($"[EquipmentDetailManager] _info null: {_info == null}");
-            Debug.Log($"[EquipmentDetailManager] _info.Type: {_info?.Type}");
-            Debug.Log($"[EquipmentDetailManager] _info.SidekickId: {_info?.SidekickId}");
-            Debug.Log($"[EquipmentDetailManager] _equipment null: {_equipment == null}");
-            Debug.Log($"[EquipmentDetailManager] _equipment.Id: {_equipment?.Id}");
-            
+        {            
             if (_info == null)
             {
                 Debug.LogError("[EquipmentDetailManager] ❌ Replace button clicked but _info is null! Cannot proceed with replace operation.");
@@ -173,7 +160,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipmentId = _equipment.Id
             };
             
-            Debug.Log($"[EquipmentDetailManager] Replace API params - type: {_info.Type}, sidekickId: {_info.SidekickId}, equipmentId: {_equipment.Id}");
             _equipmentApi.Action("replace", apiParams, SetProfileFromServer);
         }
 
@@ -184,16 +170,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 // Determine context based on available info
                 EquipmentDismantleManager.DismantleContext context = EquipmentDismantleManager.DismantleContext.Hero;
                 
-                Debug.Log($"[EquipmentDetailManager] OnDismantle: _info.Type = {_info?.Type}, SidekickId = {_info?.SidekickId}");
-                
                 if (_info != null && _info.Type == "sidekick")
                 {
                     context = EquipmentDismantleManager.DismantleContext.Ally;
-                    Debug.Log("[EquipmentDetailManager] Detected Ally context for dismantle!");
-                }
-                else
-                {
-                    Debug.Log("[EquipmentDetailManager] Using Hero context for dismantle (default)");
                 }
                 
                 EquipmentDismantleManager.Instance.OpenDismantlePage(context);
@@ -211,16 +190,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 // Determine context based on available info
                 EquipmentForgeManager.ForgeContext context = EquipmentForgeManager.ForgeContext.Hero;
                 
-                Debug.Log($"[EquipmentDetailManager] OnForge: _info.Type = {_info?.Type}, SidekickId = {_info?.SidekickId}");
-                
                 if (_info != null && _info.Type == "sidekick")
                 {
                     context = EquipmentForgeManager.ForgeContext.Ally;
-                    Debug.Log("[EquipmentDetailManager] Detected Ally context!");
-                }
-                else
-                {
-                    Debug.Log("[EquipmentDetailManager] Using Hero context (default)");
                 }
                 
                 EquipmentForgeManager.Instance.OpenForgePage(_equipment, context);
@@ -236,20 +208,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Prevent double execution
             if (_isEquipping)
             {
-                Debug.LogWarning($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip already in progress - ignoring duplicate call");
                 return;
             }
             
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip called - equipment: {_equipment?.Name}");
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info null: {_info == null}");
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info.Type: {_info?.Type}");
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _info.SidekickId: {_info?.SidekickId}");
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _equipment null: {_equipment == null}");
-            Debug.Log($"[EquipmentDetailManager-{GetInstanceID()}] _equipment.Id: {_equipment?.Id}");
-            
             if (_equipment == null)
             {
-                Debug.LogWarning($"[EquipmentDetailManager-{GetInstanceID()}] OnEquip: No equipment data - likely old instance with stale listener, ignoring");
                 return;
             }
 
@@ -264,7 +227,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (equipButton != null)
             {
                 equipButton.interactable = false;
-                Debug.Log("[EquipmentDetailManager] Disabled equip button to prevent double-clicking");
             }
 
             var apiParams = new
@@ -274,23 +236,17 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipmentId = _equipment.Id
             };
             
-            Debug.Log($"[EquipmentDetailManager] Equip API params - type: {_info.Type}, sidekickId: {_info.SidekickId}, equipmentId: {_equipment.Id}");
-            Debug.Log($"[EquipmentDetailManager] Using dedicated Equip API for empty slot equipping");
-            
             // Use the dedicated Equip API for empty slot equipping
             _equipmentApi.Action("equip", apiParams, SetProfileFromServer);
         }
 
         private void SetProfileFromServer(JObject obj)
         {
-            Debug.Log($"[EquipmentDetailManager] SetProfileFromServer called with response structure");
-            
             // Reset the guard flag and re-enable the equip button regardless of success/failure
             _isEquipping = false;
             if (equipButton != null)
             {
                 equipButton.interactable = true;
-                Debug.Log("[EquipmentDetailManager] Re-enabled equip button and reset guard flag");
             }
             
             if (obj == null)
@@ -315,13 +271,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             try
             {
                 PlayerProfile.Data.SetPlayer(obj["player_profile"]["Player"].ToObject<Player>());
-                Debug.Log("[EquipmentDetailManager] ✅ Player profile updated successfully from server response");
                 
                 // Close the equipment detail popup after successful equipping
                 if (EquipmentDetailBox.Instance != null && EquipmentDetailBox.Instance.popUpBox != null)
                 {
                     EquipmentDetailBox.Instance.popUpBox.SetActive(false);
-                    Debug.Log("[EquipmentDetailManager] Closed equipment detail popup after successful equipping");
                 }
             }
             catch (System.Exception ex)

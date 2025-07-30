@@ -40,9 +40,7 @@ public class LoadButtonController : MonoBehaviour
         SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
         if (switchPanels != null)
         {
-            // Call BOTH methods - new separate button visibility AND legacy text
             switchPanels.UpdateButtonVisibility();
-            Debug.Log("[LoadButtonController] Called UpdateButtonVisibility() for separate buttons");
         }
     }
 

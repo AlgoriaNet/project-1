@@ -38,7 +38,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (gems == null || gems.Count == 0)
             {
-                Debug.LogWarning($"[EquipmentColumnManager] No gem slots configured for {equipment?.Name}");
                 return;
             }
 
@@ -56,8 +55,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Populate gem slots from equipment embedded gems data
             if (equipment?.EmbeddedGems != null && equipment.EmbeddedGems.Count > 0)
             {
-                Debug.Log($"[EquipmentColumnManager] Initializing {equipment.EmbeddedGems.Count} embedded gems for {equipment.Name}");
-                
                 foreach (var embeddedGem in equipment.EmbeddedGems)
                 {
                     if (embeddedGem.gem == null || embeddedGem.is_empty)
@@ -76,22 +73,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         {
                             gems[slotIndex].sprite = dotSprite;
                             gems[slotIndex].color = Color.white;
-                            Debug.Log($"[EquipmentColumnManager] Set slot {embeddedGem.slot} with {dotSpriteName} for gem {embeddedGem.gem.EffectName}");
                         }
-                        else
-                        {
-                            Debug.LogWarning($"[EquipmentColumnManager] Could not load dot sprite: {dotSpriteName}");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[EquipmentColumnManager] Invalid slot number {embeddedGem.slot} for equipment {equipment.Name}");
                     }
                 }
-            }
-            else
-            {
-                Debug.Log($"[EquipmentColumnManager] No embedded gems found for {equipment?.Name}");
             }
         }
 

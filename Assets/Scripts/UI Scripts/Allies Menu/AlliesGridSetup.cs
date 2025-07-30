@@ -1410,16 +1410,7 @@ public class AlliesGridSetup : MonoBehaviour
         SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
         if (switchPanels != null)
         {
-            // CRITICAL FIX: Reset BOTH legacy text AND separate button visibility
-            if (switchPanels.buttonText != null)
-            {
-                switchPanels.buttonText.text = "Go to Pack";
-                Debug.Log("[AlliesGridSetup] Reset Orange button text to 'Go to Pack' for Step 2");
-            }
-            
-            // CRITICAL FIX: Also update separate button visibility to show Go to Pack
             switchPanels.UpdateButtonVisibility();
-            Debug.Log("[AlliesGridSetup] ✅ FIXED: Reset separate buttons to show 'Go to Pack' for Step 2");
         }
     }
 }

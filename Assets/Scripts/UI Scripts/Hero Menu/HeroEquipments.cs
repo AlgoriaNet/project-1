@@ -23,10 +23,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu
         public void Init()
         {
             List<Equipment> equipments = PlayerProfile.Data.GetHeroEquipments();
-            Debug.Log($"equipments count: {equipments.Count}");
             foreach (var equipment in equipments)
             {
-                Debug.Log(equipment.Part);
                 switch (equipment.Part)
                 {
                     case "Helm":

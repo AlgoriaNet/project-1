@@ -267,9 +267,7 @@ public class HeroBlockSetup : MonoBehaviour
                 // Remove existing listeners and add auto equip functionality
                 autoActionButton.onClick.RemoveAllListeners();
                 autoActionButton.onClick.AddListener(() => {
-                    Debug.Log("[HeroBlockSetup] Auto Equip clicked - starting auto equip process for Hero");
                     AutoEquipUtility.AutoEquipAll(AutoEquipUtility.EquipContext.Hero, 0, () => {
-                        Debug.Log("[HeroBlockSetup] Auto equip completed - refreshing Hero UI");
                         StartCoroutine(RefreshHeroUIAfterAutoEquip());
                     });
                 });
@@ -282,9 +280,7 @@ public class HeroBlockSetup : MonoBehaviour
                 // Remove existing listeners and add auto embed functionality
                 autoActionButton.onClick.RemoveAllListeners();
                 autoActionButton.onClick.AddListener(() => {
-                    Debug.Log("[HeroBlockSetup] Auto Embed clicked - starting auto embed process for Hero");
                     AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Hero, 0, (result) => {
-                        Debug.Log($"[HeroBlockSetup] Auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
                         StartCoroutine(RefreshHeroUIAfterAutoEmbed(result));
                     });
                 });
@@ -414,9 +410,6 @@ public class HeroBlockSetup : MonoBehaviour
                 }
             });
         }
-        
-        Debug.Log($"[OtherTab] UpdateOthersTab complete: {blocksCreated} blocks created from {grouped.Count} total items");
-        // ...
     }
 
     // Helper: match GachaController logic for image path
@@ -441,7 +434,6 @@ public class HeroBlockSetup : MonoBehaviour
         if (equipmentTabButton != null)
         {
             equipmentTabButton.onClick.Invoke(); // Simulate user click for full tab logic
-            Debug.Log("[HeroBlockSetup] Equipment tab selected via onClick.Invoke().");
             return;
         }
         Debug.LogWarning("[HeroBlockSetup] equipmentTabButton not assigned!");
@@ -498,8 +490,6 @@ public class HeroBlockSetup : MonoBehaviour
             currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
                 equipment.Part == equipmentPart && equipment.EquipWithSidekickId == contextId);
         }
-
-        Debug.Log($"[HeroBlockSetup] Checking equipped {equipmentPart} for {context} {contextId}: {(currentEquipment != null ? $"Found ID {currentEquipment.Id}" : "None")}");
         return currentEquipment;
     }
 
@@ -511,16 +501,12 @@ public class HeroBlockSetup : MonoBehaviour
         // Wait one frame since PlayerProfile is now updated immediately from server responses
         yield return null;
         
-        Debug.Log("[HeroBlockSetup] Starting Hero UI refresh after auto equip");
-        
         // Find and refresh the Hero equipment display
         var heroEquipments = FindObjectOfType<HeroEquipments>();
         if (heroEquipments != null)
         {
-            Debug.Log("[HeroBlockSetup] Calling Hero equipment refresh method");
             // Call the Init() method directly since we know it exists
             heroEquipments.Init();
-            Debug.Log("[HeroBlockSetup] Refreshed Hero equipment UI after auto equip");
         }
         else
         {
@@ -528,10 +514,7 @@ public class HeroBlockSetup : MonoBehaviour
         }
         
         // Refresh the item pack display to reflect equipment that was moved from pack
-        Debug.Log("[HeroBlockSetup] Refreshing Hero item pack display after auto equip");
         UpdateTotalBlocks();
-        
-        Debug.Log("[HeroBlockSetup] Hero UI refresh completed after auto equip");
     }
 
     /// <summary>
@@ -542,15 +525,11 @@ public class HeroBlockSetup : MonoBehaviour
         // Wait one frame since PlayerProfile is now updated immediately from server responses
         yield return null;
         
-        Debug.Log("[HeroBlockSetup] Starting Hero UI refresh after auto embed");
-        
         // Find and refresh the Hero equipment display to show new embedded gems
         var heroEquipments = FindObjectOfType<HeroEquipments>();
         if (heroEquipments != null)
         {
-            Debug.Log("[HeroBlockSetup] Calling Hero equipment refresh method after auto embed");
             heroEquipments.Init();
-            Debug.Log("[HeroBlockSetup] Refreshed Hero equipment UI after auto embed");
         }
         else
         {
@@ -558,13 +537,10 @@ public class HeroBlockSetup : MonoBehaviour
         }
         
         // Refresh the gem pack display to reflect gems that were embedded
-        Debug.Log("[HeroBlockSetup] Refreshing Hero gem pack display after auto embed");
         UpdateTotalBlocks();
         
         // Show result feedback
         ShowAutoEmbedResult(result);
-        
-        Debug.Log("[HeroBlockSetup] Hero UI refresh completed after auto embed");
     }
     
     /// <summary>
@@ -574,7 +550,6 @@ public class HeroBlockSetup : MonoBehaviour
     {
         if (result.TotalEmbedded > 0)
         {
-            Debug.Log($"[HeroBlockSetup] ✅ Auto Embed Success: {result.TotalEmbedded} gems embedded");
             // TODO: Show success popup or notification
         }
         
@@ -586,7 +561,6 @@ public class HeroBlockSetup : MonoBehaviour
         
         if (result.TotalAttempted == 0)
         {
-            Debug.Log("[HeroBlockSetup] ℹ️ Auto Embed: No gems to embed (all equipment slots full or no suitable gems)");
             // TODO: Show info popup or notification
         }
     }

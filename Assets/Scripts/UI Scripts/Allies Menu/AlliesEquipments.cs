@@ -45,7 +45,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             int currentSidekickId = GetCurrentSidekickId();
             if (currentSidekickId == 0)
             {
-                Debug.LogWarning("[AlliesEquipments] No current sidekick ID - clearing equipment display");
                 ClearEquipmentDisplay();
                 return;
             }
@@ -68,7 +67,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
 
             // Get equipments for this specific sidekick
             List<Equipment> sidekickEquipments = PlayerProfile.Data.GetSidekickEquipments(sidekickId);
-            Debug.Log($"[AlliesEquipments] Found {sidekickEquipments.Count} equipments for sidekick {sidekickId}");
             
             // Clear existing equipment display
             ClearEquipmentDisplay();
@@ -79,7 +77,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             // Load equipment into slots
             foreach (var equipment in sidekickEquipments)
             {
-                Debug.Log($"[AlliesEquipments] Loading equipment: {equipment.Part} - {equipment.Name}");
                 switch (equipment.Part)
                 {
                     case "Helm":
@@ -143,12 +140,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 columnManager.detailButton.onClick.RemoveAllListeners();
                 columnManager.detailButton.onClick.AddListener(() => 
                 {
-                    Debug.Log($"[AlliesEquipments] Equipped {equipment.Name} clicked - opening EquipmentDetailBox");
                     EquipmentDetailBox.Instance.Init(equipment);
                 });
             }
-            
-            Debug.Log($"[AlliesEquipments] Loading equipment: {equipment.Part} - {equipment.Name}");
         }
 
         /// <summary>
@@ -170,12 +164,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 columnManager.detailButton.onClick.RemoveAllListeners();
                 columnManager.detailButton.onClick.AddListener(() => 
                 {
-                    Debug.Log($"[AlliesEquipments] Empty {equipmentPart} slot clicked for sidekick {sidekickId} - should open equipment selection");
-                    // TODO: Open equipment selection popup filtered by equipment part
-                    // For now, we could show a message or open equipment comparison with null current equipment
                     ShowEmptySlotMessage(equipmentPart, sidekickId);
                 });
-                Debug.Log($"[AlliesEquipments] Empty equipment slot {slotTransform.name} - click handler added for {equipmentPart}");
             }
         }
 
@@ -184,7 +174,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
         /// </summary>
         private void ShowEmptySlotMessage(string equipmentPart, int sidekickId)
         {
-            Debug.Log($"[AlliesEquipments] No {equipmentPart} equipped on sidekick {sidekickId}. Could open equipment selection here.");
             // TODO: Implement equipment selection popup for this part type
             // For now, maybe just log or show a simple message
         }
@@ -258,7 +247,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
 
                 if (sidekick != null)
                 {
-                    Debug.Log($"[AlliesEquipments] Found sidekick ID {sidekick.id} for ally {currentAllyName}");
                     if (int.TryParse(sidekick.id, out int sidekickId))
                     {
                         return sidekickId;
@@ -294,7 +282,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                 if (currentAllyNameField != null)
                 {
                     string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
-                    Debug.Log($"[AlliesEquipments] Retrieved current ally name: {currentAllyName}");
                     return currentAllyName ?? "";
                 }
                 else

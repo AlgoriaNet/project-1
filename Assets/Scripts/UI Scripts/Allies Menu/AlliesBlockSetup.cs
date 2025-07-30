@@ -86,8 +86,6 @@ public class AlliesBlockSetup : MonoBehaviour
         // when equipment or gems are actually added, not for hero draws (shards)
         PlayerProfile.Data.AddListener(UpdateUI, "Equipments");
         PlayerProfile.Data.AddListener(UpdateUI, "Gemstones");
-        
-        Debug.Log($"Page_3 active state at method start: {page3.activeSelf}");
     }
     
     private void OnEnable()
@@ -95,7 +93,6 @@ public class AlliesBlockSetup : MonoBehaviour
         // If we have a pending refresh, do it now that the GameObject is active
         if (needsRefreshOnEnable)
         {
-            Debug.Log("[AlliesBlockSetup] GameObject became active, performing deferred pack UI update");
             needsRefreshOnEnable = false;
             StartCoroutine(DelayedUpdateTotalBlocks());
         }
@@ -122,7 +119,6 @@ public class AlliesBlockSetup : MonoBehaviour
         else
         {
             // If the GameObject is inactive, mark that we need to update when it becomes active
-            Debug.Log("[AlliesBlockSetup] GameObject inactive, deferring pack UI update");
             needsRefreshOnEnable = true;
         }
     }
@@ -218,7 +214,6 @@ public class AlliesBlockSetup : MonoBehaviour
                 {
                     // Get current sidekick ID for Allies equipment comparison
                     int currentSidekickId = GetCurrentSidekickId();
-                    Debug.Log($"[AlliesBlockSetup] Equipment clicked - using Sidekick context with ID: {currentSidekickId}");
                     
                     // Check if there's currently equipped equipment for this part and sidekick
                     Equipment currentEquipment = GetCurrentlyEquippedForSidekick(equipment.Part, currentSidekickId);
@@ -226,13 +221,11 @@ public class AlliesBlockSetup : MonoBehaviour
                     if (currentEquipment != null)
                     {
                         // Equipment slot is occupied - show comparison page
-                        Debug.Log($"[AlliesBlockSetup] Slot occupied by equipment ID {currentEquipment.Id} - showing comparison");
                         EquipmentComparisonManager.Instance.Init(EquipmentComparisonManager.EquippedOn.Sidekick, equipment?.Id, currentSidekickId);
                     }
                     else
                     {
                         // Equipment slot is empty - show single equipment detail for equipping
-                        Debug.Log($"[AlliesBlockSetup] Slot empty - showing single detail for equipping");
                         EquipmentDetailBox.Instance.InitForEquipping(equipment, EquipmentComparisonManager.EquippedOn.Sidekick, currentSidekickId);
                     }
                 });
@@ -246,7 +239,6 @@ public class AlliesBlockSetup : MonoBehaviour
                 {
                     // Get current sidekick ID for Allies gem embedding
                     int currentSidekickId = GetCurrentSidekickId();
-                    Debug.Log($"[AlliesBlockSetup] Gem clicked - using Sidekick context with ID: {currentSidekickId}");
                     GemDetailWithInlaid.Instance.Init(gemstone, currentSidekickId); 
                 });
             }
@@ -455,15 +447,12 @@ public class AlliesBlockSetup : MonoBehaviour
         if (partImage != null && partImage.sprite != null)
         {
             string partName = partImage.sprite.name; // Retrieve the name of the part image
-            Debug.Log($"Part name from blockItem: {partName}"); // Debug the part name
 
             // Use the Inspector-assigned Step2Panel > UpperGroup > Right Panel > Grid
             Transform gridTransform = step2Panel.transform.Find("Upper Group/Right Panel/Grid");
 
             if (gridTransform != null)
             {
-                Debug.Log($"Step2 Grid has {gridTransform.childCount} blocks."); // Debug total blocks
-
                 // Iterate through all blocks in the grid to find the matching equipment
                 foreach (Transform block in gridTransform)
                 {
@@ -471,14 +460,10 @@ public class AlliesBlockSetup : MonoBehaviour
 
                     if (gridBlockImage != null && gridBlockImage.sprite != null && gridBlockImage.sprite.name.StartsWith(partName))
                     {
-                        Debug.Log($"Matching block found: {gridBlockImage.sprite.name}"); // Debug matching block
-
                         // Retrieve the "Dots" transform under the matching block
                         Transform dotsTransform = block.Find("Dots");
                         if (dotsTransform != null)
                         {
-                            Debug.Log($"Dots found under block: {block.name}"); // Debug dots presence
-
                             for (int i = 1; i <= 5; i++) // Assume there are 5 dots
                             {
                                 string dotName = $"D{i}";
@@ -489,15 +474,12 @@ public class AlliesBlockSetup : MonoBehaviour
                                     Image dotImage = dotTransform.GetComponent<Image>();
                                     if (dotImage != null && dotImage.sprite != null)
                                     {
-                                        Debug.Log($"Found {dotName} Image File: {dotImage.sprite.name}"); // Debug dot image file name
-
                                         Transform groupTransform = page4.transform.Find($"Group_{i}");
                                         if (groupTransform != null)
                                         {
                                             if (dotImage.sprite.name == "Dot_00")
                                             {
                                                 groupTransform.gameObject.SetActive(false); // Disable the group
-                                                Debug.Log($"Disabled Group_{i} because the dot is Dot_00");
                                                 continue; // Skip further processing for this group
                                             }
 
@@ -517,7 +499,6 @@ public class AlliesBlockSetup : MonoBehaviour
                                                 {
                                                     groupImage.sprite = gemSprite; // Set the gem image
                                                     groupImage.color = Color.white; // Ensure the image is visible
-                                                    Debug.Log($"Assigned Gem Image: {gemImageFileName} to Group_{i}"); // Debug assignment
                                                 }
                                             }
                                         }
@@ -529,7 +510,6 @@ public class AlliesBlockSetup : MonoBehaviour
                         // After processing the blocks and groups
                         if (anyGroupActive)
                         {
-                            Debug.Log("At least one group active. Ensuring Page_4 is visible.");
                             ResetPage4AndPage3(); // Only reset if groups are active
                         }
                         else
@@ -538,9 +518,7 @@ public class AlliesBlockSetup : MonoBehaviour
                             RectTransform page3Rect = page3.GetComponent<RectTransform>();
                             page3Rect.anchorMin = new Vector2(0.2675f, page3Rect.anchorMin.y); // Set X for Min
                             page3Rect.anchorMax = new Vector2(0.7325f, page3Rect.anchorMax.y); // Set X for Max
-                            Debug.Log($"Page_3 active state after centering: {page3.activeSelf}");
                             page4.SetActive(false);
-                            Debug.Log("All groups disabled. Page_4 hidden, and Page_3 centered.");
                         }
 
                         return; // Exit once the matching block is processed
@@ -560,8 +538,6 @@ public class AlliesBlockSetup : MonoBehaviour
         RectTransform page3ResetRect = page3.GetComponent<RectTransform>();
         page3ResetRect.anchorMin = new Vector2(0.025f, page3ResetRect.anchorMin.y); // Set X for Min
         page3ResetRect.anchorMax = new Vector2(0.49f, page3ResetRect.anchorMax.y); // Set X for Max
-
-        Debug.Log("Page_4 re-enabled, and Page_3 anchor reset.");
     }
 
     public void CloseStep3()
@@ -573,163 +549,7 @@ public class AlliesBlockSetup : MonoBehaviour
         step2Panel.SetActive(true);
 
         // Any additional setup for Step 3 can be done here
-        Debug.Log("Step 3 closed!");
     }
-
-    // DEAD CODE: Equipment functionality has migrated to PopupBox system
-    // This method is no longer called - equipment interactions now use EquipmentDetailBox.Instance
-    /*
-    public void OpenForgePage()
-    {
-        ForgePage.SetActive(true);
-        CommonPage.SetActive(false);
-        CloseStep3();
-        step2Panel.SetActive(false);
-
-        LoadForgePagePack(); // Load Pack after activating Allies Step 2
-
-        // Add button listeners when ForgePage opens
-        enhanceButton.onClick.RemoveAllListeners();
-        upgradeButton.onClick.RemoveAllListeners();
-        enhanceButton.onClick.AddListener(() => ToggleEnhanceUpgrade(true));
-        upgradeButton.onClick.AddListener(() => ToggleEnhanceUpgrade(false));
-
-        // Set default state
-        ToggleEnhanceUpgrade(true);
-    }
-    */
-
-
-    // DEAD CODE: Equipment functionality has migrated to PopupBox system
-    // This method is no longer called - equipment interactions now use EquipmentDetailBox.Instance
-    /*
-    // This Loading block data method will be only triggered manualy by the button on the Page_1
-    public void LoadForgePageData()
-    {
-        if (forgeBlock == null)
-        {
-            Debug.LogError("❌ ForgePage Block NOT assigned in Inspector!");
-            return;
-        }
-
-        // Reference Allies Step 3 → Page_1 → UpperGroup → Block
-        Transform AlliesBlock = page1.transform.Find("UpperGroup/Block");
-        if (AlliesBlock == null)
-        {
-            Debug.LogError("❌ Allies Step 3 Block NOT found!");
-            return;
-        }
-
-        // Copy TopText
-        TextMeshProUGUI alliesTopText = AlliesBlock.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-        if (alliesTopText != null && forgeTopText != null)
-        {
-            forgeTopText.text = alliesTopText.text;
-        }
-
-        // Copy Image
-        Image alliesImage = AlliesBlock.Find("Image")?.GetComponent<Image>();
-        Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
-        if (alliesImage != null && forgeImage != null)
-        {
-            forgeImage.sprite = alliesImage.sprite;
-            forgeImage.color = Color.white; // Ensure visibility
-        }
-
-        Debug.Log("✅ ForgePage Block Updated Successfully!");
-    }
-    */
-
-    // DEAD CODE: Equipment functionality has migrated to PopupBox system
-    /*
-    public void LoadForgePagePack()
-    {
-        if (forgePackContent == null)
-        {
-            Debug.LogError("❌ ForgePage Pack Content NOT assigned in Inspector!");
-            return;
-        }
-
-        // Clear existing items in ForgePage Pack
-        foreach (Transform child in forgePackContent)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // Clone each item from the existing Pack
-        foreach (Transform item in contentPanel) // contentPanel is already assigned in AlliesBlockSetup
-        {
-            GameObject newItem = Instantiate(item.gameObject, forgePackContent);
-            newItem.name = item.name; // Keep the same name
-        }
-
-        // ✅ Apply dynamic grid adjustments
-        if (forgePackGrid != null)
-        {
-            forgePackGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            forgePackGrid.constraintCount = 5; // Match LowerGroup settings
-            forgePackGrid.cellSize = new Vector2(blockWidth, blockWidth); 
-            forgePackGrid.spacing = new Vector2(spacingX, spacingY);
-            forgePackGrid.childAlignment = TextAnchor.UpperLeft; // Align items to the left instead of center
-            forgePackGrid.padding.left = Mathf.RoundToInt(leftPadding);
-            forgePackGrid.padding.right = Mathf.RoundToInt(rightPadding);
-        }
-
-        Debug.Log("✅ ForgePage Pack Loaded Successfully!");
-    }
-    */
-
-    // DEAD CODE: Equipment functionality has migrated to PopupBox system
-    /*
-    private void ToggleEnhanceUpgrade(bool isEnhance)
-    {
-        Debug.Log($"[AlliesBlockSetup] ToggleEnhanceUpgrade called - isEnhance: {isEnhance}");
-        
-        // Switch between enhance and upgrade panels
-        if (enhancePanel != null && upgradePanel != null)
-        {
-            enhancePanel.SetActive(isEnhance);
-            upgradePanel.SetActive(!isEnhance);
-        }
-
-        // Handle toggle button visuals
-        if (enhanceButton != null)
-        {
-            enhanceButton.transform.Find("OrangeButton")?.gameObject.SetActive(isEnhance);
-            enhanceButton.transform.Find("GreyButton")?.gameObject.SetActive(!isEnhance);
-        }
-
-        if (upgradeButton != null)
-        {
-            upgradeButton.transform.Find("OrangeButton")?.gameObject.SetActive(!isEnhance);
-            upgradeButton.transform.Find("GreyButton")?.gameObject.SetActive(isEnhance);
-        }
-    }
-    */
-
-    // DEAD CODE: Equipment functionality has migrated to PopupBox system
-    /*
-    public void CloseForgePage()
-    {
-        ForgePage.SetActive(false);
-        CommonPage.SetActive(true);
-        step2Panel.SetActive(true);
-
-        // Clear ForgeBlock TopText and Image
-        TextMeshProUGUI forgeTopText = forgeBlock.transform.Find("TopText")?.GetComponent<TextMeshProUGUI>();
-        Image forgeImage = forgeBlock.transform.Find("Image")?.GetComponent<Image>();
-
-        if (forgeTopText != null) forgeTopText.text = "";
-        if (forgeImage != null)
-        {
-            forgeImage.sprite = null;
-            forgeImage.color = new Color(0, 0, 0, 0); // Fully transparent
-        }
-
-        Debug.Log("✅ ForgePage Block Cleared on Close!");
-    }
-    */
 
     /// <summary>
     /// Get the current sidekick ID for equipment comparison.
@@ -771,7 +591,6 @@ public class AlliesBlockSetup : MonoBehaviour
 
             if (sidekick != null)
             {
-                Debug.Log($"[AlliesBlockSetup] Found sidekick ID {sidekick.id} for ally {currentAllyName}");
                 if (int.TryParse(sidekick.id, out int sidekickId))
                 {
                     return sidekickId;
@@ -807,8 +626,6 @@ public class AlliesBlockSetup : MonoBehaviour
         // Find equipment that matches the part and is equipped to this sidekick
         Equipment currentEquipment = PlayerProfile.Data.Player.Equipments.Find(equipment =>
             equipment.Part == equipmentPart && equipment.EquipWithSidekickId == sidekickId);
-
-        Debug.Log($"[AlliesBlockSetup] Checking equipped {equipmentPart} for sidekick {sidekickId}: {(currentEquipment != null ? $"Found ID {currentEquipment.Id}" : "None")}");
         return currentEquipment;
     }
 
@@ -829,7 +646,6 @@ public class AlliesBlockSetup : MonoBehaviour
             if (currentAllyNameField != null)
             {
                 string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
-                Debug.Log($"[AlliesBlockSetup] Retrieved current ally name: {currentAllyName}");
                 return currentAllyName ?? "";
             }
             else
