@@ -33,14 +33,16 @@ public class LoadButtonController : MonoBehaviour
     }
     
     /// <summary>
-    /// Update the Orange button text via SwitchPanels when tabs change
+    /// Update the Orange button text and visibility via SwitchPanels when tabs change
     /// </summary>
     private void UpdateOrangeButtonText()
     {
         SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
         if (switchPanels != null)
         {
-            switchPanels.UpdateButtonText();
+            // Call BOTH methods - new separate button visibility AND legacy text
+            switchPanels.UpdateButtonVisibility();
+            Debug.Log("[LoadButtonController] Called UpdateButtonVisibility() for separate buttons");
         }
     }
 

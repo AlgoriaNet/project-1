@@ -10,20 +10,51 @@ using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu;
 
 public class SwitchPanels : MonoBehaviour
 {
-    public Button button;   // Assign the button in Inspector
+    [Header("SEPARATE BUTTONS APPROACH - MUCH CLEANER")]
+    public Button goToPackButton;     // "Go to Pack" button
+    public Button autoEquipButton;    // "Auto Equip" button  
+    public Button autoEmbedButton;    // "Auto Embed" button
+    
+    [Header("Legacy - Keep for backward compatibility")]
+    public Button button;   // Assign the button in Inspector (LEGACY)
     public GameObject packPanel;  // Assign the Pack panel in Inspector
     public GameObject boardPanel; // Assign the Board panel in Inspector
-    public TextMeshProUGUI buttonText; // Assign the Orange button's text component
+    public TextMeshProUGUI buttonText; // Assign the Orange button's text component (LEGACY)
 
     private void Start()
     {
+        // SEPARATE BUTTONS APPROACH - Much cleaner and more reliable
+        if (goToPackButton != null)
+        {
+            goToPackButton.onClick.AddListener(SwitchToPack);
+            Debug.Log("[SwitchPanels] ✅ Go to Pack button registered");
+        }
+        
+        if (autoEquipButton != null)
+        {
+            autoEquipButton.onClick.AddListener(TriggerAutoEquip);
+            Debug.Log("[SwitchPanels] ✅ Auto Equip button registered");
+        }
+        
+        if (autoEmbedButton != null)
+        {
+            autoEmbedButton.onClick.AddListener(TriggerAutoEmbed);
+            Debug.Log("[SwitchPanels] ✅ Auto Embed button registered");
+        }
+        
+        // LEGACY: Keep old dynamic button approach for backward compatibility
         if (button != null)
         {
             button.onClick.AddListener(HandleButtonClick);
+            Debug.Log("[SwitchPanels] ⚠️ Legacy dynamic button registered");
+            
+            // HIDE THE LEGACY BUTTON since we're using separate buttons now
+            button.gameObject.SetActive(false);
+            Debug.Log("[SwitchPanels] 🚫 HIDDEN legacy dynamic button - using separate buttons instead");
         }
         
-        // Set initial button text
-        UpdateButtonText();
+        // Update button visibility based on current state
+        UpdateButtonVisibility();
     }
 
     /// <summary>
@@ -33,25 +64,35 @@ public class SwitchPanels : MonoBehaviour
     {
         Debug.Log("[SwitchPanels] 🚨🚨🚨 HandleButtonClick called! 🚨🚨🚨");
         
-        if (buttonText == null) return;
+        if (buttonText == null) 
+        {
+            Debug.LogError("[SwitchPanels] ❌ buttonText is NULL!");
+            return;
+        }
         
         // CRITICAL FIX: Store current tab BEFORE any event handlers can change it
         ItemLoader.ItemType preservedTab = GetCurrentTab();
         string currentText = buttonText.text;
-        Debug.Log($"[SwitchPanels] Current button text: '{currentText}', Preserved tab: {preservedTab}");
+        Debug.Log($"[SwitchPanels] Current button text: '{currentText}' (Length: {currentText.Length}), Preserved tab: {preservedTab}");
         
-        if (currentText == "Go to Pack")
+        // DEBUGGING: Check for exact text matches with trimming
+        string trimmedText = currentText.Trim();
+        Debug.Log($"[SwitchPanels] Trimmed button text: '{trimmedText}' (Length: {trimmedText.Length})");
+        
+        if (trimmedText == "Go to Pack")
         {
-            // Switch to Pack
+            Debug.Log("[SwitchPanels] ✅ Matched 'Go to Pack' - switching to pack");
             SwitchToPack();
         }
-        else if (currentText == "Auto Equip")
+        else if (trimmedText == "Auto Equip")
         {
-            // Trigger Auto Equip (same as red button)
+            Debug.Log("[SwitchPanels] ✅ Matched 'Auto Equip' - triggering auto equip");
             TriggerAutoEquip();
         }
-        else if (currentText == "Auto Embed")
+        else if (trimmedText == "Auto Embed")
         {
+            Debug.Log("[SwitchPanels] ✅ Matched 'Auto Embed' - forcing gem tab and triggering auto embed");
+            
             // CRITICAL FIX: Ensure we stay on Gem tab for Auto Embed
             Debug.Log("[SwitchPanels] 🔥 FORCING GEM TAB BEFORE AUTO EMBED");
             ForceTabSwitch(ItemLoader.ItemType.Gem);
@@ -59,15 +100,21 @@ public class SwitchPanels : MonoBehaviour
             // Trigger Auto Embed (same as red button)
             TriggerAutoEmbed();
         }
+        else
+        {
+            Debug.LogWarning($"[SwitchPanels] ❌ UNRECOGNIZED button text: '{trimmedText}' - no action taken!");
+        }
     }
     
     private void SwitchToPack()
     {
+        Debug.Log("[SwitchPanels] 🎯 SwitchToPack called");
+        
         if (packPanel != null) packPanel.SetActive(true);
         if (boardPanel != null) boardPanel.SetActive(false);
         
-        // Update button text after switching to pack
-        UpdateButtonText();
+        // Update button visibility after switching to pack
+        UpdateButtonVisibility();
     }
     
     /// <summary>
@@ -96,11 +143,11 @@ public class SwitchPanels : MonoBehaviour
     }
     
     /// <summary>
-    /// Trigger Auto Embed functionality (same as red button)
+    /// Trigger Auto Embed functionality - CLEAN VERSION WITHOUT TAB SWITCHING
     /// </summary>
     private void TriggerAutoEmbed()
     {
-        Debug.Log("[SwitchPanels] 🔥🔥🔥 NEW METHOD - ORANGE AUTO EMBED BUTTON CLICKED - DEBUGGING v2");
+        Debug.Log("[SwitchPanels] 🔥🔥🔥 SEPARATE BUTTON AUTO EMBED CLICKED - NO TAB SWITCHING!");
         
         try
         {
@@ -114,7 +161,7 @@ public class SwitchPanels : MonoBehaviour
             
             Debug.Log("[SwitchPanels] ✅ Found ItemLoader, calling its OpenAutoEmbedPage method via reflection");
             
-            // Use reflection to call the private OpenAutoEmbedPage method (EXACTLY like before)
+            // Use reflection to call the private OpenAutoEmbedPage method
             var autoEmbedMethod = typeof(ItemLoader).GetMethod("OpenAutoEmbedPage", 
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 
@@ -137,7 +184,65 @@ public class SwitchPanels : MonoBehaviour
     }
     
     /// <summary>
-    /// Update the Orange button text based on Pack visibility and current tab
+    /// Update button visibility - DEBUG VERSION TO SEE WHAT'S HAPPENING
+    /// </summary>
+    public void UpdateButtonVisibility()
+    {
+        bool isPackVisible = packPanel != null && packPanel.activeInHierarchy;
+        
+        // CRITICAL DEBUG: Check if separate buttons exist
+        Debug.Log($"[SwitchPanels] 🔍 DEBUG: goToPackButton={goToPackButton != null}, autoEquipButton={autoEquipButton != null}, autoEmbedButton={autoEmbedButton != null}");
+        Debug.Log($"[SwitchPanels] 🔍 DEBUG: packPanel={packPanel != null}, packVisible={isPackVisible}");
+        
+        if (isPackVisible)
+        {
+            // Pack is visible - check current tab (EXACTLY like legacy UpdateButtonText)
+            ItemLoader.ItemType currentTab = GetCurrentTab();
+            Debug.Log($"[SwitchPanels] 🔍 DEBUG: Pack visible, currentTab={currentTab}");
+            
+            switch (currentTab)
+            {
+                case ItemLoader.ItemType.Equipment:
+                    // Show "Auto Equip" button, hide others
+                    if (goToPackButton != null) { goToPackButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Go to Pack button"); }
+                    if (autoEquipButton != null) { autoEquipButton.gameObject.SetActive(true); Debug.Log("[SwitchPanels] ✅ Showed Auto Equip button"); }
+                    if (autoEmbedButton != null) { autoEmbedButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Embed button"); }
+                    Debug.Log("[SwitchPanels] Pack visible + Equipment tab → Show Auto Equip");
+                    break;
+                    
+                case ItemLoader.ItemType.Gem:
+                    // Show "Auto Embed" button, hide others
+                    if (goToPackButton != null) { goToPackButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Go to Pack button"); }
+                    if (autoEquipButton != null) { autoEquipButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Equip button"); }
+                    if (autoEmbedButton != null) { autoEmbedButton.gameObject.SetActive(true); Debug.Log("[SwitchPanels] ✅ Showed Auto Embed button"); }
+                    Debug.Log("[SwitchPanels] Pack visible + Gem tab → Show Auto Embed");
+                    break;
+                    
+                default:
+                    // Allies menu only has Equipment and Gem - this shouldn't happen
+                    Debug.LogWarning($"[SwitchPanels] Unexpected tab in Allies menu: {currentTab}");
+                    if (goToPackButton != null) { goToPackButton.gameObject.SetActive(true); Debug.Log("[SwitchPanels] ✅ Showed Go to Pack button (default)"); }
+                    if (autoEquipButton != null) { autoEquipButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Equip button (default)"); }
+                    if (autoEmbedButton != null) { autoEmbedButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Embed button (default)"); }
+                    break;
+            }
+        }
+        else
+        {
+            // Board is visible - show "Go to Pack" button only (EXACTLY like legacy)
+            Debug.Log($"[SwitchPanels] 🔍 DEBUG: Board visible");
+            if (goToPackButton != null) { goToPackButton.gameObject.SetActive(true); Debug.Log("[SwitchPanels] ✅ Showed Go to Pack button (board)"); }
+            if (autoEquipButton != null) { autoEquipButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Equip button (board)"); }
+            if (autoEmbedButton != null) { autoEmbedButton.gameObject.SetActive(false); Debug.Log("[SwitchPanels] ✅ Hid Auto Embed button (board)"); }
+            Debug.Log("[SwitchPanels] Board visible → Show 'Go to Pack' button");
+        }
+        
+        // LEGACY: Also update old dynamic button for backward compatibility
+        UpdateButtonText();
+    }
+    
+    /// <summary>
+    /// Update the Orange button text based on Pack visibility and current tab - LEGACY SUPPORT
     /// </summary>
     public void UpdateButtonText()
     {
@@ -154,12 +259,12 @@ public class SwitchPanels : MonoBehaviour
             {
                 case ItemLoader.ItemType.Equipment:
                     buttonText.text = "Auto Equip";
-                    Debug.Log("[SwitchPanels] Pack visible + Equipment tab → Auto Equip");
+                    Debug.Log("[SwitchPanels] LEGACY: Pack visible + Equipment tab → Auto Equip");
                     break;
                     
                 case ItemLoader.ItemType.Gem:
                     buttonText.text = "Auto Embed";
-                    Debug.Log("[SwitchPanels] Pack visible + Gem tab → Auto Embed");
+                    Debug.Log("[SwitchPanels] LEGACY: Pack visible + Gem tab → Auto Embed");
                     break;
                     
                 default:
@@ -171,7 +276,7 @@ public class SwitchPanels : MonoBehaviour
         {
             // Board is visible - default text
             buttonText.text = "Go to Pack";
-            Debug.Log("[SwitchPanels] Board visible → Go to Pack");
+            Debug.Log("[SwitchPanels] LEGACY: Board visible → Go to Pack");
         }
     }
     

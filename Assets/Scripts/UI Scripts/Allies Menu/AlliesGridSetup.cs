@@ -1403,19 +1403,23 @@ public class AlliesGridSetup : MonoBehaviour
     }
     
     /// <summary>
-    /// Reset the Orange button text to default "Go to Pack" when entering Step 2
+    /// Reset the Orange button to default "Go to Pack" when entering Step 2 (both legacy text AND separate buttons)
     /// </summary>
     private void ResetOrangeButtonText()
     {
         SwitchPanels switchPanels = FindObjectOfType<SwitchPanels>();
         if (switchPanels != null)
         {
-            // Force reset to default text since Board is visible by default in Step 2
+            // CRITICAL FIX: Reset BOTH legacy text AND separate button visibility
             if (switchPanels.buttonText != null)
             {
                 switchPanels.buttonText.text = "Go to Pack";
                 Debug.Log("[AlliesGridSetup] Reset Orange button text to 'Go to Pack' for Step 2");
             }
+            
+            // CRITICAL FIX: Also update separate button visibility to show Go to Pack
+            switchPanels.UpdateButtonVisibility();
+            Debug.Log("[AlliesGridSetup] ✅ FIXED: Reset separate buttons to show 'Go to Pack' for Step 2");
         }
     }
 }

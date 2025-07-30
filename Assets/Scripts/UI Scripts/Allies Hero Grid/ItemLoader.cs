@@ -87,6 +87,14 @@ public class ItemLoader : MonoBehaviour
         
         // Dynamically update action button based on selected item type
         UpdateActionButton(itemType);
+        
+        // CRITICAL FIX: Update separate buttons visibility when tab changes
+        var switchPanels = FindObjectOfType<SwitchPanels>();
+        if (switchPanels != null)
+        {
+            switchPanels.UpdateButtonVisibility();
+            Debug.Log($"[ItemLoader] Called SwitchPanels.UpdateButtonVisibility() for tab {itemType}");
+        }
 
         if (menuController == null)
         {
@@ -690,6 +698,10 @@ public class ItemLoader : MonoBehaviour
         
         // Show result feedback
         ShowAutoEmbedResult(result, "Allies");
+        
+        // ATTEMPT TO FIX: Try to stay on Gem tab after Auto Embed
+        Debug.Log("[ItemLoader] 🔄 Attempting to stay on Gem tab after Auto Embed");
+        SwitchItemType(ItemType.Gem);
         
         Debug.Log("[ItemLoader] Allies UI refresh completed after auto embed");
     }
