@@ -101,7 +101,8 @@ namespace EquipmentUtils
                     Debug.Log($"[AutoEquipUtility] Equipping to empty {action.slotType}: {action.bestEquipment.Name}");
                 }
                 
-                AutoEquipSingleItem(action.bestEquipment, context, contextId, () => {
+                bool isUpgrade = action.currentEquipment != null;
+                AutoEquipSingleItem(action.bestEquipment, context, contextId, isUpgrade, () => {
                     pendingOperations--;
                     if (pendingOperations <= 0)
                     {
@@ -116,7 +117,7 @@ namespace EquipmentUtils
         /// <summary>
         /// Auto equip a single equipment item
         /// </summary>
-        private static void AutoEquipSingleItem(Equipment equipment, EquipContext context, int contextId, System.Action onComplete = null)
+        private static void AutoEquipSingleItem(Equipment equipment, EquipContext context, int contextId, bool isUpgrade, System.Action onComplete = null)
         {
             if (equipment == null)
             {
@@ -141,16 +142,23 @@ namespace EquipmentUtils
                 equipmentId = equipment.Id
             };
 
-            Debug.Log($"[AutoEquipUtility] Auto equip API call - type: {apiParams.type}, sidekickId: {contextId}, equipmentId: {equipment.Id}");
+            // Choose the correct API action: equip for empty slots, replace for occupied slots
+            string apiAction = isUpgrade ? "replace" : "equip";
+            string debugRequestId = System.Guid.NewGuid().ToString()[..8];
+            Debug.Log($"[AutoEquipUtility] 🚀 [{debugRequestId}] Auto equip API call - {apiAction} - type: {apiParams.type}, sidekickId: {contextId}, equipmentId: {equipment.Id}");
             
-            // Use the dedicated Equip API for auto equipping
-            equipmentApi.Action("equip", apiParams, (response) => {
-                Debug.Log($"[AutoEquipUtility] Auto equip response received for {equipment.Name}");
+            // Use the appropriate API action
+            equipmentApi.Action(apiAction, apiParams, (response) => {
+                Debug.Log($"[AutoEquipUtility] 🔄 [{debugRequestId}] SUCCESS RESPONSE received for {equipment.Name}");
+                Debug.Log($"[AutoEquipUtility] 📄 [{debugRequestId}] Response content: {response}");
                 
                 // Update PlayerProfile from server response
                 UpdatePlayerProfileFromResponse(response, equipment.Name);
                 
                 // Call completion callback
+                onComplete?.Invoke();
+            }, (errorResponse) => {
+                Debug.LogError($"[AutoEquipUtility] 💥 [{debugRequestId}] WebSocket ERROR for {equipment.Name}: {errorResponse}");
                 onComplete?.Invoke();
             });
         }
