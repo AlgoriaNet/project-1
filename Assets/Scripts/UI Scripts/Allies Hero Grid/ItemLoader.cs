@@ -697,8 +697,6 @@ public class ItemLoader : MonoBehaviour
         // Show result feedback
         ShowAutoEmbedResult(result, "Allies");
         
-        SwitchItemType(ItemType.Gem);
-        
         Debug.Log("[ItemLoader] Allies UI refresh completed after auto embed");
     }
 
