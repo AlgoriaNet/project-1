@@ -55,51 +55,33 @@ public class ItemLoader : MonoBehaviour
 
     public void SwitchItemType(ItemType itemType)
     {
-        Debug.Log($"SwitchItemType called with {itemType} (Before: {currentItemType})");
-        
         // SMART BLOCKING: Only block rapid automatic switches, not user clicks
         if (itemType == ItemType.Equipment && currentItemType == ItemType.Gem)
         {
-            Debug.Log($"🚨 POTENTIAL AUTO-SWITCH: SwitchItemType switching from Gem to Equipment!");
-            Debug.Log($"🚨 STACK TRACE: {System.Environment.StackTrace}");
-            
             // Check if this is a rapid automatic switch (likely within 1 second of switching to Gem)
-            // If user manually clicks Equipment tab, they would typically wait longer than 1 second
             if (Time.time - lastGemSwitchTime < 1.0f)
             {
-                Debug.Log($"🛡️ BLOCKING rapid automatic Gem→Equipment switch (within 1 second)!");
                 return; // Block rapid automatic switches
             }
-            else
-            {
-                Debug.Log($"🟢 ALLOWING Gem→Equipment switch (user likely clicked Equipment tab manually)");
-            }
         }
-        
         // Track when we switch to Gem tab for timing-based blocking
         if (itemType == ItemType.Gem)
         {
             lastGemSwitchTime = Time.time;
         }
-        
         currentItemType = itemType;
-        Debug.Log($"Updated currentItemType: {currentItemType}");
-        
         // Dynamically update action button based on selected item type
         UpdateActionButton(itemType);
-        
         var switchPanels = FindObjectOfType<SwitchPanels>();
         if (switchPanels != null)
         {
             switchPanels.UpdateButtonVisibility();
         }
-
         if (menuController == null)
         {
             Debug.LogError("menuController is NULL in SwitchItemType!");
             return;
         }
-
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
             var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
@@ -177,8 +159,6 @@ public class ItemLoader : MonoBehaviour
 
     private void OpenAutoEquipPage()
     {
-        Debug.Log("[ItemLoader] ✅ Auto Equip button clicked - starting auto equip process for Ally");
-        
         // Get current sidekick ID from AlliesGridSetup
         int currentSidekickId = GetCurrentSidekickId();
         if (currentSidekickId == 0)
@@ -186,25 +166,17 @@ public class ItemLoader : MonoBehaviour
             Debug.LogWarning("[ItemLoader] No current sidekick selected - cannot auto equip");
             return;
         }
-        
-        Debug.Log($"[ItemLoader] Auto equipping for sidekick ID: {currentSidekickId}");
-        
         // Use the shared AutoEquipUtility for allies
         AutoEquipUtility.AutoEquipAll(AutoEquipUtility.EquipContext.Ally, currentSidekickId, () => {
-            Debug.Log("[ItemLoader] Auto equip completed - refreshing Ally UI");
             StartCoroutine(RefreshEquipmentUIAfterAutoEquip());
         });
     }
 
     private void OpenAutoEmbedPage()
     {
-        Debug.Log("[ItemLoader] ✅ Auto Embed button clicked");
-        
         // Determine context based on which menu is active
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
-            Debug.Log("[ItemLoader] Auto Embed starting for Ally");
-            
             // Get current sidekick ID from AlliesGridSetup
             int currentSidekickId = GetCurrentSidekickId();
             if (currentSidekickId == 0)
@@ -212,22 +184,15 @@ public class ItemLoader : MonoBehaviour
                 Debug.LogWarning("[ItemLoader] No current sidekick selected - cannot auto embed");
                 return;
             }
-            
-            Debug.Log($"[ItemLoader] Auto embedding for sidekick ID: {currentSidekickId}");
-            
             // Use AutoEmbedUtility for allies
             AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Ally, currentSidekickId, (result) => {
-                Debug.Log($"[ItemLoader] Ally auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
                 StartCoroutine(RefreshAlliesUIAfterAutoEmbed(result, currentSidekickId));
             });
         }
         else if (menuController.IsMenuActive(1)) // Hero Menu
         {
-            Debug.Log("[ItemLoader] Auto Embed starting for Hero");
-            
             // Use AutoEmbedUtility for hero
             AutoEmbedUtility.AutoEmbedAll(AutoEmbedUtility.EmbedContext.Hero, 0, (result) => {
-                Debug.Log($"[ItemLoader] Hero auto embed completed - {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
                 StartCoroutine(RefreshHeroUIAfterAutoEmbed(result));
             });
         }
@@ -246,12 +211,10 @@ public class ItemLoader : MonoBehaviour
             if (menuController.IsMenuActive(0)) // Allies Menu
             {
                 EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Ally);
-                Debug.Log("[ItemLoader] Opening Dismantle Page for Allies via EquipmentDismantleManager...");
             }
             else // Hero Menu
             {
                 EquipmentDismantleManager.Instance.OpenDismantlePage(EquipmentDismantleManager.DismantleContext.Hero);
-                Debug.Log("[ItemLoader] Opening Dismantle Page for Hero via EquipmentDismantleManager...");
             }
         }
         else
@@ -266,7 +229,6 @@ public class ItemLoader : MonoBehaviour
         if (GemMergePageManager.Instance != null)
         {
             GemMergePageManager.Instance.OpenGemMergePage();
-            Debug.Log("[ItemLoader] Opening Gem Merge Page via GemMergePageManager");
         }
         else
         {
@@ -277,7 +239,6 @@ public class ItemLoader : MonoBehaviour
     private void OpenOtherPage()
     {
         // Logic for Other Action (to be implemented)
-        Debug.Log("Opening Other Page...");
     }
 
     private IEnumerator PopulateItemsDelayed()
@@ -538,7 +499,6 @@ public class ItemLoader : MonoBehaviour
             Debug.LogWarning("[ItemLoader] AlliesGridSetup not found - cannot determine current sidekick ID");
             return 0;
         }
-
         // Get current ally name using reflection
         string currentAllyName = GetCurrentAllyNameFromGridSetup(alliesGridSetup);
         if (string.IsNullOrEmpty(currentAllyName))
@@ -546,7 +506,6 @@ public class ItemLoader : MonoBehaviour
             Debug.LogWarning("[ItemLoader] Current ally name is empty - using default sidekick ID 0");
             return 0;
         }
-
         // Convert ally name to sidekick ID
         if (PlayerProfile.Data?.Sidekick != null)
         {
@@ -555,14 +514,11 @@ public class ItemLoader : MonoBehaviour
                 string allyBaseId = GetAllyBaseIdFromName(currentAllyName);
                 return s.base_id == allyBaseId;
             });
-
             if (sidekick != null && int.TryParse(sidekick.id, out int sidekickId))
             {
-                Debug.Log($"[ItemLoader] Found sidekick ID {sidekickId} for ally {currentAllyName}");
                 return sidekickId;
             }
         }
-
         return 0;
     }
 
@@ -572,16 +528,13 @@ public class ItemLoader : MonoBehaviour
     private string GetCurrentAllyNameFromGridSetup(AlliesGridSetup alliesGridSetup)
     {
         if (alliesGridSetup == null) return "";
-
         try
         {
-            var currentAllyNameField = typeof(AlliesGridSetup).GetField("currentAllyName", 
+            var currentAllyNameField = typeof(AlliesGridSetup).GetField("currentAllyName",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
             if (currentAllyNameField != null)
             {
                 string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
-                Debug.Log($"[ItemLoader] Retrieved current ally name: {currentAllyName}");
                 return currentAllyName ?? "";
             }
         }
@@ -589,7 +542,6 @@ public class ItemLoader : MonoBehaviour
         {
             Debug.LogError($"[ItemLoader] Error getting current ally name: {ex.Message}");
         }
-
         return "";
     }
 
@@ -625,25 +577,17 @@ public class ItemLoader : MonoBehaviour
     {
         // Wait just one frame since PlayerProfile is now updated immediately from server responses
         yield return null;
-        
-        Debug.Log("[ItemLoader] Starting equipment UI refresh after auto equip");
-        
         // Find and refresh the AlliesEquipments component
         var alliesEquipments = FindObjectOfType<AlliesEquipments>();
         if (alliesEquipments != null)
         {
-            Debug.Log("[ItemLoader] Calling InitForCurrentAlly to refresh equipment display");
             alliesEquipments.InitForCurrentAlly();
-            Debug.Log("[ItemLoader] Refreshed equipment UI after auto equip");
         }
         else
         {
             Debug.LogWarning("[ItemLoader] AlliesEquipments component not found - cannot refresh UI");
         }
-        
         // Also refresh the item loader display to reflect the equipment that was moved from pack
-        Debug.Log("[ItemLoader] Refreshing item pack display after auto equip");
-        
         if (menuController.IsMenuActive(0)) // Allies Menu
         {
             var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
@@ -663,27 +607,27 @@ public class ItemLoader : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator RefreshAlliesUIAfterAutoEmbed(AutoEmbedResult result, int targetSidekickId)
     {
-        // Wait just one frame since PlayerProfile is now updated immediately from server responses
-        yield return null;
+        // Wait a bit longer to ensure PlayerProfile data has been fully processed
+        yield return new UnityEngine.WaitForSeconds(0.5f);
         
-        Debug.Log($"[ItemLoader] Starting Allies UI refresh after auto embed for sidekick {targetSidekickId}");
+        Debug.Log($"[ItemLoader] Refreshing Allies UI after auto embed for sidekick {targetSidekickId}");
+        
+        // Force PlayerProfile data listeners to update
+        PlayerProfile.Data.NotifyListeners("Equipments");
+        PlayerProfile.Data.NotifyListeners("Gemstones");
         
         // Find and refresh the AlliesEquipments component to show embedded gems for the specific sidekick
         var alliesEquipments = FindObjectOfType<AlliesEquipments>();
         if (alliesEquipments != null)
         {
-            Debug.Log($"[ItemLoader] Calling InitForSpecificSidekick({targetSidekickId}) to refresh equipment display with embedded gems");
+            Debug.Log($"[ItemLoader] Calling InitForSpecificSidekick({targetSidekickId})");
             alliesEquipments.InitForSpecificSidekick(targetSidekickId);
-            Debug.Log($"[ItemLoader] Refreshed Allies equipment UI after auto embed for sidekick {targetSidekickId}");
         }
         else
         {
             Debug.LogWarning("[ItemLoader] AlliesEquipments component not found - cannot refresh UI");
         }
-        
         // Refresh the gem pack display to reflect gems that were embedded
-        Debug.Log("[ItemLoader] Refreshing Allies gem pack display after auto embed");
-        
         var alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
         if (alliesBlockSetup != null)
         {
@@ -693,11 +637,8 @@ public class ItemLoader : MonoBehaviour
         {
             Debug.LogWarning("[ItemLoader] AlliesBlockSetup not found when refreshing after auto embed");
         }
-        
         // Show result feedback
         ShowAutoEmbedResult(result, "Allies");
-        
-        Debug.Log("[ItemLoader] Allies UI refresh completed after auto embed");
     }
 
     /// <summary>
@@ -705,27 +646,27 @@ public class ItemLoader : MonoBehaviour
     /// </summary>
     private System.Collections.IEnumerator RefreshHeroUIAfterAutoEmbed(AutoEmbedResult result)
     {
-        // Wait just one frame since PlayerProfile is now updated immediately from server responses
-        yield return null;
+        // Wait a bit longer to ensure PlayerProfile data has been fully processed
+        yield return new UnityEngine.WaitForSeconds(0.5f);
         
-        Debug.Log("[ItemLoader] Starting Hero UI refresh after auto embed");
+        Debug.Log("[ItemLoader] Refreshing Hero UI after auto embed");
+        
+        // Force PlayerProfile data listeners to update
+        PlayerProfile.Data.NotifyListeners("Equipments");
+        PlayerProfile.Data.NotifyListeners("Gemstones");
         
         // Find and refresh the HeroEquipments component to show embedded gems
         var heroEquipments = FindObjectOfType<HeroEquipments>();
         if (heroEquipments != null)
         {
-            Debug.Log("[ItemLoader] Calling Hero equipment refresh method after auto embed");
+            Debug.Log("[ItemLoader] Calling heroEquipments.Init()");
             heroEquipments.Init();
-            Debug.Log("[ItemLoader] Refreshed Hero equipment UI after auto embed");
         }
         else
         {
             Debug.LogWarning("[ItemLoader] HeroEquipments component not found - cannot refresh UI");
         }
-        
         // Refresh the gem pack display to reflect gems that were embedded
-        Debug.Log("[ItemLoader] Refreshing Hero gem pack display after auto embed");
-        
         var heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
         if (heroBlockSetup != null)
         {
@@ -735,11 +676,8 @@ public class ItemLoader : MonoBehaviour
         {
             Debug.LogWarning("[ItemLoader] HeroBlockSetup not found when refreshing after auto embed");
         }
-        
         // Show result feedback
         ShowAutoEmbedResult(result, "Hero");
-        
-        Debug.Log("[ItemLoader] Hero UI refresh completed after auto embed");
     }
     
     /// <summary>

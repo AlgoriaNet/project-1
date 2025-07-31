@@ -39,10 +39,11 @@ namespace GemUtils
             
             // Find all equipped equipment for this context
             string[] equipmentSlots = { "Helm", "Shoulder", "Chest", "Pants", "Gloves", "Boots" };
-            List<(Equipment equipment, List<(Gemstone gem, int slot)> embedActions)> embedPlans = new List<(Equipment, List<(Gemstone, int)>)>();
+            List<(Equipment equipment, List<(Gemstone gem, int slot, bool isUpgrade)> embedActions)> embedPlans = new List<(Equipment, List<(Gemstone, int, bool)>)>();
             
-            int totalEmptySlots = 0;
+            int totalAvailableSlots = 0;
             int totalGemsToEmbed = 0;
+            int totalUpgrades = 0;
             
             foreach (string slot in equipmentSlots)
             {
@@ -53,16 +54,16 @@ namespace GemUtils
                     continue;
                 }
                 
-                // Find empty gem slots in this equipment
-                List<int> emptySlots = GetEmptyGemSlots(equippedEquipment);
-                if (emptySlots.Count == 0)
+                // Find available gem slots (both empty and upgradeable) in this equipment
+                List<(int slotIndex, Gemstone currentGem, bool isUpgrade)> availableSlots = GetAvailableGemSlots(equippedEquipment, slot);
+                if (availableSlots.Count == 0)
                 {
-                    Debug.Log($"[AutoEmbedUtility] No empty gem slots in {equippedEquipment.Name}");
+                    Debug.Log($"[AutoEmbedUtility] No available gem slots in {equippedEquipment.Name} (all slots full with best gems)");
                     continue;
                 }
                 
                 // Find best gems for this equipment part
-                List<Gemstone> availableGems = FindBestGemsForPart(slot, emptySlots.Count);
+                List<Gemstone> availableGems = FindBestGemsForPart(slot, availableSlots.Count);
                 if (availableGems.Count == 0)
                 {
                     Debug.Log($"[AutoEmbedUtility] No available gems for {slot}");
@@ -70,30 +71,43 @@ namespace GemUtils
                 }
                 
                 // Create embed plan for this equipment
-                List<(Gemstone gem, int slot)> equipmentEmbedActions = new List<(Gemstone, int)>();
-                for (int i = 0; i < System.Math.Min(emptySlots.Count, availableGems.Count); i++)
+                List<(Gemstone gem, int slot, bool isUpgrade)> equipmentEmbedActions = new List<(Gemstone, int, bool)>();
+                for (int i = 0; i < System.Math.Min(availableSlots.Count, availableGems.Count); i++)
                 {
-                    equipmentEmbedActions.Add((availableGems[i], emptySlots[i]));
+                    var targetSlot = availableSlots[i];
+                    var gemToEmbed = availableGems[i];
+                    
+                    // For upgrades, make sure this gem is actually better than current
+                    if (targetSlot.isUpgrade && !IsGemBetter(gemToEmbed, targetSlot.currentGem))
+                    {
+                        continue; // Skip if not actually better
+                    }
+                    
+                    equipmentEmbedActions.Add((gemToEmbed, targetSlot.slotIndex, targetSlot.isUpgrade));
                     totalGemsToEmbed++;
+                    if (targetSlot.isUpgrade) totalUpgrades++;
                 }
                 
                 if (equipmentEmbedActions.Count > 0)
                 {
                     embedPlans.Add((equippedEquipment, equipmentEmbedActions));
-                    Debug.Log($"[AutoEmbedUtility] Plan for {equippedEquipment.Name}: {equipmentEmbedActions.Count} gems to embed");
+                    int equipmentNewEmbeds = equipmentEmbedActions.Count(a => !a.isUpgrade);
+                    int equipmentUpgrades = equipmentEmbedActions.Count(a => a.isUpgrade);
+                    Debug.Log($"[AutoEmbedUtility] Plan for {equippedEquipment.Name}: {equipmentNewEmbeds} new embeds, {equipmentUpgrades} upgrades");
                 }
                 
-                totalEmptySlots += emptySlots.Count;
+                totalAvailableSlots += availableSlots.Count;
             }
             
             if (embedPlans.Count == 0)
             {
-                Debug.Log("[AutoEmbedUtility] No gems to embed - no equipped equipment with empty slots or no suitable gems available");
+                Debug.Log("[AutoEmbedUtility] No gems to embed - no equipped equipment with upgradeable slots or no suitable gems available");
                 onComplete?.Invoke(new AutoEmbedResult { TotalEmbedded = 0, FailedEmbeds = 0 });
                 return;
             }
             
-            Debug.Log($"[AutoEmbedUtility] Auto embed plan: {totalGemsToEmbed} gems across {embedPlans.Count} equipment pieces");
+            int newEmbeds = totalGemsToEmbed - totalUpgrades;
+            Debug.Log($"[AutoEmbedUtility] Auto embed plan: {totalGemsToEmbed} total operations ({newEmbeds} new embeds, {totalUpgrades} upgrades) across {embedPlans.Count} equipment pieces");
             
             // Execute embedding operations
             ExecuteEmbedPlans(embedPlans, context, contextId, onComplete);
@@ -102,7 +116,7 @@ namespace GemUtils
         /// <summary>
         /// Execute the embed plans for all equipment
         /// </summary>
-        private static void ExecuteEmbedPlans(List<(Equipment equipment, List<(Gemstone gem, int slot)> embedActions)> embedPlans, 
+        private static void ExecuteEmbedPlans(List<(Equipment equipment, List<(Gemstone gem, int slot, bool isUpgrade)> embedActions)> embedPlans, 
                                              EmbedContext context, int contextId, System.Action<AutoEmbedResult> onComplete)
         {
             AutoEmbedResult result = new AutoEmbedResult();
@@ -118,27 +132,31 @@ namespace GemUtils
                 {
                     Gemstone gem = action.gem;
                     int slot = action.slot;
+                    bool isUpgrade = action.isUpgrade;
                     
-                    Debug.Log($"[AutoEmbedUtility] Embedding {gem.EffectName} (Level {gem.Level}) into {equipment.Name} slot {slot}");
+                    string actionType = isUpgrade ? "Upgrading" : "Embedding";
+                    Debug.Log($"[AutoEmbedUtility] {actionType} {gem.EffectName} (Level {gem.Level}, Power {gem.EntryValue}) into {equipment.Name} slot {slot}");
                     
-                    AutoEmbedSingleGem(gem, equipment, slot, context, contextId, (success) => {
+                    AutoEmbedSingleGem(gem, equipment, slot, isUpgrade, context, contextId, (success) => {
                         completedOperations++;
                         
                         if (success)
                         {
                             result.TotalEmbedded++;
-                            Debug.Log($"[AutoEmbedUtility] ✅ Successfully embedded {gem.EffectName} into {equipment.Name}");
+                            string actionType = isUpgrade ? "upgraded" : "embedded";
+                            Debug.Log($"[AutoEmbedUtility] ✅ Successfully {actionType} {gem.EffectName} into {equipment.Name}");
                         }
                         else
                         {
                             result.FailedEmbeds++;
-                            Debug.LogError($"[AutoEmbedUtility] ❌ Failed to embed {gem.EffectName} into {equipment.Name}");
+                            string actionType = isUpgrade ? "upgrade" : "embed";
+                            Debug.LogError($"[AutoEmbedUtility] ❌ Failed to {actionType} {gem.EffectName} into {equipment.Name}");
                         }
                         
                         // Check if all operations completed
                         if (completedOperations >= totalOperations)
                         {
-                            Debug.Log($"[AutoEmbedUtility] Auto embed completed: {result.TotalEmbedded} embedded, {result.FailedEmbeds} failed");
+                            Debug.Log($"[AutoEmbedUtility] Auto embed completed: {result.TotalEmbedded} operations successful, {result.FailedEmbeds} failed");
                             onComplete?.Invoke(result);
                         }
                     });
@@ -149,7 +167,7 @@ namespace GemUtils
         /// <summary>
         /// Auto embed a single gem into an equipment slot
         /// </summary>
-        private static void AutoEmbedSingleGem(Gemstone gem, Equipment equipment, int slotNumber, 
+        private static void AutoEmbedSingleGem(Gemstone gem, Equipment equipment, int slotNumber, bool isUpgrade,
                                               EmbedContext context, int contextId, System.Action<bool> onComplete = null)
         {
             if (gem == null || equipment == null)
@@ -175,33 +193,57 @@ namespace GemUtils
                 slotNumber = slotNumber
             };
 
-            Debug.Log($"[AutoEmbedUtility] Auto embed API call - gemId: {gem.Id}, equipmentId: {equipment.Id}, slotNumber: {slotNumber}");
+            // Choose the correct API action: inlay for empty slots, replace for occupied slots
+            string apiAction = isUpgrade ? "replace" : "inlay";
+            Debug.Log($"[AutoEmbedUtility] Auto embed API call - {apiAction} - gemId: {gem.Id}, equipmentId: {equipment.Id}, slotNumber: {slotNumber}");
+            Debug.Log($"[AutoEmbedUtility] 🔧 DEBUG: gemApi instance: {gemApi}, apiAction: {apiAction}, params: {apiParams}");
             
-            // Use the same inlay API as manual embedding
-            gemApi.Action("inlay", apiParams, (response) => {
-                Debug.Log($"[AutoEmbedUtility] Auto embed response received for {gem.EffectName}");
-                
-                // Check for success response (same as manual embedding)
-                if (response["success"]?.Value<bool>() == true && response["updated_equipment"] != null)
-                {
-                    Debug.Log($"[AutoEmbedUtility] ✅ Gem {gem.EffectName} auto embedded successfully");
+            // Add timeout detection
+            bool responseReceived = false;
+            string debugRequestId = System.Guid.NewGuid().ToString()[..8];
+            
+            Debug.Log($"[AutoEmbedUtility] 🚀 [{debugRequestId}] Starting API call for {gem.EffectName} (ID: {gem.Id})");
+            
+            // Use the appropriate API action
+            try 
+            {
+                gemApi.Action(apiAction, apiParams, (response) => {
+                    responseReceived = true;
+                    Debug.Log($"[AutoEmbedUtility] 🔄 [{debugRequestId}] SUCCESS RESPONSE received for {gem.EffectName}");
+                    Debug.Log($"[AutoEmbedUtility] 📄 [{debugRequestId}] Response content: {response}");
                     
-                    // Update PlayerProfile from server response (same as manual embedding)
-                    UpdatePlayerProfileFromEmbedResponse(response);
-                    
-                    onComplete?.Invoke(true);
-                }
-                else
-                {
-                    string error = response["error"]?.Value<string>() ?? "Unknown error";
-                    Debug.LogError($"[AutoEmbedUtility] ❌ Auto embed failed for {gem.EffectName}: {error}");
+                    // Check for success response (same as manual embedding)
+                    if (response["success"]?.Value<bool>() == true && response["updated_equipment"] != null)
+                    {
+                        Debug.Log($"[AutoEmbedUtility] ✅ [{debugRequestId}] Gem {gem.EffectName} auto embedded successfully");
+                        
+                        // Update PlayerProfile from server response (same as manual embedding)
+                        UpdatePlayerProfileFromEmbedResponse(response);
+                        
+                        onComplete?.Invoke(true);
+                    }
+                    else
+                    {
+                        string error = response["error"]?.Value<string>() ?? "Unknown error";
+                        Debug.LogError($"[AutoEmbedUtility] ❌ [{debugRequestId}] Auto embed failed for {gem.EffectName}: {error}");
+                        Debug.LogError($"[AutoEmbedUtility] 📄 [{debugRequestId}] Full response: {response}");
+                        onComplete?.Invoke(false);
+                    }
+                }, (errorResponse) => {
+                    responseReceived = true;
+                    Debug.LogError($"[AutoEmbedUtility] 💥 [{debugRequestId}] WebSocket ERROR for {gem.EffectName}: {errorResponse}");
                     onComplete?.Invoke(false);
-                }
-            }, (errorResponse) => {
-                Debug.LogError($"[AutoEmbedUtility] 💥 WebSocket error for {gem.EffectName}: {errorResponse}");
+                });
+                
+                Debug.Log($"[AutoEmbedUtility] 📡 [{debugRequestId}] API call dispatched for {gem.EffectName}, waiting for response...");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[AutoEmbedUtility] 💀 [{debugRequestId}] Exception during API call for {gem.EffectName}: {ex.Message}");
                 onComplete?.Invoke(false);
-            });
+            }
         }
+        
         
         /// <summary>
         /// Get equipped equipment for a specific context and slot
@@ -232,38 +274,59 @@ namespace GemUtils
         }
         
         /// <summary>
-        /// Get empty gem slots for an equipment piece
+        /// Get available gem slots for an equipment piece (both empty slots and upgradeable slots)
+        /// Returns list of (slotIndex, currentGem, isUpgrade) tuples
         /// </summary>
-        private static List<int> GetEmptyGemSlots(Equipment equipment)
+        private static List<(int slotIndex, Gemstone currentGem, bool isUpgrade)> GetAvailableGemSlots(Equipment equipment, string equipmentPart)
         {
-            List<int> emptySlots = new List<int>();
+            List<(int, Gemstone, bool)> availableSlots = new List<(int, Gemstone, bool)>();
+            List<Gemstone> availableGems = FindBestGemsForPart(equipmentPart, 10); // Get more gems for comparison
+            
+            if (availableGems.Count == 0)
+            {
+                Debug.Log($"[AutoEmbedUtility] No gems available in pack for {equipmentPart}");
+                return availableSlots;
+            }
             
             if (equipment.EmbeddedGems == null || equipment.EmbeddedGems.Count == 0)
             {
                 // If no embedded gems data, assume all 5 slots are empty
                 for (int i = 1; i <= 5; i++)
                 {
-                    emptySlots.Add(i);
+                    availableSlots.Add((i, null, false)); // Empty slot
                 }
-                return emptySlots;
+                return availableSlots;
             }
             
-            // Check each slot for emptiness
+            // Check each slot for emptiness or upgrade opportunity
             for (int i = 0; i < equipment.EmbeddedGems.Count && i < 5; i++)
             {
                 if (equipment.EmbeddedGems[i].is_empty || equipment.EmbeddedGems[i].gem == null)
                 {
-                    emptySlots.Add(i + 1); // Convert to 1-based slot number
+                    // Empty slot
+                    availableSlots.Add((i + 1, null, false));
+                }
+                else
+                {
+                    // Occupied slot - check if we can upgrade
+                    Gemstone currentGem = equipment.EmbeddedGems[i].gem;
+                    Gemstone bestAvailableGem = availableGems.FirstOrDefault(gem => IsGemBetter(gem, currentGem));
+                    
+                    if (bestAvailableGem != null)
+                    {
+                        Debug.Log($"[AutoEmbedUtility] Found upgrade opportunity for slot {i+1}: {currentGem.EffectName} (L{currentGem.Level}, P{currentGem.EntryValue}) -> {bestAvailableGem.EffectName} (L{bestAvailableGem.Level}, P{bestAvailableGem.EntryValue})");
+                        availableSlots.Add((i + 1, currentGem, true)); // Upgradeable slot
+                    }
                 }
             }
             
             // If we have fewer than 5 slots in data, assume remaining are empty
             for (int i = equipment.EmbeddedGems.Count; i < 5; i++)
             {
-                emptySlots.Add(i + 1);
+                availableSlots.Add((i + 1, null, false)); // Empty slot
             }
             
-            return emptySlots;
+            return availableSlots;
         }
         
         /// <summary>
@@ -312,6 +375,34 @@ namespace GemUtils
         }
         
         /// <summary>
+        /// Compare two gems to determine if candidate is better than current
+        /// Priority: Gem Level (Gem_07 > Gem_06 > ... > Gem_01) FIRST, then EntryValue/Power SECOND
+        /// </summary>
+        private static bool IsGemBetter(Gemstone candidate, Gemstone current)
+        {
+            if (candidate == null || current == null)
+                return false;
+
+            // PRIMARY: Gem Level (Gem_07 > Gem_06 > ... > Gem_01)
+            if (candidate.Level > current.Level)
+            {
+                Debug.Log($"[AutoEmbedUtility] Gem level upgrade: {current.EffectName}(Gem_{current.Level:D2},P{current.EntryValue}) -> {candidate.EffectName}(Gem_{candidate.Level:D2},P{candidate.EntryValue})");
+                return true;
+            }
+            if (candidate.Level < current.Level)
+                return false;
+
+            // SECONDARY: Same gem level, compare by power
+            if (candidate.EntryValue > current.EntryValue)
+                return true;
+            if (candidate.EntryValue < current.EntryValue)
+                return false;
+
+            // TERTIARY: Same level and power, compare by ID
+            return candidate.Id > current.Id;
+        }
+        
+        /// <summary>
         /// Update PlayerProfile from embed response (copied from GemDetail.cs)
         /// </summary>
         private static void UpdatePlayerProfileFromEmbedResponse(JObject response)
@@ -350,6 +441,7 @@ namespace GemUtils
             PlayerProfile.Data.NotifyListeners("Equipments");
             PlayerProfile.Data.NotifyListeners("Gemstones");
         }
+        
     }
 
     /// <summary>
