@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
+using System.Linq;
+using model;
+using WebSocket;
+using Newtonsoft.Json.Linq;
 
 namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 {
@@ -16,11 +21,19 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public Transform gemMergeContentPanel;
         public GridLayoutGroup gemMergeGridLayout;
 
+        [Header("Auto Merge")]
+        public Button autoMergeButton;
+        public TextMeshProUGUI autoMergeStatusText;
+        public TextMeshProUGUI mergeableGroupsText;
+
+        private GemWebSocketApi _gemApi;
+
         private void Awake()
         {
             if (Instance == null)
             {
                 Instance = this;
+                _gemApi = GemWebSocketApi.Instance;
             }
             else
             {
@@ -39,6 +52,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 closeGemMergeButton.onClick.AddListener(CloseGemMergePage);
             }
+
+            if (autoMergeButton != null)
+            {
+                autoMergeButton.onClick.AddListener(OnAutoMergeClicked);
+            }
         }
 
         public void OpenGemMergePage()
@@ -47,6 +65,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 gemMergePage.SetActive(true);
                 ReloadBlockItemsForMerge();
+                UpdateMergeableGroupsDisplay();
                 Debug.Log("[GemMergePageManager] Gem merge page opened");
             }
         }
@@ -137,6 +156,231 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
             // Rebuild the layout to ensure proper spacing and alignment
             LayoutRebuilder.ForceRebuildLayoutImmediate(gemMergeContentPanel.GetComponent<RectTransform>());
+        }
+
+        /// <summary>
+        /// Refresh the source inventory display (Hero/Allies) to reflect updated gem data
+        /// </summary>
+        private void RefreshSourceInventoryDisplay()
+        {
+            MenuController menuController = FindObjectOfType<MenuController>();
+            if (menuController == null)
+            {
+                Debug.LogWarning("[GemMergePageManager] MenuController not found for inventory refresh");
+                return;
+            }
+
+            if (menuController.IsMenuActive(0)) // Allies Menu
+            {
+                AlliesBlockSetup alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
+                if (alliesBlockSetup != null)
+                {
+                    alliesBlockSetup.UpdateTotalBlocks();
+                    Debug.Log("[GemMergePageManager] Refreshed Allies inventory display");
+                }
+            }
+            else if (menuController.IsMenuActive(1)) // Hero Menu
+            {
+                HeroBlockSetup heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
+                if (heroBlockSetup != null)
+                {
+                    heroBlockSetup.UpdateTotalBlocks();
+                    Debug.Log("[GemMergePageManager] Refreshed Hero inventory display");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculate and display how many gem groups can be merged
+        /// </summary>
+        private void UpdateMergeableGroupsDisplay()
+        {
+            if (mergeableGroupsText == null) return;
+
+            var mergeableGroups = CalculateMergeableGroups();
+            int totalMergeOperations = mergeableGroups.Sum(g => g.PossibleMerges);
+
+            if (totalMergeOperations > 0)
+            {
+                mergeableGroupsText.text = $"{totalMergeOperations} groups can be auto-merged";
+                if (autoMergeButton != null)
+                {
+                    autoMergeButton.interactable = true;
+                }
+            }
+            else
+            {
+                mergeableGroupsText.text = "No gems available for merging";
+                if (autoMergeButton != null)
+                {
+                    autoMergeButton.interactable = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculate which gem groups can be merged (groups of 5+)
+        /// </summary>
+        private List<MergeableGroup> CalculateMergeableGroups()
+        {
+            var mergeableGroups = new List<MergeableGroup>();
+            
+            // Get all unembedded gems from inventory
+            var inventoryGems = PlayerProfile.Data?.GetGemstonesInPack();
+            if (inventoryGems == null || inventoryGems.Count == 0)
+            {
+                return mergeableGroups;
+            }
+
+            // Group gems by part and level
+            var gemGroups = inventoryGems
+                .Where(gem => !gem.IsEmbedded) // Only unembedded gems
+                .GroupBy(gem => new { gem.Part, gem.Level })
+                .Where(group => group.Count() >= 5) // Only groups with 5+ gems
+                .ToList();
+
+            foreach (var group in gemGroups)
+            {
+                int gemCount = group.Count();
+                int possibleMerges = gemCount / 5; // Integer division
+                int remainingGems = gemCount % 5;
+
+                mergeableGroups.Add(new MergeableGroup
+                {
+                    Part = group.Key.Part,
+                    Level = group.Key.Level,
+                    TotalGems = gemCount,
+                    PossibleMerges = possibleMerges,
+                    RemainingGems = remainingGems
+                });
+            }
+
+            return mergeableGroups;
+        }
+
+        /// <summary>
+        /// Handle auto merge button click
+        /// </summary>
+        public void OnAutoMergeClicked()
+        {
+            Debug.Log("[GemMergePageManager] Auto merge button clicked");
+
+            // Disable button during processing
+            if (autoMergeButton != null)
+            {
+                autoMergeButton.interactable = false;
+            }
+
+            // Update status
+            if (autoMergeStatusText != null)
+            {
+                autoMergeStatusText.text = "Processing auto merge...";
+            }
+
+            // Send auto merge request to backend
+            _gemApi.Action("auto_merge", new { }, (response) =>
+            {
+                Debug.Log($"[GemMergePageManager] Auto merge response: {response}");
+                HandleAutoMergeResponse(response);
+            }, (errorResponse) =>
+            {
+                string errorMessage = errorResponse?.ToString() ?? "Unknown error";
+                Debug.LogError($"[GemMergePageManager] Auto merge error: {errorMessage}");
+                HandleAutoMergeError(errorMessage);
+            });
+        }
+
+        /// <summary>
+        /// Handle successful auto merge response
+        /// </summary>
+        private void HandleAutoMergeResponse(JObject response)
+        {
+            bool success = response["success"]?.Value<bool>() ?? false;
+            
+            if (success)
+            {
+                // Update player profile with new gem inventory
+                if (response["inventory_gems"] != null)
+                {
+                    var updatedGems = response["inventory_gems"].ToObject<List<Gemstone>>();
+                    PlayerProfile.Data.SetGems(updatedGems);
+                    Debug.Log($"[GemMergePageManager] Updated gem inventory with {updatedGems?.Count ?? 0} gems");
+                }
+
+                // Show merge results
+                var mergedGroups = response["merged_groups"]?.ToObject<List<MergedGroupResult>>();
+                int totalOperations = response["total_operations"]?.Value<int>() ?? 0;
+                int totalGemsConsumed = response["total_gems_consumed"]?.Value<int>() ?? 0;
+                int totalGemsCreated = response["total_gems_created"]?.Value<int>() ?? 0;
+
+                // Update UI
+                if (autoMergeStatusText != null)
+                {
+                    autoMergeStatusText.text = $"✅ Auto merge complete!\n{totalOperations} operations: {totalGemsConsumed} gems → {totalGemsCreated} higher-level gems";
+                }
+
+                // Refresh the source inventory first, then the merge page display
+                RefreshSourceInventoryDisplay();
+                ReloadBlockItemsForMerge();
+                UpdateMergeableGroupsDisplay();
+
+                Debug.Log($"[GemMergePageManager] ✅ Auto merge successful: {totalOperations} operations completed");
+            }
+            else
+            {
+                string error = response["error"]?.Value<string>() ?? "Unknown error";
+                HandleAutoMergeError(error);
+            }
+
+            // Re-enable button
+            if (autoMergeButton != null)
+            {
+                autoMergeButton.interactable = true;
+            }
+        }
+
+        /// <summary>
+        /// Handle auto merge error
+        /// </summary>
+        private void HandleAutoMergeError(string error)
+        {
+            Debug.LogError($"[GemMergePageManager] Auto merge failed: {error}");
+            
+            if (autoMergeStatusText != null)
+            {
+                autoMergeStatusText.text = $"❌ Auto merge failed: {error}";
+            }
+
+            // Re-enable button
+            if (autoMergeButton != null)
+            {
+                autoMergeButton.interactable = true;
+            }
+        }
+
+        /// <summary>
+        /// Data structure for mergeable gem groups
+        /// </summary>
+        private class MergeableGroup
+        {
+            public string Part { get; set; }
+            public int Level { get; set; }
+            public int TotalGems { get; set; }
+            public int PossibleMerges { get; set; }
+            public int RemainingGems { get; set; }
+        }
+
+        /// <summary>
+        /// Data structure for merged group results from backend
+        /// </summary>
+        private class MergedGroupResult
+        {
+            public string part { get; set; }
+            public int from_level { get; set; }
+            public int to_level { get; set; }
+            public int gems_consumed { get; set; }
+            public int gems_created { get; set; }
+            public Gemstone new_gem { get; set; }
         }
     }
 }

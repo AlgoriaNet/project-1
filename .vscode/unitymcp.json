@@ -1,0 +1,4 @@
+{
+  "server": "http://localhost:48080",
+  "tools": ["unity.run_scene", "unity.inspect_prefabs", "adb.touch"]
+}
