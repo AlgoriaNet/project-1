@@ -255,7 +255,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         }
         
         /// <summary>
-        /// Select a gem slot and provide visual feedback
+        /// Select a gem slot and provide visual feedback using source Image enable/disable approach
         /// </summary>
         private void SelectSlot(int slotNumber)
         {
@@ -264,46 +264,48 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             
             _selectedSlot = slotNumber;
             
-            // Apply visual highlight by adding background to the Group
+            // Apply visual selection by disabling the source Image of the selected group
             Transform groupTransform = transform.Find($"Group_{slotNumber}");
             if (groupTransform != null)
             {
-                // Get or create background Image on the Group itself
-                Image groupBackground = groupTransform.GetComponent<Image>();
-                if (groupBackground == null)
+                // Get the existing source Image component (should already exist on each Group)
+                Image groupSourceImage = groupTransform.GetComponent<Image>();
+                if (groupSourceImage != null)
                 {
-                    groupBackground = groupTransform.gameObject.AddComponent<Image>();
+                    // Disable the source image to make background transparent (selected state)
+                    groupSourceImage.enabled = false;
+                    Debug.Log($"[InlayGemstones] Selected slot {slotNumber} - disabled source image (transparent background)");
                 }
-                
-                // Set semi-transparent yellow background
-                groupBackground.color = new Color(1f, 1f, 0f, 0.4f); // Yellow background
-                Debug.Log($"[InlayGemstones] Selected slot {slotNumber} - applied yellow background to group");
+                else
+                {
+                    Debug.LogWarning($"[InlayGemstones] No source Image component found on Group_{slotNumber}");
+                }
             }
         }
         
         /// <summary>
-        /// Clear current selection and visual feedback
+        /// Clear current selection and visual feedback using source Image enable/disable approach
         /// </summary>
         public void ClearSelection()
         {
-            // Clear ALL group backgrounds, not just the previously selected one
+            // Enable ALL group source Images to restore white background (unselected state)
             for (int i = 1; i <= 5; i++)
             {
                 Transform groupTransform = transform.Find($"Group_{i}");
                 if (groupTransform != null)
                 {
-                    Image groupBackground = groupTransform.GetComponent<Image>();
-                    if (groupBackground != null)
+                    Image groupSourceImage = groupTransform.GetComponent<Image>();
+                    if (groupSourceImage != null)
                     {
-                        // Make background transparent
-                        groupBackground.color = new Color(0, 0, 0, 0);
+                        // Enable the source image to show white background (unselected state)
+                        groupSourceImage.enabled = true;
                     }
                 }
             }
             
             if (_selectedSlot > 0)
             {
-                Debug.Log($"[InlayGemstones] Cleared selection from slot {_selectedSlot}");
+                Debug.Log($"[InlayGemstones] Cleared selection from slot {_selectedSlot} - enabled all source images (white backgrounds)");
             }
             
             _selectedSlot = -1;
