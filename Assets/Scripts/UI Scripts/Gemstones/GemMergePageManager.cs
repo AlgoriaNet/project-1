@@ -87,11 +87,22 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 return;
             }
 
-            // Clear existing items in Gem Merge page
+            // Clear existing items in Gem Merge page - safer approach
+            List<Transform> childrenToDestroy = new List<Transform>();
             foreach (Transform child in gemMergeContentPanel)
             {
-                Destroy(child.gameObject);
+                childrenToDestroy.Add(child);
             }
+            
+            foreach (Transform child in childrenToDestroy)
+            {
+                if (child != null)
+                {
+                    DestroyImmediate(child.gameObject);
+                }
+            }
+            
+            Debug.Log($"[GemMergePageManager] Cleared {childrenToDestroy.Count} old gem blocks from merge page");
 
             // Find the source content panel based on active menu
             Transform sourceContentPanel = GetSourceContentPanel();
@@ -102,14 +113,22 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
 
             // Copy over items from source content panel
+            int newBlockCount = 0;
             foreach (Transform block in sourceContentPanel)
             {
                 GameObject newBlock = Instantiate(block.gameObject, gemMergeContentPanel);
                 newBlock.name = block.name;
+                newBlockCount++;
             }
+            
+            Debug.Log($"[GemMergePageManager] Added {newBlockCount} new gem blocks to merge page");
 
             // Adjust the GridLayoutGroup for the new blocks
             UpdateGridLayoutForGemMerge(sourceContentPanel);
+            
+            // Force immediate layout rebuild to ensure proper positioning
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(gemMergeContentPanel.GetComponent<RectTransform>());
         }
 
         private Transform GetSourceContentPanel()
@@ -160,6 +179,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
         /// <summary>
         /// Refresh the source inventory display (Hero/Allies) to reflect updated gem data
+        /// This forces a complete rebuild of the source inventory
         /// </summary>
         private void RefreshSourceInventoryDisplay()
         {
@@ -173,8 +193,27 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (menuController.IsMenuActive(0)) // Allies Menu
             {
                 AlliesBlockSetup alliesBlockSetup = FindObjectOfType<AlliesBlockSetup>();
-                if (alliesBlockSetup != null)
+                if (alliesBlockSetup != null && alliesBlockSetup.contentPanel != null)
                 {
+                    // Clear the source inventory first, then rebuild
+                    Transform contentPanel = alliesBlockSetup.contentPanel;
+                    List<Transform> oldBlocks = new List<Transform>();
+                    foreach (Transform child in contentPanel)
+                    {
+                        oldBlocks.Add(child);
+                    }
+                    
+                    foreach (Transform oldBlock in oldBlocks)
+                    {
+                        if (oldBlock != null)
+                        {
+                            DestroyImmediate(oldBlock.gameObject);
+                        }
+                    }
+                    
+                    Debug.Log($"[GemMergePageManager] Cleared {oldBlocks.Count} old blocks from Allies inventory");
+                    
+                    // Now rebuild with fresh data
                     alliesBlockSetup.UpdateTotalBlocks();
                     Debug.Log("[GemMergePageManager] Refreshed Allies inventory display");
                 }
@@ -182,8 +221,27 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             else if (menuController.IsMenuActive(1)) // Hero Menu
             {
                 HeroBlockSetup heroBlockSetup = FindObjectOfType<HeroBlockSetup>();
-                if (heroBlockSetup != null)
+                if (heroBlockSetup != null && heroBlockSetup.contentPanel != null)
                 {
+                    // Clear the source inventory first, then rebuild
+                    Transform contentPanel = heroBlockSetup.contentPanel;
+                    List<Transform> oldBlocks = new List<Transform>();
+                    foreach (Transform child in contentPanel)
+                    {
+                        oldBlocks.Add(child);
+                    }
+                    
+                    foreach (Transform oldBlock in oldBlocks)
+                    {
+                        if (oldBlock != null)
+                        {
+                            DestroyImmediate(oldBlock.gameObject);
+                        }
+                    }
+                    
+                    Debug.Log($"[GemMergePageManager] Cleared {oldBlocks.Count} old blocks from Hero inventory");
+                    
+                    // Now rebuild with fresh data
                     heroBlockSetup.UpdateTotalBlocks();
                     Debug.Log("[GemMergePageManager] Refreshed Hero inventory display");
                 }
