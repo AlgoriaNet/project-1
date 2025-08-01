@@ -56,6 +56,33 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                     partImage.color = Color.clear;
                 }
             }
+            
+            // Check if equipment exists for this gem's part and enable/disable embed button accordingly
+            UpdateEmbedButtonState();
+        }
+        
+        /// <summary>
+        /// Update the embed button state based on whether equipment exists for this gem's part
+        /// </summary>
+        private void UpdateEmbedButtonState()
+        {
+            if (inlayButton == null || _gemstone == null)
+                return;
+                
+            Equipment targetEquipment = FindEquipmentForPart(_gemstone.Part);
+            bool hasEquipment = targetEquipment != null;
+            
+            // Enable button only if equipment exists for this part
+            inlayButton.interactable = hasEquipment;
+            
+            if (hasEquipment)
+            {
+                Debug.Log($"[GemDetail] Embed button enabled - equipment {targetEquipment.Name} available for {_gemstone.Part}");
+            }
+            else
+            {
+                Debug.Log($"[GemDetail] Embed button disabled - no equipment available for {_gemstone.Part}");
+            }
         }
         
         private void OnInlay()
@@ -76,8 +103,24 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             int emptySlot = FindEmptyDotSlot(targetEquipment);
             if (emptySlot == -1)
             {
-                Debug.Log($"[GemDetail] All dot slots occupied in {targetEquipment.Name} - need replacement logic");
-                // TODO: Implement replacement UI when all slots are occupied
+                Debug.Log($"[GemDetail] All dot slots occupied in {targetEquipment.Name} - checking for selected slot for replacement");
+                
+                // Check if user has selected a slot for replacement
+                InlayGemstones inlayComponent = GetInlayGemstonesComponent();
+                if (inlayComponent != null && inlayComponent.HasSelection())
+                {
+                    int selectedSlot = inlayComponent.GetSelectedSlot();
+                    Debug.Log($"[GemDetail] User selected slot {selectedSlot} for replacement - replacing gem");
+                    
+                    // Replace the gem in the selected slot
+                    ReplaceGemInSlot(targetEquipment, selectedSlot);
+                }
+                else
+                {
+                    Debug.Log($"[GemDetail] No slot selected for replacement - user must select a gem slot first");
+                    // You could show a message to user here if needed
+                    return;
+                }
                 return;
             }
             
@@ -246,6 +289,135 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
             }
             
             return null;
+        }
+        
+        /// <summary>
+        /// Get the InlayGemstones component for selection checking
+        /// </summary>
+        private InlayGemstones GetInlayGemstonesComponent()
+        {
+            if (GemDetailWithInlaid.Instance == null)
+            {
+                return null;
+            }
+            
+            // Access InlayGemstones component through reflection
+            var inlayField = typeof(GemDetailWithInlaid).GetField("inlayGemstones", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (inlayField != null)
+            {
+                return (InlayGemstones)inlayField.GetValue(GemDetailWithInlaid.Instance);
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Replace the gem in the specified slot using the replace API directly
+        /// </summary>
+        private void ReplaceGemInSlot(Equipment equipment, int dotSlot)
+        {
+            Debug.Log($"[GemDetail] Starting gem replacement: {_gemstone.EffectName} (ID: {_gemstone.Id}) into equipment ID {equipment.Id} slot {dotSlot}");
+            
+            // Get the currently embedded gem from selected slot for UI update later
+            InlayGemstones inlayComponent = GetInlayGemstonesComponent();
+            Gemstone currentGem = inlayComponent?.GetEmbeddedGemFromSlot(dotSlot, equipment);
+            
+            if (currentGem == null)
+            {
+                Debug.LogError($"[GemDetail] Cannot find embedded gem in slot {dotSlot} for replacement");
+                return;
+            }
+            
+            Debug.Log($"[GemDetail] Will replace {currentGem.EffectName} (ID: {currentGem.Id}) with {_gemstone.EffectName} (ID: {_gemstone.Id})");
+            
+            // Log gem status for debugging but don't block replacement - let server handle validation
+            Debug.Log($"[GemDetail] Gem status: {_gemstone.EffectName} (ID: {_gemstone.Id}) - IsInInventory: {_gemstone.IsInInventory}, IsEmbedded: {_gemstone.IsEmbedded}");
+            
+            // Update the UI immediately (optimistic update) 
+            UpdateDotSlotUI(equipment.Part, dotSlot);
+            
+            // Send server request using 'replace' API action
+            var apiParams = new
+            {
+                gemId = _gemstone.Id,
+                equipmentId = equipment.Id,
+                slotNumber = dotSlot
+            };
+            
+            Debug.Log($"[GemDetail] 📤 Sending WebSocket replace request: {Newtonsoft.Json.JsonConvert.SerializeObject(apiParams)}");
+            
+            _gemApi.Action("replace", apiParams, (response) =>
+            {
+                Debug.Log($"[GemDetail] 📥 Replace response received: {response}");
+                
+                // Check for success response with new backend format
+                if (response["success"]?.Value<bool>() == true && response["updated_equipment"] != null)
+                {
+                    Debug.Log("[GemDetail] ✅ Gem replaced successfully using replace API");
+                    
+                    // Update player profile with complete response data
+                    UpdatePlayerProfileFromEmbedResponse(response);
+                    
+                    // Update GemDetail display with the gem that was replaced (now in inventory)
+                    UpdateGemDetailDisplay(currentGem);
+                    
+                    // DIRECT UPDATE: Immediately update the InlayGems slot with the new gem
+                    UpdateInlayGemSlotDirectly(dotSlot, _gemstone);
+                    
+                    // VERIFY: Check if the slot actually got updated
+                    VerifySlotUpdate(dotSlot, _gemstone);
+                    
+                    // REFRESH: Update the InlayGemstones display to show the correct equipment
+                    RefreshInlayGemstonesUI(equipment.Part);
+                    
+                    // Clear selection after successful replacement
+                    if (inlayComponent != null)
+                    {
+                        inlayComponent.ClearSelection();
+                    }
+                    
+                    // Use a small delay to ensure data updates are processed before UI refresh
+                    if (gameObject.activeInHierarchy)
+                    {
+                        StartCoroutine(DelayedInventoryRefresh());
+                    }
+                    
+                    Debug.Log("[GemDetail] ✅ Replacement complete - slot updated directly, inlay refreshed, inventory refreshing");
+                }
+                else
+                {
+                    string error = response["error"]?.Value<string>() ?? "Unknown error";
+                    Debug.LogError($"[GemDetail] ❌ Replace failed: {error}");
+                    
+                    // Revert UI changes on failure
+                    RevertDotSlotUI(equipment.Part, dotSlot);
+                }
+            }, (errorResponse) =>
+            {
+                Debug.LogError($"[GemDetail] 💥 WebSocket error callback for replace: {errorResponse}");
+                
+                // Revert UI changes on error
+                RevertDotSlotUI(equipment.Part, dotSlot);
+            });
+        }
+        
+        /// <summary>
+        /// Update the GemDetail display to show the newly acquired gem (the one that was replaced)
+        /// </summary>
+        private void UpdateGemDetailDisplay(Gemstone newGem)
+        {
+            Debug.Log($"[GemDetail] Updating GemDetail display with replaced gem: {newGem.EffectName}");
+            
+            // Update the gem status to reflect it's now in inventory (not embedded)
+            newGem.IsEmbedded = false;
+            newGem.IsInInventory = true;
+            newGem.EquipmentId = null;
+            newGem.SlotNumber = null;
+            
+            // Update the current GemDetail instance to show the gem that was just removed/replaced
+            // This makes it appear in the left panel as if the user now has this gem
+            Init(newGem, _sidekickId);
         }
         
         /// <summary>

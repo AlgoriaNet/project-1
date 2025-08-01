@@ -74,9 +74,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                 }
                 else
                 {
-                    Debug.LogWarning($"[GemDetailWithInlaid] No equipped {equipmentPart} found for character");
-                    // Fallback to old method if equipment not found
-                    inlayGemstones.InitFromDots(equipmentPart, sidekickId);
+                    Debug.Log($"[GemDetailWithInlaid] No equipped {equipmentPart} found for character - clearing gem slots");
+                    // Clear all slots when no equipment exists for this part
+                    inlayGemstones.InitFromEquipmentData(null);
                 }
             }
             else

@@ -3,6 +3,7 @@ using model;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
 {
@@ -11,6 +12,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         private List<Gemstone> _gemstones;
         [SerializeField] public List<Image> images;
         [SerializeField] public List<TextMeshProUGUI> descriptions;
+        
+        // Selection tracking
+        private int _selectedSlot = -1; // -1 means no selection, 1-5 for selected slots
+        private Color _originalColor = Color.white;
+        private Color _selectedColor = new Color(1f, 1f, 0f, 1f); // Yellow highlight
         
         
         public void Init(List<Gemstone> gemstones)
@@ -37,6 +43,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         public void InitFromEquipmentData(Equipment equipment)
         {
             Debug.Log($"[InlayGemstones] InitFromEquipmentData called for equipment: {equipment?.Name}");
+            
+            // Store current selection to restore it after data refresh
+            int previousSelection = _selectedSlot;
+            
+            // Clear selection temporarily for data refresh
+            ClearSelection();
             
             if (equipment?.EmbeddedGems == null)
             {
@@ -67,10 +79,20 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                     }
                 }
             }
+            
+            // Restore previous selection if it was valid and slot still has a gem
+            if (previousSelection > 0 && HasGemInSlot(previousSelection))
+            {
+                Debug.Log($"[InlayGemstones] Restoring selection for slot {previousSelection}");
+                SelectSlot(previousSelection);
+            }
         }
         
         private void ClearAllSlots()
         {
+            // Clear any existing selection
+            ClearSelection();
+            
             for (int i = 0; i < images.Count; i++)
             {
                 images[i].sprite = null;
@@ -135,6 +157,193 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
                 slotImage.sprite = null;
                 Debug.Log($"[InlayGemstones] ✅ Cleared slot {slotNumber}");
             }
+        }
+        
+        /// <summary>
+        /// Setup click detection for all gem slot groups
+        /// </summary>
+        private void Start()
+        {
+            SetupSlotClickDetection();
+        }
+        
+        /// <summary>
+        /// Setup click detection for Group_1 through Group_5 using EventTrigger instead of Button
+        /// </summary>
+        private void SetupSlotClickDetection()
+        {
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform groupTransform = transform.Find($"Group_{i}");
+                if (groupTransform != null)
+                {
+                    // Remove any existing Button component that causes orange appearance
+                    Button existingButton = groupTransform.GetComponent<Button>();
+                    if (existingButton != null)
+                    {
+                        DestroyImmediate(existingButton);
+                    }
+                    
+                    // Add EventTrigger for click detection without visual changes
+                    UnityEngine.EventSystems.EventTrigger trigger = groupTransform.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+                    if (trigger == null)
+                    {
+                        trigger = groupTransform.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+                    }
+                    
+                    // Clear existing triggers
+                    trigger.triggers.Clear();
+                    
+                    // Add click trigger
+                    UnityEngine.EventSystems.EventTrigger.Entry entry = new UnityEngine.EventSystems.EventTrigger.Entry();
+                    entry.eventID = UnityEngine.EventSystems.EventTriggerType.PointerClick;
+                    
+                    // Capture slot number for closure
+                    int slotNumber = i;
+                    entry.callback.AddListener((eventData) => OnSlotClicked(slotNumber));
+                    
+                    trigger.triggers.Add(entry);
+                    
+                    Debug.Log($"[InlayGemstones] Setup click detection for Group_{i}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[InlayGemstones] Group_{i} not found in hierarchy");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handle gem slot click for selection
+        /// </summary>
+        private void OnSlotClicked(int slotNumber)
+        {
+            Debug.Log($"[InlayGemstones] Slot {slotNumber} clicked");
+            
+            // Check if this slot has a gem (only allow selection of occupied slots)
+            if (HasGemInSlot(slotNumber))
+            {
+                // Toggle selection
+                if (_selectedSlot == slotNumber)
+                {
+                    // Deselect current slot
+                    ClearSelection();
+                }
+                else
+                {
+                    // Select new slot
+                    SelectSlot(slotNumber);
+                }
+            }
+            else
+            {
+                Debug.Log($"[InlayGemstones] Cannot select empty slot {slotNumber}");
+            }
+        }
+        
+        /// <summary>
+        /// Check if a slot has a gem
+        /// </summary>
+        private bool HasGemInSlot(int slotNumber)
+        {
+            int arrayIndex = slotNumber - 1;
+            if (arrayIndex >= 0 && arrayIndex < images.Count)
+            {
+                return images[arrayIndex].sprite != null;
+            }
+            return false;
+        }
+        
+        /// <summary>
+        /// Select a gem slot and provide visual feedback
+        /// </summary>
+        private void SelectSlot(int slotNumber)
+        {
+            // Clear previous selection
+            ClearSelection();
+            
+            _selectedSlot = slotNumber;
+            
+            // Apply visual highlight by adding background to the Group
+            Transform groupTransform = transform.Find($"Group_{slotNumber}");
+            if (groupTransform != null)
+            {
+                // Get or create background Image on the Group itself
+                Image groupBackground = groupTransform.GetComponent<Image>();
+                if (groupBackground == null)
+                {
+                    groupBackground = groupTransform.gameObject.AddComponent<Image>();
+                }
+                
+                // Set semi-transparent yellow background
+                groupBackground.color = new Color(1f, 1f, 0f, 0.4f); // Yellow background
+                Debug.Log($"[InlayGemstones] Selected slot {slotNumber} - applied yellow background to group");
+            }
+        }
+        
+        /// <summary>
+        /// Clear current selection and visual feedback
+        /// </summary>
+        public void ClearSelection()
+        {
+            // Clear ALL group backgrounds, not just the previously selected one
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform groupTransform = transform.Find($"Group_{i}");
+                if (groupTransform != null)
+                {
+                    Image groupBackground = groupTransform.GetComponent<Image>();
+                    if (groupBackground != null)
+                    {
+                        // Make background transparent
+                        groupBackground.color = new Color(0, 0, 0, 0);
+                    }
+                }
+            }
+            
+            if (_selectedSlot > 0)
+            {
+                Debug.Log($"[InlayGemstones] Cleared selection from slot {_selectedSlot}");
+            }
+            
+            _selectedSlot = -1;
+        }
+        
+        /// <summary>
+        /// Get the currently selected slot number (1-5, or -1 if none selected)
+        /// </summary>
+        public int GetSelectedSlot()
+        {
+            return _selectedSlot;
+        }
+        
+        /// <summary>
+        /// Check if any slot is currently selected
+        /// </summary>
+        public bool HasSelection()
+        {
+            return _selectedSlot > 0;
+        }
+        
+        /// <summary>
+        /// Get the embedded gem from a specific slot using equipment data
+        /// </summary>
+        public Gemstone GetEmbeddedGemFromSlot(int slotNumber, Equipment equipment)
+        {
+            if (equipment?.EmbeddedGems == null || slotNumber < 1 || slotNumber > 5)
+            {
+                return null;
+            }
+            
+            int arrayIndex = slotNumber - 1;
+            if (arrayIndex < equipment.EmbeddedGems.Count && 
+                !equipment.EmbeddedGems[arrayIndex].is_empty && 
+                equipment.EmbeddedGems[arrayIndex].gem != null)
+            {
+                return equipment.EmbeddedGems[arrayIndex].gem;
+            }
+            
+            return null;
         }
         
         /// <summary>

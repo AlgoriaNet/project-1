@@ -29,8 +29,6 @@ namespace EquipmentUtils
         /// <param name="onComplete">Callback when all operations complete</param>
         public static void AutoEquipAll(EquipContext context, int contextId, System.Action onComplete = null)
         {
-            Debug.Log($"[AutoEquipUtility] ✅ Starting auto equip for {context} (ID: {contextId})");
-            
             if (context == EquipContext.Ally && contextId == 0)
             {
                 Debug.LogWarning("[AutoEquipUtility] Invalid sidekick ID 0 for Ally context");
@@ -51,40 +49,20 @@ namespace EquipmentUtils
                 {
                     if (currentEquipment == null)
                     {
-                        Debug.Log($"[AutoEquipUtility] Found empty slot: {slot} - will equip {bestEquipment.Name}");
                         upgradeActions.Add((slot, null, bestEquipment));
                     }
                     else if (IsEquipmentBetter(bestEquipment, currentEquipment))
                     {
-                        Debug.Log($"[AutoEquipUtility] Found upgrade for {slot}: {currentEquipment.Name} -> {bestEquipment.Name}");
                         upgradeActions.Add((slot, currentEquipment, bestEquipment));
-                    }
-                    else
-                    {
-                        Debug.Log($"[AutoEquipUtility] No upgrade available for {slot}: {currentEquipment.Name} is already the best");
-                    }
-                }
-                else
-                {
-                    if (currentEquipment == null)
-                    {
-                        Debug.Log($"[AutoEquipUtility] No equipment available for empty slot: {slot}");
-                    }
-                    else
-                    {
-                        Debug.Log($"[AutoEquipUtility] No better equipment available for {slot}: {currentEquipment.Name}");
                     }
                 }
             }
             
             if (upgradeActions.Count == 0)
             {
-                Debug.Log("[AutoEquipUtility] No equipment upgrades or empty slots to fill");
                 onComplete?.Invoke();
                 return;
             }
-            
-            Debug.Log($"[AutoEquipUtility] Found {upgradeActions.Count} equipment actions to perform");
             
             // Track pending operations for completion callback
             int pendingOperations = upgradeActions.Count;
@@ -92,22 +70,12 @@ namespace EquipmentUtils
             // Perform all upgrade actions
             foreach (var action in upgradeActions)
             {
-                if (action.currentEquipment != null)
-                {
-                    Debug.Log($"[AutoEquipUtility] Upgrading {action.slotType}: {action.currentEquipment.Name} -> {action.bestEquipment.Name}");
-                }
-                else
-                {
-                    Debug.Log($"[AutoEquipUtility] Equipping to empty {action.slotType}: {action.bestEquipment.Name}");
-                }
-                
                 bool isUpgrade = action.currentEquipment != null;
                 AutoEquipSingleItem(action.bestEquipment, context, contextId, isUpgrade, () => {
                     pendingOperations--;
                     if (pendingOperations <= 0)
                     {
                         // All operations completed
-                        Debug.Log("[AutoEquipUtility] All auto equip operations completed");
                         onComplete?.Invoke();
                     }
                 });
@@ -145,13 +113,9 @@ namespace EquipmentUtils
             // Choose the correct API action: equip for empty slots, replace for occupied slots
             string apiAction = isUpgrade ? "replace" : "equip";
             string debugRequestId = System.Guid.NewGuid().ToString()[..8];
-            Debug.Log($"[AutoEquipUtility] 🚀 [{debugRequestId}] Auto equip API call - {apiAction} - type: {apiParams.type}, sidekickId: {contextId}, equipmentId: {equipment.Id}");
             
             // Use the appropriate API action
             equipmentApi.Action(apiAction, apiParams, (response) => {
-                Debug.Log($"[AutoEquipUtility] 🔄 [{debugRequestId}] SUCCESS RESPONSE received for {equipment.Name}");
-                Debug.Log($"[AutoEquipUtility] 📄 [{debugRequestId}] Response content: {response}");
-                
                 // Update PlayerProfile from server response
                 UpdatePlayerProfileFromResponse(response, equipment.Name);
                 
@@ -212,8 +176,6 @@ namespace EquipmentUtils
                 return null;
             }
 
-            Debug.Log($"[AutoEquipUtility] Found {suitableEquipments.Count} {slotType} equipment(s) in pack");
-
             // Sort by equipment ranking: Primary = type number, Secondary = equipment ID
             Equipment bestEquipment = suitableEquipments.OrderByDescending(eq => GetEquipmentTypeNumber(eq.Name))
                                                        .ThenByDescending(eq => eq.Id) // Placeholder for power value ranking
@@ -222,18 +184,15 @@ namespace EquipmentUtils
             // If there's no current equipment, return the best from pack
             if (currentEquipment == null)
             {
-                Debug.Log($"[AutoEquipUtility] Selected best {slotType} for empty slot: {bestEquipment.Name} (ID: {bestEquipment.Id}, Type: {GetEquipmentTypeNumber(bestEquipment.Name)})");
                 return bestEquipment;
             }
 
             // If there's current equipment, only return if pack equipment is better
             if (IsEquipmentBetter(bestEquipment, currentEquipment))
             {
-                Debug.Log($"[AutoEquipUtility] Found better {slotType}: {bestEquipment.Name} (Type: {GetEquipmentTypeNumber(bestEquipment.Name)}) > {currentEquipment.Name} (Type: {GetEquipmentTypeNumber(currentEquipment.Name)})");
                 return bestEquipment;
             }
 
-            Debug.Log($"[AutoEquipUtility] No better {slotType} found in pack than currently equipped {currentEquipment.Name}");
             return null;
         }
 
@@ -302,7 +261,6 @@ namespace EquipmentUtils
             try
             {
                 PlayerProfile.Data.SetPlayer(response["player_profile"]["Player"].ToObject<Player>());
-                Debug.Log($"[AutoEquipUtility] ✅ Player profile updated successfully from server response for {equipmentName}");
             }
             catch (System.Exception ex)
             {
