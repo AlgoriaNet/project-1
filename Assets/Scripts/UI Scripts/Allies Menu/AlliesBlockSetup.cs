@@ -110,6 +110,9 @@ public class AlliesBlockSetup : MonoBehaviour
 
     private void UpdateUI(ApplicationModel model)
     {
+        // Always mark that we need to refresh (whether active or not)
+        needsRefreshOnEnable = true;
+        
         // Check if the GameObject is active before starting coroutine
         if (gameObject.activeInHierarchy)
         {
@@ -118,8 +121,6 @@ public class AlliesBlockSetup : MonoBehaviour
         }
         else
         {
-            // If the GameObject is inactive, mark that we need to update when it becomes active
-            needsRefreshOnEnable = true;
         }
     }
     
@@ -566,7 +567,6 @@ public class AlliesBlockSetup : MonoBehaviour
 
         if (alliesGridSetup == null)
         {
-            Debug.LogWarning("[AlliesBlockSetup] AlliesGridSetup not found - cannot determine current sidekick ID");
             return 0;
         }
 
@@ -574,7 +574,6 @@ public class AlliesBlockSetup : MonoBehaviour
         string currentAllyName = GetCurrentAllyNameFromGridSetup();
         if (string.IsNullOrEmpty(currentAllyName))
         {
-            Debug.LogWarning("[AlliesBlockSetup] Current ally name is empty - using default sidekick ID 0");
             return 0;
         }
 
@@ -597,13 +596,8 @@ public class AlliesBlockSetup : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"[AlliesBlockSetup] Could not parse sidekick ID '{sidekick.id}' to int");
                     return 0;
                 }
-            }
-            else
-            {
-                Debug.LogWarning($"[AlliesBlockSetup] No sidekick found for ally {currentAllyName}");
             }
         }
 
@@ -648,14 +642,9 @@ public class AlliesBlockSetup : MonoBehaviour
                 string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
                 return currentAllyName ?? "";
             }
-            else
-            {
-                Debug.LogWarning("[AlliesBlockSetup] Could not access currentAllyName field via reflection");
-            }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Debug.LogError($"[AlliesBlockSetup] Error getting current ally name: {ex.Message}");
         }
 
         return "";
@@ -684,7 +673,6 @@ public class AlliesBlockSetup : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"[AlliesBlockSetup] Unknown ally name: {allyName}");
         return "0";
     }
 

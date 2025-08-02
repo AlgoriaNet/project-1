@@ -57,6 +57,7 @@ namespace model
                 // Preserve existing sidekick data when new player data doesn't include sidekicks
             }
   
+            Debug.Log($"🔔 [PlayerProfile] SetPlayer complete - notifying listeners for Player, Bag, Equipments ({this.Player?.Equipments?.Count ?? 0} total), Gemstones, Sidekicks");
             NotifyListeners("Player");
             NotifyListeners("Bag");
             NotifyListeners("Equipments");

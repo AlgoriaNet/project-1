@@ -66,7 +66,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 gemMergePage.SetActive(true);
                 ReloadBlockItemsForMerge();
                 UpdateMergeableGroupsDisplay();
-                Debug.Log("[GemMergePageManager] Gem merge page opened");
             }
         }
 
@@ -75,7 +74,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (gemMergePage != null)
             {
                 gemMergePage.SetActive(false);
-                Debug.Log("[GemMergePageManager] Gem merge page closed");
             }
         }
 
@@ -83,7 +81,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (gemMergeContentPanel == null)
             {
-                Debug.LogError("[GemMergePageManager] gemMergeContentPanel is null");
                 return;
             }
 
@@ -101,14 +98,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     DestroyImmediate(child.gameObject);
                 }
             }
-            
-            Debug.Log($"[GemMergePageManager] Cleared {childrenToDestroy.Count} old gem blocks from merge page");
 
             // Find the source content panel based on active menu
             Transform sourceContentPanel = GetSourceContentPanel();
             if (sourceContentPanel == null)
             {
-                Debug.LogError("[GemMergePageManager] Could not find source content panel");
                 return;
             }
 
@@ -120,8 +114,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 newBlock.name = block.name;
                 newBlockCount++;
             }
-            
-            Debug.Log($"[GemMergePageManager] Added {newBlockCount} new gem blocks to merge page");
 
             // Adjust the GridLayoutGroup for the new blocks
             UpdateGridLayoutForGemMerge(sourceContentPanel);
@@ -136,7 +128,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             MenuController menuController = FindObjectOfType<MenuController>();
             if (menuController == null)
             {
-                Debug.LogError("[GemMergePageManager] MenuController not found");
                 return null;
             }
 
@@ -158,7 +149,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (gemMergeGridLayout == null)
             {
-                Debug.LogError("[GemMergePageManager] gemMergeGridLayout reference is missing");
                 return;
             }
 
@@ -186,7 +176,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             MenuController menuController = FindObjectOfType<MenuController>();
             if (menuController == null)
             {
-                Debug.LogWarning("[GemMergePageManager] MenuController not found for inventory refresh");
                 return;
             }
 
@@ -211,11 +200,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         }
                     }
                     
-                    Debug.Log($"[GemMergePageManager] Cleared {oldBlocks.Count} old blocks from Allies inventory");
-                    
                     // Now rebuild with fresh data
                     alliesBlockSetup.UpdateTotalBlocks();
-                    Debug.Log("[GemMergePageManager] Refreshed Allies inventory display");
                 }
             }
             else if (menuController.IsMenuActive(1)) // Hero Menu
@@ -239,11 +225,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         }
                     }
                     
-                    Debug.Log($"[GemMergePageManager] Cleared {oldBlocks.Count} old blocks from Hero inventory");
-                    
                     // Now rebuild with fresh data
                     heroBlockSetup.UpdateTotalBlocks();
-                    Debug.Log("[GemMergePageManager] Refreshed Hero inventory display");
                 }
             }
         }
@@ -321,8 +304,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         /// </summary>
         public void OnAutoMergeClicked()
         {
-            Debug.Log("[GemMergePageManager] Auto merge button clicked");
-
             // Disable button during processing
             if (autoMergeButton != null)
             {
@@ -338,12 +319,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Send auto merge request to backend
             _gemApi.Action("auto_merge", new { }, (response) =>
             {
-                Debug.Log($"[GemMergePageManager] Auto merge response: {response}");
                 HandleAutoMergeResponse(response);
             }, (errorResponse) =>
             {
                 string errorMessage = errorResponse?.ToString() ?? "Unknown error";
-                Debug.LogError($"[GemMergePageManager] Auto merge error: {errorMessage}");
                 HandleAutoMergeError(errorMessage);
             });
         }
@@ -362,7 +341,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 {
                     var updatedGems = response["inventory_gems"].ToObject<List<Gemstone>>();
                     PlayerProfile.Data.SetGems(updatedGems);
-                    Debug.Log($"[GemMergePageManager] Updated gem inventory with {updatedGems?.Count ?? 0} gems");
                 }
 
                 // Show merge results
@@ -381,8 +359,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 RefreshSourceInventoryDisplay();
                 ReloadBlockItemsForMerge();
                 UpdateMergeableGroupsDisplay();
-
-                Debug.Log($"[GemMergePageManager] ✅ Auto merge successful: {totalOperations} operations completed");
             }
             else
             {
@@ -402,8 +378,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         /// </summary>
         private void HandleAutoMergeError(string error)
         {
-            Debug.LogError($"[GemMergePageManager] Auto merge failed: {error}");
-            
             if (autoMergeStatusText != null)
             {
                 autoMergeStatusText.text = $"❌ Auto merge failed: {error}";

@@ -120,7 +120,6 @@ public class GachaController : MonoBehaviour
             }
             else
             {
-                Debug.Log("Rewarded ad not available, showing interstitial ad instead.");
                 GoogleMobileAdsScript.This.ShowInterstitialAd(() =>
                 {
                     PlayerPrefs.SetInt(PREF_HERO_FREE_CLAIM_COUNT, claimCount + 1);
@@ -211,7 +210,6 @@ public class GachaController : MonoBehaviour
             }
             else
             {
-                Debug.Log("Rewarded ad not available, showing interstitial ad instead.");
                 GoogleMobileAdsScript.This.ShowInterstitialAd(() =>
                 {
                     PlayerPrefs.SetInt(PREF_RARE_FREE_CLAIM_COUNT, claimCount + 1);
@@ -302,7 +300,6 @@ public class GachaController : MonoBehaviour
             }
             else
             {
-                Debug.Log("Rewarded ad not available, showing interstitial ad instead.");
                 GoogleMobileAdsScript.This.ShowInterstitialAd(() =>
                 {
                     PlayerPrefs.SetInt(PREF_EPIC_FREE_CLAIM_COUNT, claimCount + 1);
@@ -367,14 +364,12 @@ public class GachaController : MonoBehaviour
         var lastItems = DrawController.Instance.GetLastDrawnItems();
         if (lastItems == null || lastItems.Count == 0)
         {
-            Debug.LogError("❌ No newly drawn items found!");
             return;
         }
 
         var orderedKey = lastItems.Keys.FirstOrDefault(k => k.StartsWith("SKb_") || k.Contains("_"));
         if (string.IsNullOrEmpty(orderedKey))
         {
-            Debug.LogError("❌ No valid item key for shard or skillbook!");
             return;
         }
 
@@ -382,7 +377,6 @@ public class GachaController : MonoBehaviour
         string[] keyParts = orderedKey.Split('_');
         if (keyParts.Length < 3)
         {
-            Debug.LogError($"❌ Invalid item key format: {orderedKey}");
             return;
         }
 
@@ -390,8 +384,6 @@ public class GachaController : MonoBehaviour
         string fileName = string.Join("_", keyParts.Skip(1).Take(keyParts.Length - 2));
         int quantity = lastItems[orderedKey]; // Get the quantity of the drawn item
         
-        Debug.Log($"🎯 Displaying newly drawn item: {fileName} with quantity {quantity}");
-
         string imagePath = fileName.StartsWith("SKb_")
             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
             : $"UILoading/CharacterImages/Shard/{fileName}";
@@ -399,7 +391,6 @@ public class GachaController : MonoBehaviour
         Sprite sprite = Resources.Load<Sprite>(imagePath);
         if (sprite == null)
         {
-            Debug.LogError($"❌ Image not found at {imagePath}");
             return;
         }
 
@@ -413,10 +404,6 @@ public class GachaController : MonoBehaviour
         {
             qntyText.text = quantity.ToString();
             qntyText.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogWarning($"⚠ Qnty text component not found in block");
         }
 
         OpenGachaPage();
@@ -432,15 +419,12 @@ public class GachaController : MonoBehaviour
         var lastItems = DrawController.Instance.GetLastDrawnItems();
         if (lastItems == null || lastItems.Count == 0)
         {
-            Debug.LogError("❌ No newly drawn items found for ten draw!");
             return;
         }
 
         OpenGachaPage();
         grid.SetActive(true);
         ClearGrid();
-
-        Debug.Log($"🎯 Processing {lastItems.Count} items from server response");
 
         // Sort by the order index we embedded in the key (00_, 01_, 02_, etc.)
         var sortedItems = lastItems.OrderBy(kvp => kvp.Key).ToList();
@@ -452,15 +436,12 @@ public class GachaController : MonoBehaviour
             string[] keyParts = item.Key.Split('_');
             if (keyParts.Length < 3)
             {
-                Debug.LogError($"❌ Invalid item key format: {item.Key}");
                 continue;
             }
 
             // Reconstruct the original item name (everything except the first part which is the index)
             string fileName = string.Join("_", keyParts.Skip(1).Take(keyParts.Length - 2));
             int quantity = item.Value;
-
-            Debug.Log($"🎯 Creating block {blockIndex + 1}: {fileName} x{quantity}");
 
             // Create one block for this item (regardless of quantity, since server sent it as one entry)
             string imagePath = fileName.StartsWith("SKb_")
@@ -470,14 +451,12 @@ public class GachaController : MonoBehaviour
             Sprite sprite = Resources.Load<Sprite>(imagePath);
             if (sprite == null)
             {
-                Debug.LogError($"❌ Image not found at {imagePath} for {fileName}");
                 continue;
             }
 
             GameObject newBlock = Instantiate(blockPrefab, grid.transform);
             if (newBlock == null)
             {
-                Debug.LogError($"❌ Failed to instantiate blockPrefab for {fileName}");
                 continue;
             }
             newBlock.name = $"Block_{blockIndex + 1}_{fileName}";
@@ -490,7 +469,6 @@ public class GachaController : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"❌ Image component not found in block {newBlock.name}");
                 Destroy(newBlock);
                 continue;
             }
@@ -509,15 +487,9 @@ public class GachaController : MonoBehaviour
                 qntyText.text = quantity.ToString();
                 qntyText.gameObject.SetActive(true);
             }
-            else
-            {
-                Debug.LogWarning($"⚠ Qnty text component not found in block {newBlock.name}");
-            }
 
             blockIndex++;
         }
-
-        Debug.Log($"🎯 Successfully displayed {blockIndex} blocks exactly following server order.");
 
         AdjustGridLayout();
 
@@ -533,11 +505,8 @@ public class GachaController : MonoBehaviour
         var gem = DrawController.Instance.GetLastDrawnGem();
         if (gem == null)
         {
-            Debug.LogError("❌ No newly drawn gem found!");
             return;
         }
-
-        Debug.Log($"🎯 Displaying newly drawn gem: ID={gem.Id}, Level={gem.Level}, Part={gem.Part}");
 
         string imageName = $"Gem_{gem.Level:00}";
         Sprite gemSprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/{imageName}");
@@ -546,10 +515,6 @@ public class GachaController : MonoBehaviour
         {
             blockImage.sprite = gemSprite;
             blockImage.gameObject.SetActive(true);
-        }
-        else
-        {
-            Debug.LogError($"❌ Gem image not found: {imageName}");
         }
 
         Sprite partSprite = Resources.Load<Sprite>($"UILoading/Gem/Part/{gem.Part}");

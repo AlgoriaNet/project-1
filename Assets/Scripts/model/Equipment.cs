@@ -41,6 +41,8 @@ namespace model
         public int GrowthAtk;
         [JsonProperty("embedded_gems")]
         public List<EmbeddedGemSlot> EmbeddedGems = new List<EmbeddedGemSlot>();
+        [JsonProperty("total_crystals_spent")]
+        public int? TotalCrystalsSpent = 0;
 
         public bool IsEquipped()
         {

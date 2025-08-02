@@ -30,7 +30,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public GameObject heroStep2Panel;
         public GameObject allyStep2Panel;
         public GameObject equipCompPanel;
-        public GameObject page1;
+        // public GameObject currentEqupment;
         
         [Header("Menu References")]
         public GameObject heroMenu;
@@ -39,6 +39,14 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [Header("Pack Sources")]
         public Transform heroSourceContentPanel; // Reference to Hero menu contentPanel
         public Transform allySourceContentPanel; // Reference to Ally menu contentPanel
+        
+        [Header("Resource Display UI")]
+        [Header("Enhance Panel Resources")]
+        public TextMeshProUGUI enhanceCrystalText; // Block_1/Text (TMP) - Crystals
+        public TextMeshProUGUI enhanceGoldText; // Block_2/Text (TMP) - Gold
+        [Header("Upgrade Panel Resources")]
+        public TextMeshProUGUI upgradeSkbText; // Block_1/Text (TMP) - Skillbook
+        public TextMeshProUGUI upgradeCrystalText; // Block_2/Text (TMP) - Crystals
         
         public static EquipmentForgeManager Instance;
         
@@ -67,6 +75,43 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             else
             {
                 Destroy(gameObject);
+            }
+        }
+        
+        public void Start()
+        {
+            // Listen for player data changes to update resource displays
+            PlayerProfile.Data.AddListener(OnPlayerDataUpdated, "Player");
+            // Listen for equipment changes to refresh forge page pack
+            PlayerProfile.Data.AddListener(OnEquipmentDataUpdated, "Equipments");
+        }
+        
+        private void OnDestroy()
+        {
+            // Clean up listeners
+            if (PlayerProfile.Data != null)
+            {
+                PlayerProfile.Data.RemoveListener(OnPlayerDataUpdated, "Player");
+                PlayerProfile.Data.RemoveListener(OnEquipmentDataUpdated, "Equipments");
+            }
+        }
+        
+        private void OnPlayerDataUpdated(ApplicationModel model)
+        {
+            // Update resource displays if forge page is open
+            if (forgePage != null && forgePage.activeInHierarchy)
+            {
+                bool isEnhanceActive = enhancePanel != null && enhancePanel.activeInHierarchy;
+                UpdateResourceDisplays(isEnhanceActive);
+            }
+        }
+        
+        private void OnEquipmentDataUpdated(ApplicationModel model)
+        {
+            // Refresh forge page pack if forge page is open
+            if (forgePage != null && forgePage.activeInHierarchy)
+            {
+                LoadForgePagePack();
             }
         }
         
@@ -118,7 +163,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             enhanceButton.onClick.AddListener(() => ToggleEnhanceUpgrade(true));
             upgradeButton.onClick.AddListener(() => ToggleEnhanceUpgrade(false));
 
-            // Set default state
+            // Set default state (this will also update resource displays)
             ToggleEnhanceUpgrade(true);
         }
         
@@ -134,7 +179,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (forgeBlock == null)
             {
-                Debug.LogError("❌ ForgePage Block NOT assigned in Inspector!");
                 return;
             }
 
@@ -159,7 +203,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 selectedEquipment = heroEquipments.Find(equipment => equipment.Part == "Helm");
                 if (selectedEquipment == null)
                 {
-                    Debug.LogError("❌ No equipped helm available for forging!");
                     return;
                 }
             }
@@ -179,13 +222,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
             if (equipImage == null)
             {
-                Debug.LogError("❌ EquipImage NOT found in ForgeBlock! Expected hierarchy: Block/EquipImage");
                 return;
             }
 
             if (equipNameText == null)
             {
-                Debug.LogError("❌ EquipNameText NOT found in ForgeBlock! Expected hierarchy: Block/EquipNameText");
                 return;
             }
 
@@ -199,7 +240,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
             else
             {
-                Debug.LogError($"❌ Equipment sprite not found at path: {imagePath}");
                 equipImage.color = Color.clear; // Hide if no sprite found
             }
 
@@ -214,10 +254,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
                 backgroundImage.color = qualityColor;
-            }
-            else
-            {
-                Debug.LogWarning("⚠️ No background Image component found on ForgeBlock for quality color");
             }
 
             // Update level progression display
@@ -246,19 +282,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 int currentLevel = equipment.IntensifyLevel + 1; // Display as 1-based (0 -> Level 1)
                 currentLevelText.text = $"Level {currentLevel}";
             }
-            else
-            {
-                Debug.LogError("❌ LevelText_1 not found in Board hierarchy!");
-            }
             
             if (nextLevelText != null)
             {
                 int nextLevel = equipment.IntensifyLevel + 2; // Next level
                 nextLevelText.text = $"Level {nextLevel}";
-            }
-            else
-            {
-                Debug.LogError("❌ LevelText_2 not found in Board hierarchy!");
             }
             
             if (currentAttackText != null)
@@ -266,19 +294,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 int currentAttack = equipment.Attack; // Already calculated: BaseAtk + IntensifyLevel * GrowthAtk
                 currentAttackText.text = $"Attack +{currentAttack}";
             }
-            else
-            {
-                Debug.LogError("❌ AttackText_1 not found in Board hierarchy!");
-            }
             
             if (nextAttackText != null)
             {
                 int nextAttack = equipment.BaseAtk + (equipment.IntensifyLevel + 1) * equipment.GrowthAtk;
                 nextAttackText.text = $"Attack +{nextAttack}";
-            }
-            else
-            {
-                Debug.LogError("❌ AttackText_2 not found in Board hierarchy!");
             }
         }
         
@@ -328,9 +348,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 }
             }
             
-            // If not found, provide detailed debugging
-            Debug.LogError($"❌ Could not find {componentName} in any panel.");
-            
             return null;
         }
         
@@ -338,7 +355,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (forgePackContent == null)
             {
-                Debug.LogError("❌ ForgePage Pack Content NOT assigned in Inspector!");
                 return;
             }
 
@@ -372,10 +388,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     }
                 }
                 // ...
-            }
-            else
-            {
-                Debug.LogError($"❌ {currentContext} Source Content Panel NOT assigned in Inspector!");
             }
 
             // Apply dynamic grid adjustments with delayed setup to ensure RectTransform is properly sized
@@ -507,8 +519,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // If width is still 0 or very small, use a fallback calculation
             if (panelWidth <= 10f)
             {
-                Debug.LogWarning($"[ForgeManager] forgePackContent width is too small ({panelWidth}), using fallback calculation");
-                
                 // Get width from parent or use a reasonable fallback
                 RectTransform parentRect = forgeContentRect.parent as RectTransform;
                 if (parentRect != null && parentRect.rect.width > 10f)
@@ -553,6 +563,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             // Handle Upgrade Button visuals
             upgradeOrangeImage.SetActive(!isEnhance);
             upgradeGreyImage.SetActive(isEnhance);
+            
+            // Update resource displays for the active panel
+            UpdateResourceDisplays(isEnhance);
         }
         
         public void CloseForgePage()
@@ -591,6 +604,72 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 backgroundImage.color = Color.white; // Reset to default white background
             }
+        }
+        
+        /// <summary>
+        /// Update resource displays for the current panel (Enhance/Upgrade)
+        /// </summary>
+        private void UpdateResourceDisplays(bool isEnhance)
+        {
+            // Get player data
+            Player player = PlayerProfile.Data?.Player;
+            if (player == null)
+            {
+                return;
+            }
+            
+            // Get crystal count from ItemsJson
+            int crystalCount = GetCrystalCount(player);
+            
+            if (isEnhance)
+            {
+                // EnhancePanel: Block_1 = crystals, Block_2 = gold coins
+                if (enhanceCrystalText != null)
+                {
+                    enhanceCrystalText.text = $"0/{FormatNumber(crystalCount)}";
+                }
+                
+                if (enhanceGoldText != null)
+                {
+                    enhanceGoldText.text = $"0/{FormatNumber(player.GoldCoin)}";
+                }
+            }
+            else
+            {
+                // UpgradePanel: Block_1 = skillbook, Block_2 = crystals
+                // upgradeSkbText (skillbook) - declared but not implemented yet
+                
+                if (upgradeCrystalText != null)
+                {
+                    upgradeCrystalText.text = $"0/{FormatNumber(crystalCount)}";
+                }
+            }
+        }
+        
+        
+        /// <summary>
+        /// Get crystal count from player's ItemsJson
+        /// </summary>
+        private int GetCrystalCount(Player player)
+        {
+            if (player?.ItemsJson != null && player.ItemsJson.ContainsKey("crystal"))
+            {
+                return player.ItemsJson["crystal"];
+            }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Format number with K suffix for thousands
+        /// </summary>
+        private string FormatNumber(int number)
+        {
+            if (number >= 1000)
+            {
+                float thousands = number / 1000f;
+                return $"{thousands:0.0}K";
+            }
+            return number.ToString();
         }
     }
 }

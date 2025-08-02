@@ -5480,12 +5480,15 @@ MonoBehaviour:
   upgradeGreyImage: {fileID: 1114339634}
   heroStep2Panel: {fileID: 1262441832}
   allyStep2Panel: {fileID: 554290720}
-  equipCompPanel: {fileID: 0}
-  page1: {fileID: 772775876}
+  equipCompPanel: {fileID: 1063673503}
   heroMenu: {fileID: 2042961323}
   allyMenu: {fileID: 918948574}
   heroSourceContentPanel: {fileID: 1392455117}
   allySourceContentPanel: {fileID: 1090299598}
+  enhanceCrystalText: {fileID: 298483277}
+  enhanceGoldText: {fileID: 444241578}
+  upgradeSkbText: {fileID: 564148598}
+  upgradeCrystalText: {fileID: 788211331}
 --- !u!114 &95556009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5512,6 +5515,9 @@ MonoBehaviour:
   allyMenu: {fileID: 918948574}
   heroSourceContentPanel: {fileID: 1392455117}
   allySourceContentPanel: {fileID: 1090299598}
+  crystalImage: {fileID: 1993356229}
+  crystalQuantityText: {fileID: 1107838254}
+  dismantleButton: {fileID: 906754128}
 --- !u!114 &95556010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18713,7 +18719,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0/3
+  m_text: 100/300
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -28639,7 +28645,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 300/20
+  m_text: 1.5K/22K
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -35794,7 +35800,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0/3
+  m_text: 10/30
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -49858,11 +49864,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 771710565}
   m_CullTransparentMesh: 1
---- !u!1 &772775876 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5069113131867248105, guid: f7f8d69a823ee4ef39563c1b79c44a01, type: 3}
-  m_PrefabInstance: {fileID: 708637944}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &774164161
 GameObject:
   m_ObjectHideFlags: 0
@@ -50968,7 +50969,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 300/20
+  m_text: 200/230
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -72762,7 +72763,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 3
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

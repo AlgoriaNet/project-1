@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "UnityMCP": {
+      "type": "stdio",
+      "command": "/tmp/unity-mcp-env/bin/python",
+      "args": [
+        "/tmp/unity-mcp/UnityMcpServer/src/server.py"
+      ],
+      "env": {
+        "UNITY_PROJECT_PATH": "/Volumes/WD_SSD/UnityProjects/project-1-equip",
+        "PYTHONPATH": "/tmp/unity-mcp/UnityMcpServer/src"
+      }
+    }
+  }
+}

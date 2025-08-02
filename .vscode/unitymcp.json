@@ -1,4 +1,14 @@
 {
   "server": "http://localhost:48080",
-  "tools": ["unity.run_scene", "unity.inspect_prefabs", "adb.touch"]
+  "tools": ["unity.run_scene", "unity.inspect_prefabs", "adb.touch"],
+  "mcp": {
+    "command": "/tmp/unity-mcp-env/bin/python",
+    "args": [
+      "/tmp/unity-mcp/UnityMcpServer/src/server.py"
+    ],
+    "env": {
+      "UNITY_PROJECT_PATH": "/Volumes/WD_SSD/UnityProjects/project-1-equip",
+      "PYTHONPATH": "/tmp/unity-mcp/UnityMcpServer/src"
+    }
+  }
 }

@@ -87,16 +87,14 @@ public class HeroBlockSetup : MonoBehaviour
 
     private void UpdateUI(ApplicationModel model)
     {
+        // Always mark that we need to refresh (whether active or not)
+        needsRefreshOnEnable = true;
+        
         // Check if the GameObject is active before starting coroutine
         if (gameObject.activeInHierarchy)
         {
             // Add a small delay to ensure player data is fully updated before refreshing pack UI
             StartCoroutine(DelayedUpdateTotalBlocks());
-        }
-        else
-        {
-            // If the GameObject is inactive, mark that we need to update when it becomes active
-            needsRefreshOnEnable = true;
         }
     }
     
@@ -308,7 +306,6 @@ public class HeroBlockSetup : MonoBehaviour
         // ...
         if (otherItemsRaw == null || otherItemsRaw.Count == 0)
         {
-            Debug.LogWarning("[OtherTab] ItemsJson is empty! Add test data or check server sync.");
             return;
         }
 
@@ -379,7 +376,6 @@ public class HeroBlockSetup : MonoBehaviour
             else
             {
                 image.color = Color.clear;
-                Debug.LogWarning($"[OtherTab] Sprite not found for fileName: {fileName}");
             }
 
             // Set quantity
@@ -419,7 +415,6 @@ public class HeroBlockSetup : MonoBehaviour
             ? $"UILoading/CharacterImages/Skillbook/{fileName}"
             : $"UILoading/CharacterImages/Shard/{fileName}";
         Sprite s = Resources.Load<Sprite>(path);
-        if (s == null) Debug.LogWarning($"[OtherTab] Sprite not found at {path}");
         return s;
     }
 
@@ -436,7 +431,6 @@ public class HeroBlockSetup : MonoBehaviour
             equipmentTabButton.onClick.Invoke(); // Simulate user click for full tab logic
             return;
         }
-        Debug.LogWarning("[HeroBlockSetup] equipmentTabButton not assigned!");
     }
 
     /// <summary>
@@ -458,7 +452,6 @@ public class HeroBlockSetup : MonoBehaviour
             }
         }
         
-        Debug.LogWarning("[HeroBlockSetup] Could not get current sidekick ID from AlliesBlockSetup");
         return 0;
     }
 
@@ -510,7 +503,6 @@ public class HeroBlockSetup : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[HeroBlockSetup] HeroEquipments component not found - skipping equipment UI refresh");
         }
         
         // Refresh the item pack display to reflect equipment that was moved from pack
@@ -533,7 +525,6 @@ public class HeroBlockSetup : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[HeroBlockSetup] HeroEquipments component not found - skipping equipment UI refresh");
         }
         
         // Refresh the gem pack display to reflect gems that were embedded
@@ -555,7 +546,6 @@ public class HeroBlockSetup : MonoBehaviour
         
         if (result.FailedEmbeds > 0)
         {
-            Debug.LogWarning($"[HeroBlockSetup] ⚠️ Auto Embed Partial: {result.FailedEmbeds} gems failed to embed");
             // TODO: Show warning popup or notification
         }
         
