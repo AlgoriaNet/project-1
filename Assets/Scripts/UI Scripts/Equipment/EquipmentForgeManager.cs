@@ -626,12 +626,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 // EnhancePanel: Block_1 = crystals, Block_2 = gold coins
                 if (enhanceCrystalText != null)
                 {
-                    enhanceCrystalText.text = $"0/{FormatNumber(crystalCount)}";
+                    enhanceCrystalText.text = $"0/{NumberFormatter.FormatNumber(crystalCount)}";
                 }
                 
                 if (enhanceGoldText != null)
                 {
-                    enhanceGoldText.text = $"0/{FormatNumber(player.GoldCoin)}";
+                    enhanceGoldText.text = $"0/{NumberFormatter.FormatNumber(player.GoldCoin)}";
                 }
             }
             else
@@ -641,7 +641,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 
                 if (upgradeCrystalText != null)
                 {
-                    upgradeCrystalText.text = $"0/{FormatNumber(crystalCount)}";
+                    upgradeCrystalText.text = $"0/{NumberFormatter.FormatNumber(crystalCount)}";
                 }
             }
         }
@@ -659,17 +659,5 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             return 0;
         }
         
-        /// <summary>
-        /// Format number with K suffix for thousands
-        /// </summary>
-        private string FormatNumber(int number)
-        {
-            if (number >= 1000)
-            {
-                float thousands = number / 1000f;
-                return $"{thousands:0.0}K";
-            }
-            return number.ToString();
-        }
     }
 }

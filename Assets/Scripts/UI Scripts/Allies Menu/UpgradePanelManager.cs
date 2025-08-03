@@ -622,19 +622,6 @@ public class UpgradePanelManager : MonoBehaviour
         Debug.LogError($"Failed to fetch star up cost: {error}");
     }
     
-    /// <summary>
-    /// Format number with K suffix for values over 999
-    /// </summary>
-    /// <param name="value">Number to format</param>
-    /// <returns>Formatted string like "1.2K" or "500"</returns>
-    private string FormatNumber(int value)
-    {
-        if (value >= 1000)
-        {
-            return $"{(value / 1000.0f):F1}K";
-        }
-        return value.ToString();
-    }
     
     /// <summary>
     /// Update resource displays on right panel
@@ -662,7 +649,7 @@ public class UpgradePanelManager : MonoBehaviour
             // Update gold display with K formatting
             if (goldText != null)
             {
-                string goldDisplay = $"{FormatNumber(currentStarUpCost.cost.gold_cost)}/{FormatNumber(currentStarUpCost.player_resources.gold)}";
+                string goldDisplay = $"{NumberFormatter.FormatNumber(currentStarUpCost.cost.gold_cost)}/{NumberFormatter.FormatNumber(currentStarUpCost.player_resources.gold)}";
                 goldText.text = goldDisplay;
             }
             
@@ -692,7 +679,7 @@ public class UpgradePanelManager : MonoBehaviour
             // Update gold display with K formatting
             if (goldText != null)
             {
-                string goldDisplay = $"{FormatNumber(currentLevelUpCost.cost.gold_cost)}/{FormatNumber(currentLevelUpCost.player_resources.gold)}";
+                string goldDisplay = $"{NumberFormatter.FormatNumber(currentLevelUpCost.cost.gold_cost)}/{NumberFormatter.FormatNumber(currentLevelUpCost.player_resources.gold)}";
                 goldText.text = goldDisplay;
             }
             

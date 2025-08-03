@@ -4,8 +4,8 @@ using UnityEngine;
 public static class NumberFormatter
 {
     /// <summary>
-    /// Formats numbers >= 1000 with K suffix
-    /// Examples: 1000 -> 1.0K, 15111 -> 15.1K, 999 -> 999
+    /// Formats numbers >= 1000 with K suffix, smart decimal handling
+    /// Examples: 1000 -> 1K, 1500 -> 1.5K, 2030 -> 2K, 2100 -> 2.1K
     /// </summary>
     public static string FormatNumber(int number)
     {
@@ -15,9 +15,18 @@ public static class NumberFormatter
         }
         
         float thousands = number / 1000f;
-        string result = $"{thousands:F1}K";
-        UnityEngine.Debug.Log($"[NumberFormatter] Formatted {number} -> {result}");
-        return result;
+        
+        // Check if the decimal part is effectively zero
+        if (Math.Abs(thousands - Math.Round(thousands)) < 0.05f)
+        {
+            // Round to whole number, no decimal
+            return $"{Math.Round(thousands)}K";
+        }
+        else
+        {
+            // Show one decimal place
+            return $"{thousands:F1}K";
+        }
     }
     
     /// <summary>
@@ -31,7 +40,18 @@ public static class NumberFormatter
         }
         
         float thousands = number / 1000f;
-        return $"{thousands:F1}K";
+        
+        // Check if the decimal part is effectively zero
+        if (Math.Abs(thousands - Math.Round(thousands)) < 0.05f)
+        {
+            // Round to whole number, no decimal
+            return $"{Math.Round(thousands)}K";
+        }
+        else
+        {
+            // Show one decimal place
+            return $"{thousands:F1}K";
+        }
     }
     
     /// <summary>
@@ -45,6 +65,17 @@ public static class NumberFormatter
         }
         
         float thousands = number / 1000f;
-        return $"{thousands:F1}K";
+        
+        // Check if the decimal part is effectively zero
+        if (Math.Abs(thousands - Math.Round(thousands)) < 0.05f)
+        {
+            // Round to whole number, no decimal
+            return $"{Math.Round(thousands)}K";
+        }
+        else
+        {
+            // Show one decimal place
+            return $"{thousands:F1}K";
+        }
     }
 }

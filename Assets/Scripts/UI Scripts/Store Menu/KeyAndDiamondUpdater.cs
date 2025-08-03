@@ -27,33 +27,20 @@ public class KeyAndDiamondUpdater : MonoBehaviour
         if (diamondText != null) 
         {
             Debug.Log($"[KeyAndDiamondUpdater] Before formatting: Diamond = {player.Diamond}");
-            diamondText.text = FormatNumber(player.Diamond);
+            diamondText.text = NumberFormatter.FormatNumber(player.Diamond);
             Debug.Log($"[KeyAndDiamondUpdater] After formatting: Diamond text = {diamondText.text}");
         }
         
         if (heroKeyText != null)
-            heroKeyText.text = player.ItemsJson.TryGetValue("heroKey", out int key1) ? FormatNumber(key1) : "0";
+            heroKeyText.text = player.ItemsJson.TryGetValue("heroKey", out int key1) ? NumberFormatter.FormatNumber(key1) : "0";
 
         if (rareKeyText != null)
-            rareKeyText.text = player.ItemsJson.TryGetValue("rareKey", out int key2) ? FormatNumber(key2) : "0";
+            rareKeyText.text = player.ItemsJson.TryGetValue("rareKey", out int key2) ? NumberFormatter.FormatNumber(key2) : "0";
 
         if (epicKeyText != null)
-            epicKeyText.text = player.ItemsJson.TryGetValue("epicKey", out int key3) ? FormatNumber(key3) : "0";
+            epicKeyText.text = player.ItemsJson.TryGetValue("epicKey", out int key3) ? NumberFormatter.FormatNumber(key3) : "0";
     }
 
-    // Local formatting method for testing
-    private string FormatNumber(int number)
-    {
-        if (number < 1000)
-        {
-            return number.ToString();
-        }
-        
-        float thousands = number / 1000f;
-        string result = $"{thousands:F1}K";
-        Debug.Log($"[KeyAndDiamondUpdater] Formatted {number} -> {result}");
-        return result;
-    }
 
     // Unsubscribe when the object is destroyed to prevent memory leaks
     private void OnDestroy()

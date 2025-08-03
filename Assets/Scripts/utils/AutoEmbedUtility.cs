@@ -234,13 +234,18 @@ namespace GemUtils
         /// <summary>
         /// Get available gem slots for an equipment piece (both empty slots and upgradeable slots)
         /// Returns list of (slotIndex, currentGem, isUpgrade) tuples
+        /// Updated for new backend rules: same entry_id/attribute_id + higher level only for upgrades
         /// </summary>
         private static List<(int slotIndex, Gemstone currentGem, bool isUpgrade)> GetAvailableGemSlots(Equipment equipment, string equipmentPart)
         {
             List<(int, Gemstone, bool)> availableSlots = new List<(int, Gemstone, bool)>();
-            List<Gemstone> availableGems = FindBestGemsForPart(equipmentPart, 10); // Get more gems for comparison
+            List<Gemstone> availableGems = PlayerProfile.Data.GetGemstonesInPack()?.Where(gem => 
+                gem.Part == equipmentPart && 
+                gem.IsInInventory && 
+                !gem.IsEmbedded
+            ).ToList();
             
-            if (availableGems.Count == 0)
+            if (availableGems == null || availableGems.Count == 0)
             {
                 return availableSlots;
             }
@@ -265,11 +270,16 @@ namespace GemUtils
                 }
                 else
                 {
-                    // Occupied slot - check if we can upgrade
+                    // Occupied slot - check if we can upgrade using new rules
                     Gemstone currentGem = equipment.EmbeddedGems[i].gem;
-                    Gemstone bestAvailableGem = availableGems.FirstOrDefault(gem => IsGemBetter(gem, currentGem));
                     
-                    if (bestAvailableGem != null)
+                    // Find gems with same entry_id/attribute_id and higher level
+                    Gemstone bestReplacement = availableGems
+                        .Where(gem => gem.EntryId == currentGem.EntryId && gem.Level > currentGem.Level)
+                        .OrderByDescending(gem => gem.Level)
+                        .FirstOrDefault();
+                    
+                    if (bestReplacement != null)
                     {
                         availableSlots.Add((i + 1, currentGem, true)); // Upgradeable slot
                     }
@@ -286,8 +296,8 @@ namespace GemUtils
         }
         
         /// <summary>
-        /// Find the best available gems for a specific equipment part
-        /// Priority: Level (highest first) > EntryValue (highest first) > Quality > ID
+        /// Find the best available gems for a specific equipment part (for empty slots)
+        /// New Rule: Highest level first, then lowest entry_id/attribute_id for tiebreaking
         /// Only returns gems that are in inventory and match the part
         /// </summary>
         private static List<Gemstone> FindBestGemsForPart(string equipmentPart, int maxCount)
@@ -310,11 +320,11 @@ namespace GemUtils
                 return new List<Gemstone>();
             }
 
-            // Sort by new two-step ranking: Level (highest first) > EntryValue (highest first) > ID
+            // New backend rule: Highest level first, then lowest entry_id/attribute_id for tiebreaking
             List<Gemstone> bestGems = suitableGems
-                .OrderByDescending(gem => gem.Level)             // Primary: Level (7 > 6 > 5 > 4 > 3 > 2 > 1)
-                .ThenByDescending(gem => gem.EntryValue)         // Secondary: Entry value within same level
-                .ThenByDescending(gem => gem.Id)                 // Final: ID for consistent ordering
+                .OrderByDescending(gem => gem.Level)             // Primary: Level (highest first)
+                .ThenBy(gem => gem.EntryId)                      // Secondary: Lowest entry_id/attribute_id for tiebreaking
+                .ThenBy(gem => gem.Id)                           // Final: ID for consistent ordering
                 .Take(maxCount)
                 .ToList();
 
@@ -322,30 +332,24 @@ namespace GemUtils
         }
         
         /// <summary>
-        /// Compare two gems to determine if candidate is better than current
-        /// Priority: Gem Level (Gem_07 > Gem_06 > ... > Gem_01) FIRST, then EntryValue/Power SECOND
+        /// Compare two gems to determine if candidate can replace current (for occupied slots)
+        /// New Rule: Same part + same entry_id/attribute_id + higher level only
         /// </summary>
         private static bool IsGemBetter(Gemstone candidate, Gemstone current)
         {
             if (candidate == null || current == null)
                 return false;
 
-            // PRIMARY: Gem Level (Gem_07 > Gem_06 > ... > Gem_01)
-            if (candidate.Level > current.Level)
-            {
-                return true;
-            }
-            if (candidate.Level < current.Level)
+            // New backend rule: Must have same part (should already be filtered, but safety check)
+            if (candidate.Part != current.Part)
                 return false;
 
-            // SECONDARY: Same gem level, compare by power
-            if (candidate.EntryValue > current.EntryValue)
-                return true;
-            if (candidate.EntryValue < current.EntryValue)
+            // New backend rule: Must have same entry_id/attribute_id (no cross-attribute replacement)
+            if (candidate.EntryId != current.EntryId)
                 return false;
 
-            // TERTIARY: Same level and power, compare by ID
-            return candidate.Id > current.Id;
+            // New backend rule: Only replace if candidate has higher level
+            return candidate.Level > current.Level;
         }
         
         /// <summary>
