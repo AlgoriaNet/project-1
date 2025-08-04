@@ -1002,12 +1002,56 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         }
         
         /// <summary>
-        /// Perform auto equipment enhancement (placeholder - not implemented)
+        /// Perform auto equipment enhancement using backend auto_enhance API
         /// </summary>
         private void PerformAutoEnhancement()
         {
-            Debug.LogWarning("[EquipmentForgeManager] Auto enhancement not implemented yet");
-            // TODO: Implement auto enhancement logic when needed
+            if (currentSelectedEquipment == null)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] No equipment selected for auto enhancement");
+                return;
+            }
+            
+            if (!canAffordEnhancement)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] Cannot afford any enhancement");
+                return;
+            }
+            
+            EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
+            if (equipmentApi == null)
+            {
+                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
+                return;
+            }
+            
+            // Use backend auto_enhance API with optional target level (defaults to max level 12)
+            var apiParams = new
+            {
+                equipmentId = currentSelectedEquipment.Id,
+                targetLevel = 12 // Let backend auto-enhance to maximum level
+            };
+            
+            Debug.Log($"[EquipmentForgeManager] 🚀 Starting auto enhancement for equipment ID: {currentSelectedEquipment.Id} to level {apiParams.targetLevel}");
+            
+            // Disable both buttons to prevent interference during auto enhancement
+            if (singleEnhanceButton != null)
+                singleEnhanceButton.interactable = false;
+            if (autoEnhanceButton != null)
+                autoEnhanceButton.interactable = false;
+            
+            equipmentApi.Action("auto_enhance", apiParams, (response) => {
+                Debug.Log($"[EquipmentForgeManager] ✅ Auto enhancement completed successfully");
+                HandleEnhancementResponse(response, true); // isAutoEnhance = true
+            }, (errorResponse) => {
+                Debug.LogError($"[EquipmentForgeManager] ❌ Auto enhancement failed: {errorResponse}");
+                
+                // Re-enable buttons on error
+                if (singleEnhanceButton != null)
+                    singleEnhanceButton.interactable = true;
+                if (autoEnhanceButton != null)
+                    autoEnhanceButton.interactable = true;
+            });
         }
         
         /// <summary>
