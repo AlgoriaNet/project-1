@@ -53,6 +53,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [Header("Enhancement Action Buttons")]
         public Button singleEnhanceButton; // "Enhance" button
         public Button autoEnhanceButton; // "Auto Enhance" button
+        public Button washButton; // "Wash" button (Button_2 in UpgradePanel)
         
         public static EquipmentForgeManager Instance;
         
@@ -105,6 +106,14 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             PlayerProfile.Data.AddListener(OnPlayerDataUpdated, "Player");
             // Listen for equipment changes to refresh forge page pack
             PlayerProfile.Data.AddListener(OnEquipmentDataUpdated, "Equipments");
+            
+            // Setup button listeners
+            if (singleEnhanceButton != null)
+                singleEnhanceButton.onClick.AddListener(PerformSingleEnhancement);
+            if (autoEnhanceButton != null)
+                autoEnhanceButton.onClick.AddListener(PerformAutoEnhancement);
+            if (washButton != null)
+                washButton.onClick.AddListener(PerformWash);
         }
         
         private void OnDestroy()
@@ -436,9 +445,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             int playerGold = player?.GoldCoin ?? 0;
             canAffordEnhancement = playerCrystals >= crystalCost && playerGold >= goldCost;
             
-            Debug.Log($"[EquipmentForgeManager] Fallback display: Level {currentLevel}→{nextLevel}, Attack {currentAttack}→{nextAttack}");
-            Debug.Log($"[EquipmentForgeManager] Fallback costs: {crystalCost} crystals (have {playerCrystals}), {goldCost} gold (have {playerGold}), Can afford: {canAffordEnhancement}");
-            
             // Ensure UI is updated with fallback costs
             if (enhancePanel != null && enhancePanel.activeInHierarchy)
             {
@@ -452,47 +458,89 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         /// </summary>
         private TextMeshProUGUI FindTextComponent(string componentName)
         {
-            // Need to find the ForgePage first, then the correct panel
+            // Need to find the ForgePage first, then the ACTIVE panel
             Transform forgePageTransform = forgePage.transform;
             
-            // Try both EnhancePanel and UpgradePanel to see which one is active or contains the component
-            string[] panelNames = { "EnhancePanel", "UpgradePanel" };
+            // Determine which panel is currently active with detailed logging
+            bool isEnhanceActive = enhancePanel != null && enhancePanel.activeInHierarchy;
+            bool isUpgradeActive = upgradePanel != null && upgradePanel.activeInHierarchy;
             
-            foreach (string panelName in panelNames)
+            // If no panels are active, return null gracefully (happens during initial loading)
+            if (!isEnhanceActive && !isUpgradeActive)
             {
-                Transform panelTransform = forgePageTransform.Find(panelName);
-                if (panelTransform == null) continue;
-                
-                // Find Board within the panel
-                Transform boardTransform = panelTransform.Find("Board");
-                if (boardTransform == null) continue;
-                
-                // Determine the container based on component name
-                string containerName = "";
-                if (componentName.StartsWith("Level"))
+                return null;
+            }
+            
+            string activePanelName = isEnhanceActive ? "EnhancePanel" : "UpgradePanel";
+            
+            Transform panelTransform = forgePageTransform.Find(activePanelName);
+            if (panelTransform == null) 
+            {
+                return null;
+            }
+            
+            // Double-check that the chosen panel is actually active
+            if (!panelTransform.gameObject.activeInHierarchy)
+            {
+                return null;
+            }
+            
+            // Find Board within the active panel
+            Transform boardTransform = panelTransform.Find("Board");
+            if (boardTransform == null) 
+            {
+                // Debug: List all children under the panel
+                for (int i = 0; i < panelTransform.childCount; i++)
                 {
-                    containerName = "LevelText";
+                    Transform child = panelTransform.GetChild(i);
                 }
-                else if (componentName.StartsWith("Attack"))
+                
+                return null;
+            }
+            
+            // Determine the container based on component name and panel type
+            string containerName = "";
+            if (componentName.StartsWith("Level"))
+            {
+                containerName = "LevelText";
+            }
+            else if (componentName.StartsWith("Attack"))
+            {
+                // Different panels may have different attack text hierarchy
+                containerName = "AttackText";
+            }
+            
+            if (string.IsNullOrEmpty(containerName)) 
+            {
+                return null;
+            }
+            
+            // Find the container within Board
+            Transform containerTransform = boardTransform.Find(containerName);
+            if (containerTransform == null && containerName == "AttackText") 
+            {
+                // Handle typo in UpgradePanel: "AttacklText" instead of "AttackText"
+                containerTransform = boardTransform.Find("AttachlText");
+                if (containerTransform != null)
                 {
-                    containerName = "AttackText";
-                }
-                
-                if (string.IsNullOrEmpty(containerName)) continue;
-                
-                // Find the container within Board
-                Transform containerTransform = boardTransform.Find(containerName);
-                if (containerTransform == null) continue;
-                
-                // Finally, find the actual text component within the container
-                TextMeshProUGUI textComponent = containerTransform.Find(componentName)?.GetComponent<TextMeshProUGUI>();
-                if (textComponent != null)
-                {
-                    return textComponent;
                 }
             }
             
-            return null;
+            if (containerTransform == null) 
+            {
+                return null;
+            }
+            
+            // Finally, find the actual text component within the container
+            TextMeshProUGUI textComponent = containerTransform.Find(componentName)?.GetComponent<TextMeshProUGUI>();
+            if (textComponent != null)
+            {
+                return textComponent;
+            }
+            else
+            {
+                return null;
+            }
         }
         
         public void LoadForgePagePack()
@@ -708,6 +756,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             upgradeOrangeImage.SetActive(!isEnhance);
             upgradeGreyImage.SetActive(isEnhance);
             
+            // Update level/attack displays for the newly active panel
+            UpdateLevelProgressionDisplayFromAPI();
+            
             // Update resource displays for the active panel
             UpdateResourceDisplays(isEnhance);
         }
@@ -769,21 +820,17 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             {
                 // EnhancePanel: Block_1 = crystals, Block_2 = gold coins
                 // Show actual enhancement costs from API or fallback calculation
-                Debug.Log($"[EquipmentForgeManager] UpdateResourceDisplays - Crystal cost: {currentEnhanceCrystalCost}, Gold cost: {currentEnhanceGoldCost}");
-                Debug.Log($"[EquipmentForgeManager] UpdateResourceDisplays - Available crystals: {crystalCount}, Available gold: {player?.GoldCoin ?? 0}");
                 
                 if (enhanceCrystalText != null)
                 {
                     string crystalDisplay = $"{NumberFormatter.FormatNumber(currentEnhanceCrystalCost)}/{NumberFormatter.FormatNumber(crystalCount)}";
                     enhanceCrystalText.text = crystalDisplay;
-                    Debug.Log($"[EquipmentForgeManager] Set crystal text to: {crystalDisplay}");
                 }
                 
                 if (enhanceGoldText != null)
                 {
                     string goldDisplay = $"{NumberFormatter.FormatNumber(currentEnhanceGoldCost)}/{NumberFormatter.FormatNumber(player.GoldCoin)}";
                     enhanceGoldText.text = goldDisplay;
-                    Debug.Log($"[EquipmentForgeManager] Set gold text to: {goldDisplay}");
                 }
                 
                 // Update button interactability based on affordability
@@ -798,12 +845,36 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
             else
             {
-                // UpgradePanel: Block_1 = skillbook, Block_2 = crystals
-                // upgradeSkbText (skillbook) - declared but not implemented yet
+                // UpgradePanel: Block_1 = skillbook, Block_2 = crystals (for wash function)
+                // Show wash cost: 200 crystals fixed cost
+                const int WASH_COST = 200;
+                
+                if (upgradeSkbText != null)
+                {
+                    // Block_1 shows wash cost info (could be used for skillbook later)
+                    upgradeSkbText.text = "Wash";
+                }
                 
                 if (upgradeCrystalText != null)
                 {
-                    upgradeCrystalText.text = $"0/{NumberFormatter.FormatNumber(crystalCount)}";
+                    // Block_2 shows wash crystal cost
+                    upgradeCrystalText.text = $"{WASH_COST}/{NumberFormatter.FormatNumber(crystalCount)}";
+                }
+                
+                // Update wash button interactability
+                if (washButton != null)
+                {
+                    bool canAffordWash = crystalCount >= WASH_COST;
+                    bool hasEquipmentSelected = currentSelectedEquipment != null;
+                    
+                    // Backend confirmed: equipped equipment CAN be washed (no inventory restriction)
+                    bool shouldEnable = canAffordWash && hasEquipmentSelected;
+                    
+                    washButton.interactable = shouldEnable;
+                }
+                else
+                {
+                    Debug.LogWarning("[EquipmentForgeManager] Wash button is null - not assigned in Inspector");
                 }
             }
         }
@@ -828,14 +899,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (equipment == null)
             {
-                Debug.LogWarning("[EquipmentForgeManager] Cannot fetch enhancement cost - equipment is null");
                 return;
             }
             
             // Prevent duplicate calls for the same equipment
             if (lastFetchedEquipmentId == equipment.Id)
             {
-                Debug.Log($"[EquipmentForgeManager] Skipping duplicate API call for equipment ID: {equipment.Id}");
                 return;
             }
             lastFetchedEquipmentId = equipment.Id;
@@ -843,7 +912,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
             if (equipmentApi == null)
             {
-                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
                 return;
             }
 
@@ -852,17 +920,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipmentId = equipment.Id
             };
 
-            Debug.Log($"[EquipmentForgeManager] Fetching enhancement cost for equipment ID: {equipment.Id}");
-            Debug.Log($"[EquipmentForgeManager] 📤 Sending WebSocket request: {Newtonsoft.Json.JsonConvert.SerializeObject(apiParams)}");
             
             equipmentApi.Action("enhancement_cost", apiParams, (response) =>
             {
-                Debug.Log($"[EquipmentForgeManager] ✅ SUCCESS - Received enhancement_cost response for equipment {equipment.Id}: {response}");
                 HandleEnhancementCostResponse(response);
             }, (errorResponse) =>
             {
-                Debug.LogError($"[EquipmentForgeManager] ❌ ERROR - Failed to fetch enhancement cost for equipment {equipment.Id}: {errorResponse}");
-                Debug.LogError($"[EquipmentForgeManager] Error response content: {errorResponse}");
                 // Set default values on error
                 ResetEnhancementData();
                 UpdateResourceDisplays(true); // Refresh display
@@ -874,14 +937,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         /// </summary>
         private void HandleEnhancementCostResponse(JObject response)
         {
-            Debug.Log($"[EquipmentForgeManager] ✅ SUCCESS - Received enhancement_cost response: {response}");
             try
             {
                 // Check for success wrapper first (backend might send wrapped responses)
                 bool hasSuccessWrapper = response["success"] != null;
                 JObject dataObj = hasSuccessWrapper ? response["data"] as JObject : response;
-                
-                Debug.Log($"[EquipmentForgeManager] Has success wrapper: {hasSuccessWrapper}, Data object: {dataObj}");
                 
                 if (dataObj != null && dataObj["current"] != null && dataObj["next"] != null && dataObj["cost"] != null)
                 {
@@ -889,30 +949,24 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     var current = dataObj["current"];
                     currentLevel = current["level"]?.Value<int>() ?? 0;
                     currentAttack = current["attack"]?.Value<int>() ?? 0;
-                    Debug.Log($"[EquipmentForgeManager] Current: Level {currentLevel}, Attack {currentAttack}");
                     
                     // Parse next level/attack data
                     var next = dataObj["next"];
                     nextLevel = next["level"]?.Value<int>() ?? 0;
                     nextAttack = next["attack"]?.Value<int>() ?? 0;
-                    Debug.Log($"[EquipmentForgeManager] Next: Level {nextLevel}, Attack {nextAttack}");
                     
                     // Parse cost data
                     var cost = dataObj["cost"];
                     currentEnhanceCrystalCost = cost["crystals"]?.Value<int>() ?? 0;
                     currentEnhanceGoldCost = cost["gold"]?.Value<int>() ?? 0;
-                    Debug.Log($"[EquipmentForgeManager] Cost: {currentEnhanceCrystalCost} crystals, {currentEnhanceGoldCost} gold");
                     
                     // Parse other data
                     attackIncrease = dataObj["attack_increase"]?.Value<int>() ?? 0;
                     canAffordEnhancement = dataObj["can_afford"]?.Value<bool>() ?? false;
                     
-                    Debug.Log($"[EquipmentForgeManager] ✅ Enhancement preview: Level {currentLevel}→{nextLevel}, Attack {currentAttack}→{nextAttack} (+{attackIncrease}), Cost: {currentEnhanceCrystalCost} crystals, {currentEnhanceGoldCost} gold, Can afford: {canAffordEnhancement}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[EquipmentForgeManager] Enhancement cost response missing required fields - falling back to equipment-based calculation");
-                    Debug.LogWarning($"[EquipmentForgeManager] Full response: {response}");
                     // Don't reset - let fallback calculation handle it
                 }
                 
@@ -923,10 +977,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     UpdateResourceDisplays(true);
                 }
             }
-            catch (System.Exception ex)
+            catch
             {
-                Debug.LogError($"[EquipmentForgeManager] Error parsing enhancement cost response: {ex.Message}");
-                Debug.LogError($"[EquipmentForgeManager] Response that caused error: {response}");
                 // Don't reset - let fallback calculation handle it
                 UpdateResourceDisplays(true);
             }
@@ -955,13 +1007,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (currentSelectedEquipment == null)
             {
-                Debug.LogWarning("[EquipmentForgeManager] No equipment selected for enhancement");
                 return;
             }
             
             if (!canAffordEnhancement)
             {
-                Debug.LogWarning("[EquipmentForgeManager] Cannot afford enhancement");
                 // Could show user feedback here
                 return;
             }
@@ -969,7 +1019,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
             if (equipmentApi == null)
             {
-                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
                 return;
             }
 
@@ -978,8 +1027,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipmentId = currentSelectedEquipment.Id
             };
             
-            Debug.Log($"[EquipmentForgeManager] 📤 Sending enhance request: equipmentId={currentSelectedEquipment.Id}");
-
             // Disable button to prevent double-clicking
             if (singleEnhanceButton != null)
             {
@@ -991,7 +1038,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 HandleEnhancementResponse(response, false);
             }, (errorResponse) =>
             {
-                Debug.LogError($"[EquipmentForgeManager] Enhancement error: {errorResponse}");
                 // Re-enable button on error
                 if (singleEnhanceButton != null)
                 {
@@ -1008,20 +1054,17 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             if (currentSelectedEquipment == null)
             {
-                Debug.LogWarning("[EquipmentForgeManager] No equipment selected for auto enhancement");
                 return;
             }
             
             if (!canAffordEnhancement)
             {
-                Debug.LogWarning("[EquipmentForgeManager] Cannot afford any enhancement");
                 return;
             }
             
             EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
             if (equipmentApi == null)
             {
-                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
                 return;
             }
             
@@ -1032,8 +1075,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 targetLevel = 12 // Let backend auto-enhance to maximum level
             };
             
-            Debug.Log($"[EquipmentForgeManager] 🚀 Starting auto enhancement for equipment ID: {currentSelectedEquipment.Id} to level {apiParams.targetLevel}");
-            
             // Disable both buttons to prevent interference during auto enhancement
             if (singleEnhanceButton != null)
                 singleEnhanceButton.interactable = false;
@@ -1041,11 +1082,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 autoEnhanceButton.interactable = false;
             
             equipmentApi.Action("auto_enhance", apiParams, (response) => {
-                Debug.Log($"[EquipmentForgeManager] ✅ Auto enhancement completed successfully");
                 HandleEnhancementResponse(response, true); // isAutoEnhance = true
             }, (errorResponse) => {
-                Debug.LogError($"[EquipmentForgeManager] ❌ Auto enhancement failed: {errorResponse}");
-                
                 // Re-enable buttons on error
                 if (singleEnhanceButton != null)
                     singleEnhanceButton.interactable = true;
@@ -1059,7 +1097,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         /// </summary>
         private void HandleEnhancementResponse(JObject response, bool isAutoEnhance)
         {
-            Debug.Log($"[EquipmentForgeManager] 📥 Received enhancement response: {response}");
             try
             {
                 // Check for new backend response format: {"code": 200, "data": {"success": true, ...}}
@@ -1067,8 +1104,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 int responseCode = hasCodeWrapper ? response["code"]?.Value<int>() ?? 400 : 200;
                 JObject dataObj = hasCodeWrapper ? response["data"] as JObject : response;
                 bool isSuccess = responseCode == 200 && (dataObj?["success"]?.Value<bool>() ?? true);
-                
-                Debug.Log($"[EquipmentForgeManager] Enhancement response - hasCodeWrapper: {hasCodeWrapper}, responseCode: {responseCode}, isSuccess: {isSuccess}");
                 
                 if (isSuccess && dataObj != null)
                 {
@@ -1078,8 +1113,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         var updatedEquipment = dataObj["updated_equipment"].ToObject<Equipment>();
                         if (updatedEquipment != null)
                         {
-                            Debug.Log($"[EquipmentForgeManager] Updating equipment: {updatedEquipment.Name} to level {updatedEquipment.IntensifyLevel}");
-                            
                             // Update the equipment in player profile
                             UpdateEquipmentInProfile(updatedEquipment);
                             
@@ -1097,7 +1130,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         var updatedPlayer = dataObj["player_profile"].ToObject<Player>();
                         if (updatedPlayer != null)
                         {
-                            Debug.Log($"[EquipmentForgeManager] Updating player profile - Gold: {updatedPlayer.GoldCoin}");
                             PlayerProfile.Data.SetPlayer(updatedPlayer);
                         }
                     }
@@ -1107,7 +1139,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     {
                         int enhancementsPerformed = dataObj["enhancements_performed"]?.Value<int>() ?? 0;
                         int finalLevel = dataObj["final_level"]?.Value<int>() ?? 0;
-                        Debug.Log($"[EquipmentForgeManager] ✅ Auto enhancement complete: {enhancementsPerformed} levels, final level {finalLevel}");
                     }
                     else
                     {
@@ -1124,26 +1155,20 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                             int beforeAttack = before["attack"]?.Value<int>() ?? 0;
                             int afterAttack = after["attack"]?.Value<int>() ?? 0;
                             
-                            Debug.Log($"[EquipmentForgeManager] ✅ Enhancement complete: Level {beforeLevel}→{afterLevel}, Attack {beforeAttack}→{afterAttack} (+{attackIncrease})");
-                            
                             if (costPaid != null)
                             {
                                 int crystalsPaid = costPaid["crystals"]?.Value<int>() ?? 0;
                                 int goldPaid = costPaid["gold"]?.Value<int>() ?? 0;
-                                Debug.Log($"[EquipmentForgeManager] 💰 Cost paid: {crystalsPaid} crystals, {goldPaid} gold");
                             }
                         }
                         else
                         {
-                            Debug.Log($"[EquipmentForgeManager] ✅ Enhancement complete: Equipment updated");
                         }
                     }
                 }
                 else
                 {
                     string error = response["error"]?.Value<string>() ?? response["msg"]?.Value<string>() ?? "Unknown error";
-                    Debug.LogError($"[EquipmentForgeManager] Enhancement failed: {error}");
-                    Debug.LogError($"[EquipmentForgeManager] Response code: {responseCode}");
                     
                     // Show detailed error information if available
                     if (dataObj?["data"] != null)
@@ -1153,18 +1178,13 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         var current = errorData["current"];
                         if (required != null && current != null)
                         {
-                            Debug.LogError($"[EquipmentForgeManager] Required resources: {required}");
-                            Debug.LogError($"[EquipmentForgeManager] Current resources: {current}");
                         }
                     }
-                    Debug.LogError($"[EquipmentForgeManager] Full error response: {response}");
                     // Could show user error message here
                 }
             }
-            catch (System.Exception ex)
+            catch
             {
-                Debug.LogError($"[EquipmentForgeManager] Error parsing enhancement response: {ex.Message}");
-                Debug.LogError($"[EquipmentForgeManager] Response that caused error: {response}");
             }
             finally
             {
@@ -1202,6 +1222,177 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             // Notify listeners of equipment changes
             PlayerProfile.Data.NotifyListeners("Equipments");
+        }
+        
+        /// <summary>
+        /// Perform equipment washing using backend wash API
+        /// </summary>
+        private void PerformWash()
+        {
+            if (currentSelectedEquipment == null)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] No equipment selected for washing");
+                return;
+            }
+            
+            // Check if player has enough crystals (200 crystals required)
+            Player player = PlayerProfile.Data?.Player;
+            int playerCrystals = GetCrystalCount(player);
+            const int WASH_COST = 200;
+            
+            if (playerCrystals < WASH_COST)
+            {
+                Debug.LogWarning($"[EquipmentForgeManager] Insufficient crystals for washing. Need {WASH_COST}, have {playerCrystals}");
+                // Could show user feedback here
+                return;
+            }
+            
+            // Backend confirmed: equipped equipment CAN be washed (no inventory restriction removed)
+            
+            EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
+            if (equipmentApi == null)
+            {
+                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
+                return;
+            }
+
+            var apiParams = new
+            {
+                equipmentId = currentSelectedEquipment.Id
+            };
+            
+            
+            // Disable wash button to prevent double-clicking
+            if (washButton != null)
+            {
+                washButton.interactable = false;
+            }
+
+            Debug.Log($"[EquipmentForgeManager] About to call wash API with equipment ID: {currentSelectedEquipment.Id}");
+            
+            equipmentApi.Action("wash", apiParams, (response) =>
+            {
+                Debug.Log($"[EquipmentForgeManager] Wash API success callback called with response: {response}");
+                HandleWashResponse(response);
+            }, (errorResponse) =>
+            {
+                Debug.LogError($"[EquipmentForgeManager] Wash API error callback called with: {errorResponse}");
+                Debug.LogError($"[EquipmentForgeManager] Error response type: {errorResponse.GetType()}");
+                
+                // Re-enable button on error
+                if (washButton != null)
+                {
+                    washButton.interactable = true;
+                }
+                
+                // Could show user error message here
+            });
+        }
+        
+        /// <summary>
+        /// Handle wash response from backend
+        /// </summary>
+        private void HandleWashResponse(JObject response)
+        {
+            try
+            {
+                // Check standard response format: {"action": "wash", "code": 200, "data": {...}}
+                int responseCode = response["code"]?.Value<int>() ?? 400;
+                JObject dataObj = response["data"] as JObject;
+                
+                if (responseCode == 200 && dataObj != null)
+                {
+                    bool success = dataObj["success"]?.Value<bool>() ?? false;
+                    
+                    if (success)
+                    {
+                        // Parse wash results
+                        int equipmentId = dataObj["equipment_id"]?.Value<int>() ?? 0;
+                        int costPaid = dataObj["cost_paid"]?.Value<int>() ?? 0;
+                        
+                        // Parse old and new attributes
+                        var oldAttributes = dataObj["old_attributes"] as JObject;
+                        var newAttributes = dataObj["new_attributes"] as JObject;
+                        
+                        Debug.Log($"[EquipmentForgeManager] 💰 Cost paid: {costPaid} crystals");
+                        
+                        if (oldAttributes != null && newAttributes != null)
+                        {
+                            Debug.Log("[EquipmentForgeManager] 🔄 Attribute changes:");
+                            
+                            // Log old attributes
+                            foreach (var attr in oldAttributes)
+                            {
+                                Debug.Log($"  Old: {attr.Key} = {attr.Value}");
+                            }
+                            
+                            // Log new attributes  
+                            foreach (var attr in newAttributes)
+                            {
+                                Debug.Log($"  New: {attr.Key} = {attr.Value}");
+                            }
+                        }
+                        
+                        // Update equipment data from response
+                        if (dataObj["updated_equipment"] != null)
+                        {
+                            var updatedEquipment = dataObj["updated_equipment"].ToObject<Equipment>();
+                            if (updatedEquipment != null)
+                            {
+                                // Update the equipment in player profile
+                                UpdateEquipmentInProfile(updatedEquipment);
+                                
+                                // Update current selected equipment reference
+                                currentSelectedEquipment = updatedEquipment;
+                                
+                                // Refresh the forge block display
+                                LoadSelectedEquipmentToForgeBlock(updatedEquipment);
+                                
+                            }
+                        }
+                        
+                        // Update player profile (for crystal count)
+                        if (dataObj["player_profile"] != null)
+                        {
+                            var updatedPlayer = dataObj["player_profile"].ToObject<Player>();
+                            if (updatedPlayer != null)
+                            {
+                                PlayerProfile.Data.SetPlayer(updatedPlayer);
+                            }
+                        }
+                        
+                        // Update resource displays
+                        UpdateResourceDisplays(false); // Refresh upgrade panel displays
+                        
+                        // TODO: Add visual animation for before/after attributes comparison
+                        // This could show a popup or animate the attribute changes
+                    }
+                    else
+                    {
+                        Debug.LogError("[EquipmentForgeManager] Wash failed: success = false");
+                    }
+                }
+                else
+                {
+                    // Handle error response - backend uses data.msg format for errors
+                    string error = dataObj?["msg"]?.Value<string>() ?? response["error"]?.Value<string>() ?? "Unknown error";
+                    Debug.LogError($"[EquipmentForgeManager] Wash failed: {error}");
+                    
+                    // Could show user error message here (e.g., "Insufficient crystals")
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[EquipmentForgeManager] Error processing wash response: {e.Message}");
+            }
+            finally
+            {
+                // Re-enable wash button
+                if (washButton != null)
+                {
+                    washButton.interactable = true;
+                }
+            }
         }
         
     }
