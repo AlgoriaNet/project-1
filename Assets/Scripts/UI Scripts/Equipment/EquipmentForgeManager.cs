@@ -1296,23 +1296,20 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         {
             try
             {
-                // Check standard response format: {"action": "wash", "code": 200, "data": {...}}
-                int responseCode = response["code"]?.Value<int>() ?? 400;
-                JObject dataObj = response["data"] as JObject;
+                Debug.Log($"[EquipmentForgeManager] 📥 Full wash response: {response}");
                 
-                if (responseCode == 200 && dataObj != null)
+                // Handle direct response format: {"success": true, "equipment_id": 193, ...}
+                bool success = response["success"]?.Value<bool>() ?? false;
+                
+                if (success)
                 {
-                    bool success = dataObj["success"]?.Value<bool>() ?? false;
+                    // Parse wash results
+                    int equipmentId = response["equipment_id"]?.Value<int>() ?? 0;
+                    int costPaid = response["cost_paid"]?.Value<int>() ?? 0;
                     
-                    if (success)
-                    {
-                        // Parse wash results
-                        int equipmentId = dataObj["equipment_id"]?.Value<int>() ?? 0;
-                        int costPaid = dataObj["cost_paid"]?.Value<int>() ?? 0;
-                        
-                        // Parse old and new attributes
-                        var oldAttributes = dataObj["old_attributes"] as JObject;
-                        var newAttributes = dataObj["new_attributes"] as JObject;
+                    // Parse old and new attributes
+                    var oldAttributes = response["old_attributes"] as JObject;
+                    var newAttributes = response["new_attributes"] as JObject;
                         
                         Debug.Log($"[EquipmentForgeManager] 💰 Cost paid: {costPaid} crystals");
                         
@@ -1334,9 +1331,9 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         }
                         
                         // Update equipment data from response
-                        if (dataObj["updated_equipment"] != null)
+                        if (response["updated_equipment"] != null)
                         {
-                            var updatedEquipment = dataObj["updated_equipment"].ToObject<Equipment>();
+                            var updatedEquipment = response["updated_equipment"].ToObject<Equipment>();
                             if (updatedEquipment != null)
                             {
                                 // Update the equipment in player profile
@@ -1352,13 +1349,32 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         }
                         
                         // Update player profile (for crystal count)
-                        if (dataObj["player_profile"] != null)
+                        if (response["player_profile"] != null)
                         {
-                            var updatedPlayer = dataObj["player_profile"].ToObject<Player>();
-                            if (updatedPlayer != null)
+                            // Backend sends player_profile.Player, not player_profile directly
+                            var playerData = response["player_profile"]["Player"];
+                            if (playerData != null)
                             {
-                                PlayerProfile.Data.SetPlayer(updatedPlayer);
+                                var updatedPlayer = playerData.ToObject<Player>();
+                                if (updatedPlayer != null)
+                                {
+                                    Debug.Log($"[EquipmentForgeManager] 🔄 Updating player profile from backend response");
+                                    Debug.Log($"[EquipmentForgeManager] 💎 New crystal count: {updatedPlayer.ItemsJson?.GetValueOrDefault("crystal", 0)}");
+                                    PlayerProfile.Data.SetPlayer(updatedPlayer);
+                                }
+                                else
+                                {
+                                    Debug.LogError("[EquipmentForgeManager] Failed to deserialize Player data from wash response");
+                                }
                             }
+                            else
+                            {
+                                Debug.LogError("[EquipmentForgeManager] player_profile.Player is null in wash response");
+                            }
+                        }
+                        else
+                        {
+                            Debug.LogError("[EquipmentForgeManager] Backend response missing player_profile - this should not happen");
                         }
                         
                         // Update resource displays
@@ -1366,16 +1382,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         
                         // TODO: Add visual animation for before/after attributes comparison
                         // This could show a popup or animate the attribute changes
-                    }
-                    else
-                    {
-                        Debug.LogError("[EquipmentForgeManager] Wash failed: success = false");
-                    }
                 }
                 else
                 {
-                    // Handle error response - backend uses data.msg format for errors
-                    string error = dataObj?["msg"]?.Value<string>() ?? response["error"]?.Value<string>() ?? "Unknown error";
+                    // Handle error response
+                    string error = response["msg"]?.Value<string>() ?? response["error"]?.Value<string>() ?? "Wash failed";
                     Debug.LogError($"[EquipmentForgeManager] Wash failed: {error}");
                     
                     // Could show user error message here (e.g., "Insufficient crystals")
