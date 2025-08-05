@@ -23,7 +23,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public void Init(Equipment equipment, List<model.Gemstone> gemstones)
         {
             _equipment = equipment;
-            background.color = ItemLoader.quantityColor[equipment.Quality];
+            background.color = ItemLoader.GetColorFromHex(equipment.RankColor);
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
             icon.color = Color.white;
 

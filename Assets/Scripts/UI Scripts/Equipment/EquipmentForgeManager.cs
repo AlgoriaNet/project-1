@@ -54,6 +54,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public Button singleEnhanceButton; // "Enhance" button
         public Button autoEnhanceButton; // "Auto Enhance" button
         public Button washButton; // "Wash" button (Button_2 in UpgradePanel)
+        public Button upgradeRankButton; // "Upgrade Rank" button
         
         public static EquipmentForgeManager Instance;
         
@@ -114,6 +115,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 autoEnhanceButton.onClick.AddListener(PerformAutoEnhancement);
             if (washButton != null)
                 washButton.onClick.AddListener(PerformWash);
+            if (upgradeRankButton != null)
+                upgradeRankButton.onClick.AddListener(PerformUpgradeRank);
         }
         
         private void OnDestroy()
@@ -252,6 +255,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 
             // Update forge block with selected equipment data
             LoadSelectedEquipmentToForgeBlock(selectedEquipment);
+            
+            // Fetch upgrade rank cost data for the selected equipment (only if upgrade panel is active)
+            if (upgradePanel != null && upgradePanel.activeInHierarchy)
+            {
+                FetchUpgradeRankCost(selectedEquipment);
+            }
         }
 
         private void LoadSelectedEquipmentToForgeBlock(Equipment equipment)
@@ -292,11 +301,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 : equipment.Name; // Fallback to technical name if display name missing
             equipNameText.text = equipmentDisplayName;
 
-            // Set background color based on equipment quality
+            // Set background color based on equipment upgrade rank
             if (backgroundImage != null)
             {
-                Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
-                backgroundImage.color = qualityColor;
+                Color rankColor = ItemLoader.GetColorFromHex(equipment.RankColor);
+                backgroundImage.color = rankColor;
             }
 
             // Fetch enhancement cost for this equipment (this will also update level progression)
@@ -509,6 +518,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 // Different panels may have different attack text hierarchy
                 containerName = "AttackText";
             }
+            else if (componentName.StartsWith("Rank"))
+            {
+                containerName = "RankText";
+            }
             
             if (string.IsNullOrEmpty(containerName)) 
             {
@@ -623,6 +636,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             currentSelectedEquipment = newEquipment;
             LoadSelectedEquipmentToForgeBlock(newEquipment);
             
+            // Fetch upgrade rank cost data for the new equipment (only if upgrade panel is active)
+            if (upgradePanel != null && upgradePanel.activeInHierarchy)
+            {
+                FetchUpgradeRankCost(newEquipment);
+            }
+            
             // If there was a previous equipment, update the clicked pack item to show it
             if (previousEquipment != null)
             {
@@ -650,12 +669,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 }
             }
             
-            // Update the background color based on quality
+            // Update the background color based on equipment rank
             Image backgroundImage = packItem.GetComponent<Image>();
             if (backgroundImage != null)
             {
-                Color qualityColor = ItemLoader.quantityColor.GetValueOrDefault(equipment.Quality, Color.white);
-                backgroundImage.color = qualityColor;
+                Color rankColor = ItemLoader.GetColorFromHex(equipment.RankColor);
+                backgroundImage.color = rankColor;
             }
             
             // Update equipment part icon if it exists
@@ -761,6 +780,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             
             // Update resource displays for the active panel
             UpdateResourceDisplays(isEnhance);
+            
+            // If switching to upgrade panel, fetch upgrade rank cost data (after resource display update)
+            if (!isEnhance && currentSelectedEquipment != null)
+            {
+                FetchUpgradeRankCost(currentSelectedEquipment);
+            }
         }
         
         public void CloseForgePage()
@@ -851,7 +876,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 
                 if (upgradeSkbText != null)
                 {
-                    // Block_1 shows wash cost info (could be used for skillbook later)
+                    // Block_1 shows skillbook cost for upgrade rank, or "Wash" as fallback
+                    // The upgrade rank cost display method will override this if upgrade rank data is available
                     upgradeSkbText.text = "Wash";
                 }
                 
@@ -1402,6 +1428,320 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 if (washButton != null)
                 {
                     washButton.interactable = true;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Fetch upgrade rank cost and preview data from backend
+        /// </summary>
+        private void FetchUpgradeRankCost(Equipment equipment)
+        {
+            if (equipment == null)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] No equipment provided for upgrade rank cost");
+                return;
+            }
+            
+            EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
+            if (equipmentApi == null)
+            {
+                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
+                return;
+            }
+
+            var apiParams = new
+            {
+                equipmentId = equipment.Id
+            };
+            
+            Debug.Log($"[EquipmentForgeManager] Fetching upgrade rank cost for equipment ID: {equipment.Id}");
+            
+            equipmentApi.Action("upgrade_rank_cost", apiParams, (response) =>
+            {
+                Debug.Log($"[EquipmentForgeManager] Upgrade rank cost response: {response}");
+                HandleUpgradeRankCostResponse(response);
+            }, (errorResponse) =>
+            {
+                Debug.LogError($"[EquipmentForgeManager] Upgrade rank cost API error: {errorResponse}");
+            });
+        }
+        
+        /// <summary>
+        /// Handle the upgrade_rank_cost API response and update UI
+        /// </summary>
+        private void HandleUpgradeRankCostResponse(JToken response)
+        {
+            try
+            {
+                var current = response["current"];
+                var next = response["next"];
+                var cost = response["cost"];
+                var playerResources = response["player_resources"];
+                var canAfford = response["can_afford"]?.Value<bool>() ?? false;
+                var attackIncrease = response["attack_increase"]?.Value<float>() ?? 0f;
+                
+                // Update rank displays (RankText_1 and RankText_2)
+                UpdateUpgradeRankDisplay(current, next);
+                
+                // Update attack displays (AttackText_1 and AttackText_2) 
+                UpdateUpgradeAttackDisplay(current, next, attackIncrease);
+                
+                // Update cost display (xxx/yyy format)
+                UpdateUpgradeRankCostDisplay(cost, playerResources);
+                
+                // Update colors based on current and next rank colors
+                UpdateUpgradeRankColors(current, next);
+                
+                // Update button state
+                if (upgradeRankButton != null)
+                {
+                    upgradeRankButton.interactable = canAfford;
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[EquipmentForgeManager] Error processing upgrade rank cost response: {e.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// Update rank text displays (RankText_1 and RankText_2)
+        /// </summary>
+        private void UpdateUpgradeRankDisplay(JToken current, JToken next)
+        {
+            TextMeshProUGUI currentRankText = FindTextComponent("RankText_1");
+            TextMeshProUGUI nextRankText = FindTextComponent("RankText_2");
+            
+            int currentRank = current?["rank"]?.Value<int>() ?? 1;
+            int nextRank = next?["rank"]?.Value<int>() ?? (currentRank + 1);
+            
+            Debug.Log($"[EquipmentForgeManager] UpdateUpgradeRankDisplay: currentRank={currentRank}, nextRank={nextRank}");
+            
+            if (currentRankText != null)
+            {
+                string currentText = $"Rank {currentRank}";
+                currentRankText.text = currentText;
+                Debug.Log($"[EquipmentForgeManager] Set RankText_1 to: '{currentText}'");
+            }
+            else
+            {
+                Debug.LogWarning("[EquipmentForgeManager] RankText_1 (currentRankText) is null!");
+            }
+            
+            if (nextRankText != null)
+            {
+                string nextText = $"Rank {nextRank}";
+                nextRankText.text = nextText;
+                Debug.Log($"[EquipmentForgeManager] Set RankText_2 to: '{nextText}'");
+            }
+            else
+            {
+                Debug.LogWarning("[EquipmentForgeManager] RankText_2 (nextRankText) is null!");
+            }
+        }
+        
+        /// <summary>
+        /// Update attack text displays for upgrade (AttackText_1 and AttackText_2)
+        /// </summary>
+        private void UpdateUpgradeAttackDisplay(JToken current, JToken next, float attackIncrease)
+        {
+            TextMeshProUGUI currentAttackText = FindTextComponent("AttackText_1");
+            TextMeshProUGUI nextAttackText = FindTextComponent("AttackText_2");
+            
+            float currentAttack = current?["attack"]?.Value<float>() ?? 0f;
+            float nextAttack = next?["attack"]?.Value<float>() ?? 0f;
+            
+            if (currentAttackText != null)
+            {
+                currentAttackText.text = $"Attack +{currentAttack:F1}";
+            }
+            
+            if (nextAttackText != null)
+            {
+                nextAttackText.text = $"Attack +{nextAttack:F1}";
+            }
+        }
+        
+        /// <summary>
+        /// Update upgrade rank cost display in xxx/yyy format
+        /// </summary>
+        private void UpdateUpgradeRankCostDisplay(JToken cost, JToken playerResources)
+        {
+            int requiredSkillbooks = cost?["skillbooks"]?.Value<int>() ?? 0;
+            int availableSkillbooks = playerResources?["skillbooks"]?.Value<int>() ?? 0;
+            
+            Debug.Log($"[EquipmentForgeManager] UpdateUpgradeRankCostDisplay: required={requiredSkillbooks}, available={availableSkillbooks}");
+            
+            if (upgradeSkbText != null)
+            {
+                string costText = $"{requiredSkillbooks}/{availableSkillbooks}";
+                upgradeSkbText.text = costText;
+                Debug.Log($"[EquipmentForgeManager] Set upgradeSkbText.text to: '{costText}'");
+                // Color code based on affordability
+                upgradeSkbText.color = availableSkillbooks >= requiredSkillbooks ? Color.white : Color.red;
+            }
+            else
+            {
+                Debug.LogWarning("[EquipmentForgeManager] upgradeSkbText is null!");
+            }
+        }
+        
+        /// <summary>
+        /// Update rank colors for current and next equipment states
+        /// </summary>
+        private void UpdateUpgradeRankColors(JToken current, JToken next)
+        {
+            string currentColor = current?["color"]?.Value<string>() ?? "#FFFFFF";
+            string nextColor = next?["color"]?.Value<string>() ?? "#FFFFFF";
+            
+            // Apply current rank color to the forge block background
+            var currentColorParsed = ItemLoader.GetColorFromHex(currentColor);
+            
+            if (forgeBlock != null)
+            {
+                Image backgroundImage = forgeBlock.GetComponent<Image>();
+                if (backgroundImage != null)
+                {
+                    backgroundImage.color = currentColorParsed;
+                }
+            }
+            
+            // Update equipment color in currentSelectedEquipment for consistency 
+            if (currentSelectedEquipment != null)
+            {
+                currentSelectedEquipment.RankColor = currentColor;
+            }
+        }
+        
+        /// <summary>
+        /// Perform equipment rank upgrade using backend upgrade_rank API
+        /// </summary>
+        private void PerformUpgradeRank()
+        {
+            if (currentSelectedEquipment == null)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] No equipment selected for rank upgrade");
+                return;
+            }
+            
+            if (!currentSelectedEquipment.CanUpgradeRank)
+            {
+                Debug.LogWarning("[EquipmentForgeManager] Equipment cannot be upgraded (max rank or insufficient resources)");
+                return;
+            }
+            
+            EquipmentWebSocketApi equipmentApi = EquipmentWebSocketApi.Instance;
+            if (equipmentApi == null)
+            {
+                Debug.LogError("[EquipmentForgeManager] EquipmentWebSocketApi.Instance is null");
+                return;
+            }
+
+            var apiParams = new
+            {
+                equipmentId = currentSelectedEquipment.Id
+            };
+            
+            // Disable upgrade rank button to prevent double-clicking
+            if (upgradeRankButton != null)
+            {
+                upgradeRankButton.interactable = false;
+            }
+
+            Debug.Log($"[EquipmentForgeManager] About to call upgrade_rank API with equipment ID: {currentSelectedEquipment.Id}");
+            
+            equipmentApi.Action("upgrade_rank", apiParams, (response) =>
+            {
+                Debug.Log($"[EquipmentForgeManager] Upgrade rank API success callback called with response: {response}");
+                HandleUpgradeRankResponse(response);
+            }, (errorResponse) =>
+            {
+                Debug.LogError($"[EquipmentForgeManager] Upgrade rank API error callback called with: {errorResponse}");
+                
+                // Re-enable button on error
+                if (upgradeRankButton != null)
+                {
+                    upgradeRankButton.interactable = true;
+                }
+            });
+        }
+        
+        /// <summary>
+        /// Handle upgrade rank response from backend
+        /// </summary>
+        private void HandleUpgradeRankResponse(JObject response)
+        {
+            try
+            {
+                Debug.Log($"[EquipmentForgeManager] 📥 Full upgrade rank response: {response}");
+                
+                // Handle direct response format: {"success": true, "equipment_id": 193, ...}
+                bool success = response["success"]?.Value<bool>() ?? false;
+                
+                if (success)
+                {
+                    // Update equipment data from response
+                    if (response["updated_equipment"] != null)
+                    {
+                        var updatedEquipment = response["updated_equipment"].ToObject<Equipment>();
+                        if (updatedEquipment != null)
+                        {
+                            // Update the equipment in player profile
+                            UpdateEquipmentInProfile(updatedEquipment);
+                            
+                            // Update current selected equipment reference
+                            currentSelectedEquipment = updatedEquipment;
+                            
+                            // Refresh the forge block display with new rank color
+                            LoadSelectedEquipmentToForgeBlock(updatedEquipment);
+                            
+                            Debug.Log($"[EquipmentForgeManager] ⬆️ Rank upgraded to: {updatedEquipment.UpgradeRank}");
+                            Debug.Log($"[EquipmentForgeManager] 🎨 New rank color: {updatedEquipment.RankColor}");
+                            Debug.Log($"[EquipmentForgeManager] 💪 New total attack: {updatedEquipment.TotalAttackWithRank}");
+                        }
+                    }
+                    
+                    // Update player profile (for resource costs)
+                    if (response["player_profile"] != null)
+                    {
+                        // Backend sends player_profile.Player, not player_profile directly
+                        var playerData = response["player_profile"]["Player"];
+                        if (playerData != null)
+                        {
+                            var updatedPlayer = playerData.ToObject<Player>();
+                            if (updatedPlayer != null)
+                            {
+                                Debug.Log($"[EquipmentForgeManager] 🔄 Updating player profile from upgrade rank response");
+                                PlayerProfile.Data.SetPlayer(updatedPlayer);
+                            }
+                        }
+                    }
+                    
+                    // Update resource displays
+                    UpdateResourceDisplays(false); // Refresh upgrade panel displays
+                    
+                    // Refetch upgrade rank cost data to update UI with new rank information
+                    FetchUpgradeRankCost(currentSelectedEquipment);
+                }
+                else
+                {
+                    // Handle error response
+                    string error = response["msg"]?.Value<string>() ?? response["error"]?.Value<string>() ?? "Rank upgrade failed";
+                    Debug.LogError($"[EquipmentForgeManager] Rank upgrade failed: {error}");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[EquipmentForgeManager] Error processing upgrade rank response: {e.Message}");
+            }
+            finally
+            {
+                // Re-enable upgrade rank button
+                if (upgradeRankButton != null)
+                {
+                    upgradeRankButton.interactable = true;
                 }
             }
         }

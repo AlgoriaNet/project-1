@@ -22,15 +22,28 @@ public class ItemLoader : MonoBehaviour
         { ItemType.Gem, 8 },
         { ItemType.Other, 5 }
     };
-    public static Dictionary<int, Color> quantityColor = new Dictionary<int, Color>
+    // OLD quantityColor system - REMOVED
+    // Equipment colors now come from backend rank_color (hex strings)
+    // Use GetColorFromHex() method to convert hex colors to Unity Color
+    
+    /// <summary>
+    /// Convert hex color string from backend to Unity Color
+    /// </summary>
+    public static Color GetColorFromHex(string hexColor)
     {
-        {1, Color.white},
-        {2, Color.green},
-        {3, Color.blue},
-        {4, Color.magenta},
-        {5, Color.yellow},
-        {6, Color.red},
-    };
+        if (string.IsNullOrEmpty(hexColor))
+            return Color.white;
+            
+        // Remove # if present
+        if (hexColor.StartsWith("#"))
+            hexColor = hexColor.Substring(1);
+            
+        // Parse hex to Color
+        if (ColorUtility.TryParseHtmlString("#" + hexColor, out Color color))
+            return color;
+            
+        return Color.white; // Fallback
+    }
 
     public string resourcesPath = "ItemImages";
     public delegate void OnItemCountChanged(int itemCount); // Event for data transfer
@@ -419,9 +432,7 @@ public class ItemLoader : MonoBehaviour
     
     public void LoadEquipmentItems(Transform block, Equipment equipment)
     {
-
         var itemName = equipment.Name;
-        var quantity = equipment.Quality;
         resourcesPath = "UILoading/Equipment";
 
         // Assign sprite to the Image based on resourcesPath
@@ -431,14 +442,17 @@ public class ItemLoader : MonoBehaviour
             Image blockImage = block.Find("Image").GetComponent<Image>();
             blockImage.sprite = itemSprite;
             blockImage.color = Color.white; // Ensure the color is not transparent
-            block.GetComponent<Image>().color = quantityColor.GetValueOrDefault(quantity, Color.white); 
+            
+            // NEW: Use backend rank_color instead of quality-based color
+            Color rankColor = GetColorFromHex(equipment.RankColor);
+            block.GetComponent<Image>().color = rankColor;
         }
         else
         {
             Debug.LogWarning($"Image not found for: {itemName}");
         }
 
-        // Assign quantity to the Qnty child
+        // Clear quantity text (not used for equipment)
         Transform qntyTransform = block.Find("Qnty");
         if (qntyTransform != null)
         {

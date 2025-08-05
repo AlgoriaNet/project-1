@@ -106,7 +106,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 equipmentName.text = !string.IsNullOrEmpty(_equipment.DisplayName) 
                     ? _equipment.DisplayName 
                     : _equipment.Name;
-                background.color = ItemLoader.quantityColor[_equipment.Quality];
+                background.color = ItemLoader.GetColorFromHex(_equipment.RankColor);
                 icon.color = Color.white;
             }
             else

@@ -43,6 +43,18 @@ namespace model
         public List<EmbeddedGemSlot> EmbeddedGems = new List<EmbeddedGemSlot>();
         [JsonProperty("total_crystals_spent")]
         public int? TotalCrystalsSpent = 0;
+        
+        // New rank system fields
+        [JsonProperty("upgrade_rank")]
+        public int UpgradeRank = 1;
+        [JsonProperty("rank_color")]
+        public string RankColor = "#FFFFFF";
+        [JsonProperty("rank_bonus_percentage")]
+        public float RankBonusPercentage = 0f;
+        [JsonProperty("total_attack_with_rank")]
+        public float TotalAttackWithRank = 0f;
+        [JsonProperty("can_upgrade_rank")]
+        public bool CanUpgradeRank = false;
 
         public bool IsEquipped()
         {
