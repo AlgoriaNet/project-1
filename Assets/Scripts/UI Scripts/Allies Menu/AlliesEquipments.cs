@@ -24,6 +24,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             // Clear equipment display initially
             ClearEquipmentDisplay();
             PlayerProfile.Data.AddListener(UpdateUI, "Player");
+            PlayerProfile.Data.AddListener(UpdateUI, "Equipments"); // Listen to equipment changes (rank upgrades)
         }
         
         private void OnDestroy()
@@ -32,6 +33,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             if (PlayerProfile.Data != null)
             {
                 PlayerProfile.Data.RemoveListener(UpdateUI, "Player");
+                PlayerProfile.Data.RemoveListener(UpdateUI, "Equipments");
             }
         }
 
@@ -325,6 +327,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
         private void UpdateUI(ApplicationModel model)
         {
             // Refresh equipment display when player data changes
+            Debug.Log("[AlliesEquipments] UpdateUI called - refreshing equipment display for current ally");
             InitForCurrentAlly();
         }
     }

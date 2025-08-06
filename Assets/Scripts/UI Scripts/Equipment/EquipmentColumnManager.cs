@@ -23,7 +23,16 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         public void Init(Equipment equipment, List<model.Gemstone> gemstones)
         {
             _equipment = equipment;
-            background.color = ItemLoader.GetColorFromHex(equipment.RankColor);
+            Color rankColor = ItemLoader.GetColorFromHex(equipment.RankColor);
+            background.color = rankColor;
+            // Validate equipment data consistency
+            if (equipment.UpgradeRank == 6 && equipment.RankColor == "#FFFF99")
+            {
+                Debug.LogError($"[EquipmentColumnManager] DATA INCONSISTENCY: {equipment.Name} ID:{equipment.Id} has rank 6 but rank 9 color #FFFF99! Using white as fallback.");
+                rankColor = Color.white;
+            }
+            
+            Debug.Log($"[EquipmentColumnManager-{GetInstanceID()}] {gameObject.name} Setting {equipment.Name} ID:{equipment.Id} rank {equipment.UpgradeRank} color to {equipment.RankColor} -> {rankColor}");
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
             icon.color = Color.white;
 

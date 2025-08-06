@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using model;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu;
 
 public class MenuController : MonoBehaviour
 {
@@ -90,6 +91,15 @@ public class MenuController : MonoBehaviour
                 {
                     heroBlockSetup.SelectEquipmentTab();
                 }
+            }
+            
+            // Force refresh HeroEquipments colors when entering Hero Menu
+            var heroEquipments = FindObjectOfType<HeroEquipments>();
+            if (heroEquipments != null)
+            {
+                Debug.Log("[MenuController] Force refreshing HeroEquipments colors on Hero Menu entry");
+                heroEquipments.Init();
+                Canvas.ForceUpdateCanvases();
             }
         }
 

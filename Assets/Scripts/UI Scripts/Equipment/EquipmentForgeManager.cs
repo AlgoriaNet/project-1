@@ -6,6 +6,8 @@ using model;
 using TMPro;
 using WebSocket;
 using Newtonsoft.Json.Linq;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu;
+using PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu;
 
 namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
 {
@@ -589,6 +591,11 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                     {
                         Equipment equipment = packEquipments[itemIndex];
                         AddForgePackClickHandler(newItem, equipment);
+                        
+                        // IMPORTANT: Refresh the cloned item's appearance with current equipment data
+                        // This ensures rank colors are up-to-date, not copied from stale source
+                        UpdatePackItemDisplay(newItem, equipment);
+                        
                         itemIndex++;
                     }
                 }
@@ -788,6 +795,40 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             }
         }
         
+        /// <summary>
+        /// Force refresh all equipment display components to ensure updated colors show immediately
+        /// </summary>
+        private void RefreshAllEquipmentDisplays()
+        {
+            Debug.Log("[EquipmentForgeManager] Force refreshing all equipment displays after rank upgrade");
+            
+            // Refresh Hero equipment displays
+            var heroEquipments = FindObjectOfType<HeroEquipments>();
+            if (heroEquipments != null)
+            {
+                heroEquipments.Init();
+            }
+            
+            // Refresh Allies equipment displays
+            var alliesEquipments = FindObjectOfType<AlliesEquipments>();
+            if (alliesEquipments != null)
+            {
+                alliesEquipments.InitForCurrentAlly();
+            }
+            
+            // Refresh forge block display with updated equipment data
+            if (currentSelectedEquipment != null)
+            {
+                // Get fresh equipment data from PlayerProfile (now guaranteed to be consistent after backend fix)
+                Equipment freshEquipment = PlayerProfile.Data.Player.Equipments?.FirstOrDefault(e => e.Id == currentSelectedEquipment.Id);
+                if (freshEquipment != null)
+                {
+                    LoadSelectedEquipmentToForgeBlock(freshEquipment);
+                    currentSelectedEquipment = freshEquipment; // Update cached reference
+                }
+            }
+        }
+
         public void CloseForgePage()
         {
             forgePage.SetActive(false);
@@ -797,11 +838,28 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (currentContext == ForgeContext.Hero)
             {
                 heroStep2Panel.SetActive(true);
+                
+                // Force refresh HeroEquipments colors when returning from forge
+                var heroEquipments = FindObjectOfType<HeroEquipments>();
+                if (heroEquipments != null)
+                {
+                    Debug.Log("[EquipmentForgeManager] Force refreshing HeroEquipments colors on forge close");
+                    heroEquipments.Init();
+                    Canvas.ForceUpdateCanvases();
+                }
             }
             else
             {
                 allyStep2Panel.SetActive(true);
                 heroStep2Panel.SetActive(true);
+                
+                // Force refresh AlliesEquipments when returning from forge to ensure updated colors
+                var alliesEquipments = FindObjectOfType<AlliesEquipments>();
+                if (alliesEquipments != null)
+                {
+                    Debug.Log("[EquipmentForgeManager] Force refreshing AlliesEquipments colors on forge close");
+                    alliesEquipments.InitForCurrentAlly();
+                }
             }
 
             // Clear ForgeBlock EquipImage, EquipNameText, and background color
@@ -1481,6 +1539,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 var canAfford = response["can_afford"]?.Value<bool>() ?? false;
                 var attackIncrease = response["attack_increase"]?.Value<float>() ?? 0f;
                 
+                
                 // Update rank displays (RankText_1 and RankText_2)
                 UpdateUpgradeRankDisplay(current, next);
                 
@@ -1682,15 +1741,28 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 
                 if (success)
                 {
-                    // Update equipment data from response
+                    // Update player profile FIRST (contains ALL fresh equipment data including updated ranks)
+                    if (response["player_profile"] != null)
+                    {
+                        // Backend sends player_profile.Player, not player_profile directly
+                        var playerData = response["player_profile"]["Player"];
+                        if (playerData != null)
+                        {
+                            var updatedPlayer = playerData.ToObject<Player>();
+                            if (updatedPlayer != null)
+                            {
+                                Debug.Log($"[EquipmentForgeManager] 🔄 Updating complete player profile from upgrade rank response");
+                                PlayerProfile.Data.SetPlayer(updatedPlayer);
+                            }
+                        }
+                    }
+                    
+                    // Update current selected equipment reference from the fresh player data
                     if (response["updated_equipment"] != null)
                     {
                         var updatedEquipment = response["updated_equipment"].ToObject<Equipment>();
                         if (updatedEquipment != null)
                         {
-                            // Update the equipment in player profile
-                            UpdateEquipmentInProfile(updatedEquipment);
-                            
                             // Update current selected equipment reference
                             currentSelectedEquipment = updatedEquipment;
                             
@@ -1703,27 +1775,14 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                         }
                     }
                     
-                    // Update player profile (for resource costs)
-                    if (response["player_profile"] != null)
-                    {
-                        // Backend sends player_profile.Player, not player_profile directly
-                        var playerData = response["player_profile"]["Player"];
-                        if (playerData != null)
-                        {
-                            var updatedPlayer = playerData.ToObject<Player>();
-                            if (updatedPlayer != null)
-                            {
-                                Debug.Log($"[EquipmentForgeManager] 🔄 Updating player profile from upgrade rank response");
-                                PlayerProfile.Data.SetPlayer(updatedPlayer);
-                            }
-                        }
-                    }
-                    
                     // Update resource displays
                     UpdateResourceDisplays(false); // Refresh upgrade panel displays
                     
                     // Refetch upgrade rank cost data to update UI with new rank information
                     FetchUpgradeRankCost(currentSelectedEquipment);
+                    
+                    // Force refresh all equipment UI components to ensure color updates
+                    RefreshAllEquipmentDisplays();
                 }
                 else
                 {

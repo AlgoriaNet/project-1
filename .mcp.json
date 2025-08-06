@@ -2,8 +2,13 @@
   "mcpServers": {
     "UnityMCP": {
       "type": "stdio",
-      "command": "./unity-mcp.sh",
-      "args": [],
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/mabelzhang/Applications/UnityMCP/UnityMcpServer/src",
+        "run",
+        "server.py"
+      ],
       "env": {}
     }
   }
