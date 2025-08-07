@@ -177,19 +177,8 @@ public class SwitchPanels : MonoBehaviour
     
     private string GetAllyBaseIdFromName(string allyName)
     {
-        string[] characterNames = {
-            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-            "Lucien", "Ugra", "Eleanor", "Nyx"
-        };
-
-        for (int i = 0; i < characterNames.Length; i++)
-        {
-            if (characterNames[i] == allyName)
-                return (i + 1).ToString();
-        }
-
-        return "0";
+        // Use CharacterService to get base_id from character name
+        return CharacterService.GetBaseIdFromName(allyName);
     }
     
     private System.Collections.IEnumerator RefreshEquipmentUIAfterAutoEquip()

@@ -33,7 +33,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu
         public void Init()
         {
             List<Equipment> equipments = PlayerProfile.Data.GetHeroEquipments();
-            Debug.Log($"[HeroEquipments] Init() found {equipments.Count} hero equipments");
             foreach (var equipment in equipments)
             {
                 switch (equipment.Part)
@@ -62,7 +61,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Hero_Menu
 
         private void UpdateUI(ApplicationModel model)
         {
-            Debug.Log("[HeroEquipments] UpdateUI called - refreshing equipment display");
             Init();
             
             // Force UI refresh

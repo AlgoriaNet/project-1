@@ -64,6 +64,24 @@ public class ItemLoader : MonoBehaviour
     void Awake()
     {
         menuController = FindObjectOfType<MenuController>();
+        
+        // Load character data from API if not already loaded
+        if (!CharacterService.IsCharacterDataLoaded())
+        {
+            StartCoroutine(LoadCharacterData());
+        }
+    }
+
+    private IEnumerator LoadCharacterData()
+    {
+        yield return CharacterService.LoadCharacters(
+            onSuccess: (characters) => {
+                Debug.Log($"[ItemLoader] Successfully loaded {characters.Length} characters");
+            },
+            onError: (error) => {
+                Debug.LogError($"[ItemLoader] Failed to load characters: {error}");
+            }
+        );
     }
 
     public void SwitchItemType(ItemType itemType)
@@ -564,22 +582,8 @@ public class ItemLoader : MonoBehaviour
     /// </summary>
     private string GetAllyBaseIdFromName(string allyName)
     {
-        string[] characterNames = {
-            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-            "Lucien", "Ugra", "Eleanor", "Nyx"
-        };
-
-        for (int i = 0; i < characterNames.Length; i++)
-        {
-            if (characterNames[i] == allyName)
-            {
-                return (i + 1).ToString();
-            }
-        }
-
-        Debug.LogWarning($"[ItemLoader] Unknown ally name: {allyName}");
-        return "0";
+        // Use CharacterService to get base_id from character name
+        return CharacterService.GetBaseIdFromName(allyName);
     }
 
 

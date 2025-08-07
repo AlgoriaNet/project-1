@@ -172,15 +172,39 @@ public class AlliesGridSetup : MonoBehaviour
         allyItemsDict.Clear();
     }
 
+    private IEnumerator LoadCharacterDataAndContinue()
+    {
+        yield return CharacterService.LoadCharacters(
+            onSuccess: (characters) => {
+                Debug.Log($"[AlliesGridSetup] Successfully loaded {characters.Length} characters");
+                ContinueLoadAllyItems(); // Continue with the loading process
+            },
+            onError: (error) => {
+                Debug.LogError($"[AlliesGridSetup] Failed to load characters: {error}");
+                ContinueLoadAllyItems(); // Continue anyway with fallback behavior
+            }
+        );
+    }
+
     private void LoadAllyItems()
     {
+        // Use CharacterService to get character names
+        string[] characterNames = CharacterService.GetCharacterNames();
         
-        // Character names matching the file names
-        string[] characterNames = {
-            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-            "Lucien", "Ugra", "Eleanor", "Nyx"
-        };
+        // If character data is not loaded yet, load it first
+        if (characterNames.Length == 0)
+        {
+            StartCoroutine(LoadCharacterDataAndContinue());
+            return;
+        }
+
+        ContinueLoadAllyItems();
+    }
+
+    private void ContinueLoadAllyItems()
+    {
+        // Use CharacterService to get character names
+        string[] characterNames = CharacterService.GetCharacterNames();
 
         // UPDATED: Get unlocked allies from backend data instead of hardcoded values
         unlockedIcons = GetUnlockedAllyIndices(characterNames);

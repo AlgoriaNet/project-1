@@ -62,7 +62,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
         {
             if (sidekickId == 0)
             {
-                Debug.LogWarning("[AlliesEquipments] Invalid sidekick ID 0 - clearing equipment display");
                 ClearEquipmentDisplay();
                 return;
             }
@@ -129,7 +128,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             EquipmentColumnManager columnManager = slotTransform.GetComponent<EquipmentColumnManager>();
             if (columnManager == null)
             {
-                Debug.LogWarning($"[AlliesEquipments] EquipmentColumnManager not found on {slotTransform.name}");
                 return;
             }
 
@@ -156,7 +154,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             EquipmentColumnManager columnManager = slotTransform.GetComponent<EquipmentColumnManager>();
             if (columnManager == null)
             {
-                Debug.LogWarning($"[AlliesEquipments] EquipmentColumnManager not found on {slotTransform.name}");
                 return;
             }
 
@@ -224,7 +221,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
 
             if (alliesGridSetup == null)
             {
-                Debug.LogWarning("[AlliesEquipments] AlliesGridSetup not found - cannot determine current sidekick ID");
                 return 0;
             }
 
@@ -232,7 +228,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
             string currentAllyName = GetCurrentAllyNameFromGridSetup();
             if (string.IsNullOrEmpty(currentAllyName))
             {
-                Debug.LogWarning("[AlliesEquipments] Current ally name is empty - using default sidekick ID 0");
                 return 0;
             }
 
@@ -255,13 +250,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                     }
                     else
                     {
-                        Debug.LogWarning($"[AlliesEquipments] Could not parse sidekick ID '{sidekick.id}' to int");
                         return 0;
                     }
-                }
-                else
-                {
-                    Debug.LogWarning($"[AlliesEquipments] No sidekick found for ally {currentAllyName}");
                 }
             }
 
@@ -286,14 +276,10 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
                     string currentAllyName = (string)currentAllyNameField.GetValue(alliesGridSetup);
                     return currentAllyName ?? "";
                 }
-                else
-                {
-                    Debug.LogWarning("[AlliesEquipments] Could not access currentAllyName field via reflection");
-                }
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
-                Debug.LogError($"[AlliesEquipments] Error getting current ally name: {ex.Message}");
+                // Error getting current ally name - silent fallback
             }
 
             return "";
@@ -304,30 +290,13 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Allies_Menu
         /// </summary>
         private string GetAllyBaseIdFromName(string allyName)
         {
-            // Character names matching the file names (same as in AlliesGridSetup)
-            string[] characterNames = {
-                "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-                "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-                "Lucien", "Ugra", "Eleanor", "Nyx"
-            };
-
-            for (int i = 0; i < characterNames.Length; i++)
-            {
-                if (characterNames[i] == allyName)
-                {
-                    // Convert 0-based index to 1-based base_id (e.g., index 3 → base_id "4")
-                    return (i + 1).ToString();
-                }
-            }
-
-            Debug.LogWarning($"[AlliesEquipments] Unknown ally name: {allyName}");
-            return "0";
+            // Use CharacterService to get base_id from character name
+            return CharacterService.GetBaseIdFromName(allyName);
         }
 
         private void UpdateUI(ApplicationModel model)
         {
             // Refresh equipment display when player data changes
-            Debug.Log("[AlliesEquipments] UpdateUI called - refreshing equipment display for current ally");
             InitForCurrentAlly();
         }
     }

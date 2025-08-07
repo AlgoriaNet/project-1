@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using model;
@@ -41,8 +42,6 @@ public class LineupController : MonoBehaviour
         if (PlayerProfile.Data.Player != null)
         {
             LoadAlliesData();
-            AdjustGridForFivePerRow();
-            LoadAllyItems();
         }
     }
     
@@ -54,18 +53,39 @@ public class LineupController : MonoBehaviour
     private void OnPlayerDataLoaded(ApplicationModel model)
     {
         LoadAlliesData();
-        AdjustGridForFivePerRow();
-        LoadAllyItems();
     }
 
     private void LoadAlliesData()
     {
-        string[] characterNames = {
-            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-            "Lucien", "Ugra", "Eleanor", "Nyx"
-        };
+        // Use CharacterService to get character names
+        string[] characterNames = CharacterService.GetCharacterNames();
+        
+        // If character data is not loaded yet, load it first
+        if (characterNames.Length == 0)
+        {
+            StartCoroutine(LoadCharacterDataAndContinue());
+            return;
+        }
 
+        ContinueLoadAlliesData(characterNames);
+    }
+
+    private IEnumerator LoadCharacterDataAndContinue()
+    {
+        yield return CharacterService.LoadCharacters(
+            onSuccess: (characters) => {
+                Debug.Log($"[LinrupController] Successfully loaded {characters.Length} characters");
+                ContinueLoadAlliesData(CharacterService.GetCharacterNames());
+            },
+            onError: (error) => {
+                Debug.LogError($"[LinrupController] Failed to load characters: {error}");
+                ContinueLoadAlliesData(CharacterService.GetCharacterNames());
+            }
+        );
+    }
+
+    private void ContinueLoadAlliesData(string[] characterNames)
+    {
         List<string> unlockedIcons = GetUnlockedAllyIndices(characterNames);
         starLevels = new Dictionary<string, int>();
 
@@ -78,6 +98,10 @@ public class LineupController : MonoBehaviour
                 unlockedAllies.Add((index, characterNames[i]));
             }
         }
+        
+        // Now that allies data is loaded, we can load the ally items
+        AdjustGridForFivePerRow();
+        LoadAllyItems();
     }
 
     private void AdjustGridForFivePerRow()

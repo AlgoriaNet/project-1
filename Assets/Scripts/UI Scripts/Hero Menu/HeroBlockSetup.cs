@@ -34,19 +34,6 @@ public class HeroBlockSetup : MonoBehaviour
     [SerializeField]
     private ItemLoader itemLoader;
 
-
-    // A dictionary to store the mapping between gem image file names and their localized names
-    private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
-    {
-        { "Gem_01", "Common Gem" },
-        { "Gem_02", "Superior Gem" },
-        { "Gem_03", "Rare Gem" },
-        { "Gem_04", "Epic Gem" },
-        { "Gem_05", "Legendary Gem" },
-        { "Gem_06", "Mythic Gem" },
-        { "Gem_07", "Ultimate Gem" }
-    };
-
     // Flag to track if we need to refresh pack UI when GameObject becomes active
     private bool needsRefreshOnEnable = false;
 

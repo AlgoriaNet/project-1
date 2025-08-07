@@ -62,30 +62,64 @@ public class AlliesBlockSetup : MonoBehaviour
     // Reference to AlliesGridSetup to get current sidekick information
     [SerializeField] private AlliesGridSetup alliesGridSetup;
 
-    // A dictionary to store the mapping between gem image file names and their localized names
-    private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>
-    {
-        { "Gem_01", "Common Gem" },
-        { "Gem_02", "Superior Gem" },
-        { "Gem_03", "Rare Gem" },
-        { "Gem_04", "Epic Gem" },
-        { "Gem_05", "Legendary Gem" },
-        { "Gem_06", "Mythic Gem" },
-        { "Gem_07", "Ultimate Gem" }
-    };
+    // Dictionary to store gem names loaded from API
+    private Dictionary<string, string> gemNameLocalization = new Dictionary<string, string>();
 
     // Flag to track if we need to refresh pack UI when GameObject becomes active
     private bool needsRefreshOnEnable = false;
 
     void Start()
     {
-        // Initially update the grid
-        UpdateTotalBlocks(); // Fetch and update the grid layout based on TotalItemsCount.
+        // Load required API data
+        StartCoroutine(LoadAllRequiredData());
         
         // Listen to specific notifications - Equipment and Gem tabs should only refresh 
         // when equipment or gems are actually added, not for hero draws (shards)
         PlayerProfile.Data.AddListener(UpdateUI, "Equipments");
         PlayerProfile.Data.AddListener(UpdateUI, "Gemstones");
+    }
+
+    private System.Collections.IEnumerator LoadAllRequiredData()
+    {
+        bool charactersLoaded = CharacterService.IsCharacterDataLoaded();
+        bool gemLevelsLoaded = GemLevelsService.IsGemDataLoaded();
+        
+        // Load character data if not already loaded
+        if (!charactersLoaded)
+        {
+            yield return CharacterService.LoadCharacters(
+                onSuccess: (characters) => {
+                    Debug.Log($"[AlliesBlockSetup] Successfully loaded {characters.Length} characters");
+                },
+                onError: (error) => {
+                    Debug.LogError($"[AlliesBlockSetup] Failed to load characters: {error}");
+                }
+            );
+        }
+        
+        // Load gem levels data if not already loaded
+        if (!gemLevelsLoaded)
+        {
+            yield return GemLevelsService.LoadGemLevels(
+                onSuccess: (gemLevels) => {
+                    Debug.Log($"[AlliesBlockSetup] Successfully loaded {gemLevels.Length} gem levels");
+                    // Update the local dictionary with API data
+                    gemNameLocalization = GemLevelsService.GetGemNameDictionary();
+                },
+                onError: (error) => {
+                    Debug.LogError($"[AlliesBlockSetup] Failed to load gem levels: {error}");
+                    // Keep empty dictionary as fallback
+                }
+            );
+        }
+        else
+        {
+            // Use cached gem data
+            gemNameLocalization = GemLevelsService.GetGemNameDictionary();
+        }
+        
+        // Initialize grid after all data is loaded
+        UpdateTotalBlocks();
     }
     
     private void OnEnable()
@@ -657,23 +691,8 @@ public class AlliesBlockSetup : MonoBehaviour
     /// <returns>Base ID (e.g., "4" for index 04_Aurelia)</returns>
     private string GetAllyBaseIdFromName(string allyName)
     {
-        // Character names matching the file names (same as in AlliesGridSetup)
-        string[] characterNames = {
-            "Zorath", "Gideon", "Sylas", "Aurelia", "Lyanna", "Zhara", "Elenya", "Rowan",
-            "Liraen", "Cedric", "Selena", "Morgath", "Zyphira", "Kaelith", "Velan", "Ragnar",
-            "Lucien", "Ugra", "Eleanor", "Nyx"
-        };
-
-        for (int i = 0; i < characterNames.Length; i++)
-        {
-            if (characterNames[i] == allyName)
-            {
-                // Convert 0-based index to 1-based base_id (e.g., index 3 -> base_id "4")
-                return (i + 1).ToString();
-            }
-        }
-
-        return "0";
+        // Use CharacterService to get base_id from character name
+        return CharacterService.GetBaseIdFromName(allyName);
     }
 
 
