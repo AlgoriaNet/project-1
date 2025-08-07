@@ -33,6 +33,8 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
         [SerializeField] public Image background;
         [SerializeField] public Image icon;
         [SerializeField] public TextMeshProUGUI attack;
+        [SerializeField] public TextMeshProUGUI levelValue;
+        [SerializeField] public TextMeshProUGUI rankValue;
         [SerializeField] public Button forgeButton;
         [SerializeField] public Button replaceButton;
         [SerializeField] public Button dismantleButton;
@@ -119,6 +121,12 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             if (_equipment != null)
             {
                 attack.text = _equipment.Attack.ToString();
+                
+                // Update level and rank values
+                if (levelValue != null)
+                    levelValue.text = _equipment.IntensifyLevel.ToString();
+                if (rankValue != null)
+                    rankValue.text = _equipment.UpgradeRank.ToString();
 
                 for (int i = 0; i < extraNames.Count; i++)
                 {
@@ -137,6 +145,13 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
             else
             {
                 attack.text = "0";
+                
+                // Set default values for empty equipment
+                if (levelValue != null)
+                    levelValue.text = "0";
+                if (rankValue != null)
+                    rankValue.text = "1";
+                
                 for (int i = 0; i < extraNames.Count; i++)
                 {
                     extraNames[i].text = "";
