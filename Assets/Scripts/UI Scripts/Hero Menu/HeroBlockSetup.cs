@@ -310,7 +310,7 @@ public class HeroBlockSetup : MonoBehaviour
         }
 
         // 1. Exclude unwanted keys
-        var excludeKeys = new HashSet<string> { "heroKey", "rareKey", "epicKey" };
+        var excludeKeys = new HashSet<string> { "heroKey", "rareKey", "epicKey", "crystal", "SKb_00_Hero" };
 
         // 2. Group and sum by true item name (shard/skillbook logic)
         var grouped = new Dictionary<string, int>(); // key: fileName, value: total qnty
@@ -407,6 +407,7 @@ public class HeroBlockSetup : MonoBehaviour
             });
         }
     }
+
 
     // Helper: match GachaController logic for image path
     private Sprite LoadOtherItemSprite_GachaStyle(string fileName, string type)
