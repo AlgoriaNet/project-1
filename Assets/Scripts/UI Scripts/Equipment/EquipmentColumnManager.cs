@@ -32,7 +32,6 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.PopUpBox
                 rankColor = Color.white;
             }
             
-            Debug.Log($"[EquipmentColumnManager-{GetInstanceID()}] {gameObject.name} Setting {equipment.Name} ID:{equipment.Id} rank {equipment.UpgradeRank} color to {equipment.RankColor} -> {rankColor}");
             icon.sprite = Resources.Load<Sprite>($"UILoading/Equipment/{equipment.Name}");
             icon.color = Color.white;
 

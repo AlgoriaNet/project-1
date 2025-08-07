@@ -845,7 +845,20 @@ public class AlliesGridSetup : MonoBehaviour
         // Delay the size adjustment to allow layout updates
         Invoke(nameof(AdjustStep2StarGroupSize), 0.05f); // Reduced from 0.1f
 
-        // 🔹 CRITICAL: Delay the button mode setup to ensure all initialization is complete
+        // 🔹 CRITICAL FIX: Initialize ally equipment context immediately (like working Step 1 → Step 2 flow)
+        // This fixes the "Current ally name is empty" error by properly setting ally context
+        if (alliesEquipments != null)
+        {
+            alliesEquipments.InitForCurrentAlly();
+        }
+        
+        // Load upgrade levels for the selected ally immediately (like working Step 1 → Step 2 flow)
+        if (upgradePanelManager != null)
+        {
+            upgradePanelManager.LoadUpgradePanelsForAlly($"{allyIndex}_{allyName}");
+        }
+
+        // 🔹 DELAY: Button mode setup to ensure all initialization is complete
         // This ensures coordination between the item type and the button/UI state
         Invoke(nameof(SetUtilizeModeAndRefresh), 0.08f); // Reduced from 0.12f
 
@@ -1128,6 +1141,8 @@ public class AlliesGridSetup : MonoBehaviour
         
         // The PageButtonController.ToggleButtonVisibility() will automatically call
         // the appropriate LevelUpLoading() or StarUpLoading() method to update the lower section
+        
+        // Note: upgradePanelManager.LoadUpgradePanelsForAlly() is now called immediately in OpenUtilizeStep2Simple()
     }
 
     /// <summary>
