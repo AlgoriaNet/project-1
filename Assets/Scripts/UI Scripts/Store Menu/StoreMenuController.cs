@@ -177,9 +177,9 @@ public class StoreMenuController : MonoBehaviour
     // Consolidated gacha panel update method - no more code duplication!
     public void UpdateGachaPanels(string keyType, int keyCount, int x1Cost, int x10Cost, string spritePath)
     {
-        // Always set diamond costs and key images
-        x1gachaDiamondText.text = NumberFormatter.FormatNumber(x1Cost);
-        x10gachaDiamondText.text = NumberFormatter.FormatNumber(x10Cost);
+        // Always set diamond costs and key images - hardcoded format for gacha
+        x1gachaDiamondText.text = $"X {x1Cost}";
+        x10gachaDiamondText.text = $"X {x10Cost}";
         
         var keySprite = Resources.Load<Sprite>(spritePath);
         x1gachaKeyImage.sprite = keySprite;
