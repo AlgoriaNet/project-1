@@ -14,7 +14,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
     {
         [SerializeField] private Image icon;
         [SerializeField] private Image partImage;
-        [SerializeField] private TextMeshProUGUI name;
+        [SerializeField] private TextMeshProUGUI gemName;
         [SerializeField] private TextMeshProUGUI description;
         [SerializeField] private TextMeshProUGUI level;
         [SerializeField] private TextMeshProUGUI part;
@@ -33,7 +33,7 @@ namespace PimDeWitte.UnityMainThreadDispatcher.UI_Scripts.Gemstones
         {
             _gemstone = gemstone;
             _sidekickId = sidekickId;
-            name.text = gemstone.LevelName ?? "Unknown Gem";
+            gemName.text = gemstone.LevelName ?? "Unknown Gem";
             icon.sprite = Resources.Load<Sprite>($"UILoading/Gem/Stone/Gem_{gemstone.Level:D2}");
             description.text = gemstone.EffectDescription ?? "No description available";
             level.text = gemstone.Level.ToString();
