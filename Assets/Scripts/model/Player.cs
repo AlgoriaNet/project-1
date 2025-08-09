@@ -43,5 +43,9 @@ namespace model
             get => _itemsJson;
             set => _itemsJson = value ?? new Dictionary<string, int>();
         }
+
+        // Server-controlled draw costs for gacha
+        [JsonProperty("draw_costs")] 
+        public Dictionary<string, Dictionary<string, int>> DrawCosts { get; set; } = new ();
     }
 }

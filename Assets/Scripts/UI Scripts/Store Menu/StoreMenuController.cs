@@ -219,7 +219,9 @@ public class StoreMenuController : MonoBehaviour
         var player = PlayerProfile.Data.Player;
         int heroKeyCount = player.ItemsJson.TryGetValue("heroKey", out int heroKey) ? heroKey : 0;
         
-        UpdateGachaPanels("heroKey", heroKeyCount, HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST, HERO_KEY_SPRITE_PATH);
+        // Use server draw costs with fallback to constants
+        var (x1Cost, x10Cost) = GetDrawCosts("hero", HERO_X1_DIAMOND_COST, HERO_X10_DIAMOND_COST);
+        UpdateGachaPanels("heroKey", heroKeyCount, x1Cost, x10Cost, HERO_KEY_SPRITE_PATH);
     }
 
     public void gachaRarePanelUpdate()
@@ -227,7 +229,9 @@ public class StoreMenuController : MonoBehaviour
         var player = PlayerProfile.Data.Player;
         int rareKeyCount = player.ItemsJson.TryGetValue("rareKey", out int rareKey) ? rareKey : 0;
         
-        UpdateGachaPanels("rareKey", rareKeyCount, RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST, RARE_KEY_SPRITE_PATH);
+        // Use server draw costs with fallback to constants
+        var (x1Cost, x10Cost) = GetDrawCosts("rare", RARE_X1_DIAMOND_COST, RARE_X10_DIAMOND_COST);
+        UpdateGachaPanels("rareKey", rareKeyCount, x1Cost, x10Cost, RARE_KEY_SPRITE_PATH);
     }
 
     public void gachaEpicPanelUpdate()
@@ -235,7 +239,28 @@ public class StoreMenuController : MonoBehaviour
         var player = PlayerProfile.Data.Player;
         int epicKeyCount = player.ItemsJson.TryGetValue("epicKey", out int epicKey) ? epicKey : 0;
         
-        UpdateGachaPanels("epicKey", epicKeyCount, EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST, EPIC_KEY_SPRITE_PATH);
+        // Use server draw costs with fallback to constants
+        var (x1Cost, x10Cost) = GetDrawCosts("epic", EPIC_X1_DIAMOND_COST, EPIC_X10_DIAMOND_COST);
+        UpdateGachaPanels("epicKey", epicKeyCount, x1Cost, x10Cost, EPIC_KEY_SPRITE_PATH);
+    }
+
+    /// <summary>
+    /// Get draw costs from server with fallback to constants
+    /// </summary>
+    private (int x1Cost, int x10Cost) GetDrawCosts(string drawType, int fallbackX1, int fallbackX10)
+    {
+        var player = PlayerProfile.Data.Player;
+        if (player?.DrawCosts?.ContainsKey(drawType) == true)
+        {
+            var drawCost = player.DrawCosts[drawType];
+            if (drawCost.ContainsKey("x1") && drawCost.ContainsKey("x10"))
+            {
+                return (drawCost["x1"], drawCost["x10"]);
+            }
+        }
+        
+        // Fallback to constants if server data is not available
+        return (fallbackX1, fallbackX10);
     }
 
     private void OnDestroy()
