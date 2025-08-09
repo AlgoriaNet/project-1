@@ -44,21 +44,33 @@ namespace battle
             if(index > 3) return;
             try
             {
+                // Calculate proper position to avoid hero overlap
+                Vector3 targetPosition = sidekickPositions[index].position;
+                
+                // Special positioning for flame sidekicks to prevent hero visual confusion
+                if (sidekick.Name.ToLower().Contains("flame"))
+                {
+                    // Place flame sidekicks further to the right
+                    targetPosition.x += 2.0f;
+                    Debug.LogWarning($"[SidekickIntoBattle] Applied special positioning for flame sidekick {sidekick.Name}");
+                }
+                
                 var sidekickObj = Instantiate(baseSidekickPrefab,
-                    sidekickPositions[index].position,
+                    targetPosition,
                     Quaternion.identity,
                     parent.transform);
                 var sidekickManager = sidekickObj.GetComponent<SidekickManager>();
                 sidekickManager.Init(sidekick);
                 sidekickPositions[index].gameObject.SetActive(false);
                 SetSkillCd(index, sidekick, sidekickManager);
+                
+                Debug.Log($"[SidekickIntoBattle] Successfully spawned {sidekick.Name} at position {targetPosition}");
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.LogError($"[SidekickIntoBattle] Failed to spawn sidekick {sidekick.Name}: {e}");
                 throw;
             }
-            
         }
 
         private void SetSkillCd(int index, Sidekick sidekick,SidekickManager sidekickManager)

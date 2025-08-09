@@ -48,7 +48,24 @@ namespace battle
             _launchesTimes = 0;
             _waitingTime = 0;
             _waitLaunchesIntervalTime = 0;
-            sidekickBack.sprite = Resources.Load<Sprite>(Path.GetPath(Path.SidekickBackSprite, sidekick.Name));
+            
+            // Load sidekick sprite with validation
+            string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name);
+            Debug.Log($"[SidekickManager] Loading sidekick sprite for {sidekick.Name} from path: {spritePath}");
+            
+            Sprite sidekickSprite = Resources.Load<Sprite>(spritePath);
+            if (sidekickSprite != null)
+            {
+                sidekickBack.sprite = sidekickSprite;
+                Debug.Log($"[SidekickManager] SUCCESS: Loaded sidekick sprite: {sidekickSprite.name} for {sidekick.Name}");
+                
+                // Ensure sidekick doesn't overlay hero position and has proper sorting order
+                EnsureProperPositioning();
+            }
+            else
+            {
+                Debug.LogError($"[SidekickManager] FAILED: Could not load sidekick sprite from path: {spritePath}");
+            }
         }
 
         private IEnumerator ReleaseSkill()
@@ -121,6 +138,48 @@ namespace battle
             }
 
             _waitLaunchesIntervalTime = 0;
+        }
+        
+        /// <summary>
+        /// Ensure sidekick doesn't interfere with hero visibility and has proper positioning
+        /// </summary>
+        private void EnsureProperPositioning()
+        {
+            if (sidekickBack == null) return;
+            
+            // Set appropriate sorting order - always below hero (hero uses 50)
+            const int SIDEKICK_MAX_SORTING_ORDER = 40;
+            sidekickBack.sortingOrder = SIDEKICK_MAX_SORTING_ORDER;
+            
+            // Find hero position to avoid overlap
+            var heroManager = FindObjectOfType<HeroManager>();
+            if (heroManager != null)
+            {
+                float distanceToHero = Vector3.Distance(transform.position, heroManager.transform.position);
+                
+                // If sidekick is too close to hero position, move it away
+                if (distanceToHero < 1.5f)
+                {
+                    Vector3 directionFromHero = (transform.position - heroManager.transform.position).normalized;
+                    Vector3 newPosition = heroManager.transform.position + directionFromHero * 2.0f;
+                    transform.position = newPosition;
+                    
+                    Debug.LogWarning($"[SidekickManager] Moved sidekick {_sidekick.Name} away from hero. New position: {newPosition}");
+                }
+                
+                // Special handling for flame-type sidekicks to prevent visual confusion
+                if (_sidekick.Name.ToLower().Contains("flame"))
+                {
+                    // Move flame sidekicks further from hero and lower their priority
+                    Vector3 flamePosition = heroManager.transform.position + Vector3.right * 3.0f;
+                    transform.position = flamePosition;
+                    sidekickBack.sortingOrder = SIDEKICK_MAX_SORTING_ORDER - 10; // Even lower priority
+                    
+                    Debug.LogWarning($"[SidekickManager] Applied special positioning for flame sidekick {_sidekick.Name} at {flamePosition}");
+                }
+            }
+            
+            Debug.Log($"[SidekickManager] Configured {_sidekick.Name} positioning - SortingOrder: {sidekickBack.sortingOrder}, Position: {transform.position}");
         }
     }
 }

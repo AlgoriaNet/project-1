@@ -108,11 +108,55 @@ public class BattleManager : MonoBehaviour
     private void SetLevelUpEffects(JToken levelUpEffectsArray)
     {
         _skillLevelUpController.Effects.Clear();
-        var levelUpEffects = levelUpEffectsArray.ToObject<List<SkillLevelUpEffect>>();
-        foreach (var levelUpEffect in levelUpEffects)
+        
+        // If no level up effects from server, create default ones
+        if (levelUpEffectsArray == null || !levelUpEffectsArray.HasValues)
         {
-            _skillLevelUpController.Effects.Add(levelUpEffect);
+            Debug.Log("No levelUpEffects from server, creating default effects");
+            CreateDefaultLevelUpEffects();
         }
+        else
+        {
+            var levelUpEffects = levelUpEffectsArray.ToObject<List<SkillLevelUpEffect>>();
+            foreach (var levelUpEffect in levelUpEffects)
+            {
+                _skillLevelUpController.Effects.Add(levelUpEffect);
+            }
+            Debug.Log($"Loaded {_skillLevelUpController.Effects.Count} level up effects from server");
+        }
+    }
+    
+    private void CreateDefaultLevelUpEffects()
+    {
+        // Get all available sidekick skills
+        foreach (var sidekick in BattleGridManager.Instance.Sidekicks)
+        {
+            string skillName = sidekick.Skill.Name;
+            
+            // Add default upgrade options for each skill
+            _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
+            {
+                Id = $"{skillName}_damage",
+                SkillName = skillName,
+                EffectName = "增加伤害",
+                Description = $"增加{skillName}的伤害",
+                Weight = 10,
+                MaxCount = 5,
+                Effects = new Dictionary<string, string> { { "ExtraDamageGain", "0.2" } }
+            });
+            
+            _skillLevelUpController.Effects.Add(new SkillLevelUpEffect
+            {
+                Id = $"{skillName}_cooldown",
+                SkillName = skillName,
+                EffectName = "减少冷却",
+                Description = $"减少{skillName}的冷却时间",
+                Weight = 8,
+                MaxCount = 3,
+                Effects = new Dictionary<string, string> { { "ReduceCd", "0.5" } }
+            });
+        }
+        Debug.Log($"Created {_skillLevelUpController.Effects.Count} default level up effects");
     }
 
     void Update()
