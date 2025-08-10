@@ -7,10 +7,12 @@ namespace battle
     public class BlackHoleTester : MonoBehaviour
     {
         [Header("Test Settings")]
-        public KeyCode testKey = KeyCode.B;
+        public KeyCode blackHoleKey = KeyCode.B;
+        public KeyCode lightningKey = KeyCode.L;
         public Transform spawnPoint;
         
         private Skill blackHoleSkill;
+        private Skill chainLightningSkill;
         private Living testLiving;
         
         void Start()
@@ -33,6 +35,24 @@ namespace battle
                 IsImpenetrability = false
             };
             
+            // Create Chain Lightning skill data
+            chainLightningSkill = new Skill
+            {
+                Name = "Chain_Lightning",
+                Icon = "skill_icon_lightning", 
+                Description = "Lightning that chains between enemies",
+                Duration = 2f,
+                Cd = 8f,
+                DamageType = DamageType.Light,
+                SkillTargetType = SkillTargetType.LatestMultiple,
+                DamageRatio = 1.5f,
+                Speed = 0,
+                ReleaseCount = 1,
+                LaunchesCount = 1,
+                IsDynamic = false,
+                IsImpenetrability = true
+            };
+            
             // Create test living entity
             testLiving = new Sidekick
             {
@@ -43,14 +63,19 @@ namespace battle
                 Skill = blackHoleSkill
             };
             
-            Debug.Log("[BlackHoleTester] Test setup complete. Press 'B' to test Black Hole skill!");
+            Debug.Log("[SkillTester] Test setup complete. Press 'B' for Black Hole, 'L' for Chain Lightning!");
         }
         
         void Update()
         {
-            if (Input.GetKeyDown(testKey))
+            if (Input.GetKeyDown(blackHoleKey))
             {
                 TestBlackHole();
+            }
+            
+            if (Input.GetKeyDown(lightningKey))
+            {
+                TestChainLightning();
             }
         }
         
@@ -78,9 +103,36 @@ namespace battle
             Debug.Log("[BlackHoleTester] Watch for the gravitational vortex effect!");
         }
         
+        private void TestChainLightning()
+        {
+            Vector3 spawnPosition = spawnPoint ? spawnPoint.position : transform.position;
+            
+            Debug.Log($"[SkillTester] Testing Chain Lightning at {spawnPosition}");
+            
+            // Use SkillFactory to create the chain lightning from prefab
+            var lightningObject = SkillFactory.Create(
+                "Chain_Lightning", 
+                testLiving, 
+                chainLightningSkill, 
+                0, 
+                Vector2.right, 
+                spawnPosition
+            );
+            
+            if (lightningObject)
+            {
+                Debug.Log("[SkillTester] ⚡ Chain Lightning test created successfully!");
+                Debug.Log("[SkillTester] Watch for the chaining lightning effect!");
+            }
+            else
+            {
+                Debug.LogError("[SkillTester] Failed to create Chain Lightning - check if prefab exists!");
+            }
+        }
+        
         private void OnGUI()
         {
-            GUI.Label(new Rect(10, 10, 300, 20), $"Press '{testKey}' to test Black Hole");
+            GUI.Label(new Rect(10, 10, 300, 20), $"Press '{blackHoleKey}' for Black Hole, '{lightningKey}' for Chain Lightning");
             GUI.Label(new Rect(10, 30, 300, 20), $"Monsters in scene: {FindObjectsOfType<MonsterManager>().Length}");
         }
         
