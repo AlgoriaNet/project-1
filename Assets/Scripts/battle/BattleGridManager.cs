@@ -28,6 +28,21 @@ public class BattleGridManager : MonoBehaviour
 
     void Start()
     {
+        // Auto-find required GameObjects if not assigned
+        if (topLeft == null)
+            topLeft = GameObject.Find("topLeft")?.transform;
+        if (bottomRight == null)
+            bottomRight = GameObject.Find("bottomRight")?.transform;
+        if (heroLocation == null)
+            heroLocation = GameObject.Find("heroLocation")?.transform;
+            
+        // Validate required references
+        if (topLeft == null || bottomRight == null || heroLocation == null)
+        {
+            Debug.LogError("[BattleGridManager] Missing required Transform references. topLeft, bottomRight, and heroLocation GameObjects must exist in the scene.");
+            return;
+        }
+        
         BattlegroundWidth = Vector3.Distance(topLeft.position,
             new Vector3(bottomRight.position.x, topLeft.position.y, topLeft.position.z));
         BattlegroundHeight = Vector3.Distance(topLeft.position,

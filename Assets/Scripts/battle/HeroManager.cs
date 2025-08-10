@@ -37,31 +37,31 @@ public class HeroManager : MonoBehaviour
 
     public float attacktime = 0f;
     private IEnumerator _enumerator;
+    
+    // Gun direction tracking for bullet coordination
+    private int currentAnimFrame = 0;
+    private Vector2[] gunDirections = {
+        new Vector2(0.8f, 0.3f),   // Hero_B-1: Gun points right-up
+        new Vector2(0.7f, 0.5f),   // Hero_B-2: Gun points right-up  
+        new Vector2(1.0f, 0.0f),   // Hero_B-3: Gun points straight ahead
+        new Vector2(-0.7f, 0.5f),  // Hero_B-4: Gun points left-up
+        new Vector2(-0.8f, 0.3f)   // Hero_B-5: Gun points left
+    };
 
 
     void Start()
     {
         _enumerator = ShootingDelay();
         _shootingDelay = 1 / attackSpeed;
-        // Get attack animation clip duration - default to 1.0f if not found
-        var attackClip = GetAnimationClip(attack_name);
-        attacktime = attackClip != null ? attackClip.length : 1.0f;
+        // Sync attack timing with animation timing (0.8s per frame, but Hero_B-3 pauses for extra time)
+        attacktime = 0.8f * 3f; // Average time for 3-4 frames considering Hero_B-3 pause
     }
 
     // Update is called once per frame
     void Update()
     {
-        time += Time.deltaTime;
-
-        if (!(time > attacktime)) return;
-        if (BattleGridManager.Instance.monsters.Count==0) return;
-        if (BattleGridManager.Instance.monsters.Count>0)
-        {
-            _closestMonster = BattleGridManager.Instance.LatestMonster();
-            StartCoroutine(_enumerator);
-            Hit();
-        }
-        time = 0;
+        // Bullet firing is now handled directly in the animation coroutine
+        // This Update method is kept for potential future use
     }
     
     private void Awake()
@@ -75,13 +75,6 @@ public class HeroManager : MonoBehaviour
         _animationController = GetComponent<Animator>();
         heroBack = GetComponent<SpriteRenderer>();
         
-        Debug.Log($"[HeroManager] Awake - Found Animator: {_animationController != null}");
-        Debug.Log($"[HeroManager] Awake - Found SpriteRenderer: {heroBack != null}");
-        if (_animationController != null)
-        {
-            Debug.Log($"[HeroManager] Awake - Animator Controller: {_animationController.runtimeAnimatorController?.name}");
-        }
-        
         // Load hero back sprite and play idle animation
         if (heroBack != null)
         {
@@ -92,7 +85,6 @@ public class HeroManager : MonoBehaviour
             if (loadedSprite != null)
             {
                 heroBack.sprite = loadedSprite;
-                Debug.Log($"[HeroManager] Awake - Initial sprite set to: {loadedSprite.name}");
                 
                 // Apply proper scaling (reduced by 10%)
                 transform.localScale = new Vector3(0.54f, 0.54f, 1f);
@@ -112,12 +104,9 @@ public class HeroManager : MonoBehaviour
         if (_animationController != null)
         {
             // DISABLE ALL ANIMATOR - it contains wrong sprites (Flame_Spirit instead of Hero_B)
-            Debug.LogWarning($"[HeroManager] Disabling Animator completely - animations contain Flame_Spirit sprites instead of Hero_B");
             _animationController.enabled = false;
         }
     }
-
-
 
     private IEnumerator ShootingDelay()
     {
@@ -131,11 +120,10 @@ public class HeroManager : MonoBehaviour
             {
                 _animationController.speed = 0.15f;
             }
-            Debug.Log($"[HeroManager] Playing {attack_name} animation");
         }
         else if (_animationController != null && !_animationController.enabled)
         {
-            Debug.Log("[HeroManager] Animator disabled - using sprite-only animation");
+            // Animator disabled - using sprite-only animation
         }
         
         yield return new WaitForSeconds(_shootingDelay);
@@ -158,13 +146,24 @@ public class HeroManager : MonoBehaviour
             }
             firePoint.GetChild(0).gameObject.GetComponent<ParticleSystem>().Play();
             GetComponent<AudioSource>().Play();
-            Vector2 direction = _closestMonster.transform.position - firePoint.position;
-            direction.Normalize();
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.AngleAxis(angle, Vector3.forward));
+            
+            // Get gun direction based on current animation frame
+            Vector2 gunDirection = gunDirections[currentAnimFrame].normalized;
+            
+            // Calculate bullet spawn position based on gun direction
+            Vector3 bulletSpawnOffset = new Vector3(gunDirection.x * 0.5f, gunDirection.y * 0.5f, 0);
+            Vector3 bulletSpawnPos = transform.position + bulletSpawnOffset;
+            
+            // Target direction (still aims at closest monster but starts from gun position)
+            Vector2 targetDirection = (_closestMonster.transform.position - bulletSpawnPos).normalized;
+            
+            float angle = Mathf.Atan2(targetDirection.y, targetDirection.x) * Mathf.Rad2Deg;
+            GameObject bullet = Instantiate(bulletPrefab, bulletSpawnPos, Quaternion.AngleAxis(angle, Vector3.forward));
             Rigidbody2D bulletRigidbody = bullet.GetComponent<Rigidbody2D>();
-            bulletRigidbody.velocity = direction * bulletSpeed;
+            bulletRigidbody.velocity = targetDirection * bulletSpeed;
+            
             bullet.GetComponent<Attacker>().Living = hero;
+            
             Destroy(bullet, 4);
         }
     }
@@ -203,7 +202,6 @@ public class HeroManager : MonoBehaviour
     public void OnAttackHit()
     {
         // This can be called from animation events if needed
-        Debug.Log("Hero attack hit event");
     }
     
     // Animate hero back sprites
@@ -211,12 +209,13 @@ public class HeroManager : MonoBehaviour
     {
         if (heroBack == null)
         {
-            Debug.LogError("[HeroManager] heroBack SpriteRenderer is null!");
             yield break;
         }
         
         string[] spriteNames = { "Hero_B-1", "Hero_B-2", "Hero_B-3", "Hero_B-4", "Hero_B-5" };
         int currentFrame = 0;
+        bool goingForward = true;
+        int pauseCount = 0;
         
         while (true)
         {
@@ -226,28 +225,54 @@ public class HeroManager : MonoBehaviour
             Sprite sprite = Resources.Load<Sprite>(spritePath);
             if (sprite != null)
             {
-                // CHECK WHAT'S CURRENTLY SHOWING BEFORE CHANGING
-                string currentSprite = heroBack.sprite != null ? heroBack.sprite.name : "NULL";
-                
                 heroBack.sprite = sprite;
-                
-                Debug.Log($"[HeroManager] SPRITE CHANGE: {currentSprite} -> {sprite.name}");
-                
-                // Immediately check if something overrode our change
-                yield return new WaitForEndOfFrame();
-                string afterChangeSprite = heroBack.sprite != null ? heroBack.sprite.name : "NULL";
-                if (afterChangeSprite != sprite.name)
+            }
+            
+            // Update current animation frame for bullet coordination
+            currentAnimFrame = currentFrame;
+            
+            // Fire bullet every frame change (including B-3 pause frames)
+            if (BattleGridManager.Instance != null && BattleGridManager.Instance.monsters.Count > 0)
+            {
+                _closestMonster = BattleGridManager.Instance.LatestMonster();
+                StartCoroutine(_enumerator);
+                Hit();
+            }
+            
+            // Special handling for Hero_B-3 (index 2) - pause for extra frames
+            if (currentFrame == 2)
+            {
+                pauseCount++;
+                if (pauseCount < 2) // Stay on Hero_B-3 for 2 extra frames
                 {
-                    Debug.LogError($"[HeroManager] SPRITE HIJACKED! We set {sprite.name} but now showing {afterChangeSprite}");
+                    yield return new WaitForSeconds(0.8f);
+                    continue;
+                }
+                else
+                {
+                    pauseCount = 0; // Reset pause counter
+                }
+            }
+            
+            // Move to next frame with ping-pong logic
+            if (goingForward)
+            {
+                currentFrame++;
+                if (currentFrame >= spriteNames.Length - 1)
+                {
+                    goingForward = false;
                 }
             }
             else
             {
-                Debug.LogError($"[HeroManager] Failed to load sprite: {spritePath}");
+                currentFrame--;
+                if (currentFrame <= 0)
+                {
+                    goingForward = true;
+                }
             }
             
-            currentFrame = (currentFrame + 1) % spriteNames.Length;
-            yield return new WaitForSeconds(0.8f); // 1.25 FPS animation (half of 0.4f speed)
+            yield return new WaitForSeconds(0.8f); // 1.25 FPS animation
         }
     }
 }
