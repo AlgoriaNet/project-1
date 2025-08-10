@@ -65,11 +65,11 @@ namespace battle
                 yield return null;
             }
             
-            // Clean up effects
+            // Clean up effects  
             ClearBlackHoleEffects();
             
-            // Destroy skill object
-            Destroy(gameObject, 1f);
+            // Destroy skill object immediately after cleanup
+            Destroy(gameObject, 0.5f);
         }
         
         private void CreateBlackHoleVisuals()
@@ -80,13 +80,16 @@ namespace battle
             blackHoleSphere.transform.position = blackHoleCenter;
             blackHoleSphere.transform.localScale = Vector3.one * 0.8f;
             
-            // Black material for the void
+            // Black material for the void - MUCH darker
             var renderer = blackHoleSphere.GetComponent<Renderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
-            renderer.material.color = new Color(0.05f, 0.05f, 0.1f, 0.9f); // Very dark purple-black
+            renderer.material.color = new Color(0.02f, 0.02f, 0.03f, 0.95f); // Almost black
             
             // Remove collider
             Destroy(blackHoleSphere.GetComponent<Collider>());
+            
+            // IMPORTANT: Destroy sphere after exact duration
+            Destroy(blackHoleSphere, blackHoleDuration + 0.1f);
             
             // Create event horizon ring
             CreateEventHorizonRing();
@@ -109,9 +112,12 @@ namespace battle
             
             var renderer = eventHorizon.GetComponent<Renderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
-            renderer.material.color = new Color(0.8f, 0.4f, 1f, 0.6f); // Purple glow
-            
+            renderer.material.color = new Color(0.15f, 0.15f, 0.2f, 0.8f); // Much darker grey
+
             Destroy(eventHorizon.GetComponent<Collider>());
+            
+            // IMPORTANT: Destroy ring after exact duration
+            Destroy(eventHorizon, blackHoleDuration + 0.1f);
             
             // Animate ring pulsing
             StartCoroutine(AnimateEventHorizon(eventHorizon));
@@ -155,7 +161,7 @@ namespace battle
                     
                     var renderer = particle.GetComponent<Renderer>();
                     renderer.material = new Material(Shader.Find("Unlit/Color"));
-                    renderer.material.color = new Color(0.6f, 0.3f, 0.9f, 0.8f); // Purple particles
+                    renderer.material.color = new Color(0.4f, 0.4f, 0.5f, 0.8f); // Dark grey particles
                     
                     Destroy(particle.GetComponent<Collider>());
                     
@@ -241,10 +247,10 @@ namespace battle
                 var renderer = ring.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    float intensity = 0.6f + Mathf.Sin(elapsed * 2f) * 0.3f;
-                    renderer.material.color = new Color(0.8f, 0.4f, 1f, intensity);
+                    float intensity = 0.6f + Mathf.Sin(elapsed * 2f) * 0.2f;
+                    renderer.material.color = new Color(0.3f, 0.3f, 0.4f, intensity);
                 }
-                
+
                 elapsed += Time.deltaTime;
                 yield return null;
             }
@@ -326,18 +332,22 @@ namespace battle
         
         private void ClearBlackHoleEffects()
         {
-            // Clean up any remaining visual effects
-            var allObjects = GameObject.FindObjectsOfType<GameObject>();
+            // Clean up any remaining visual effects more aggressively
+            var blackHoles = GameObject.FindGameObjectsWithTag("Untagged").Where(obj => 
+                obj.name.Contains("BlackHole") || 
+                obj.name.Contains("EventHorizon") || 
+                obj.name.Contains("GravityParticle")).ToArray();
             
-            foreach (var obj in allObjects)
+            foreach (var obj in blackHoles)
             {
-                if (obj != null && (obj.name.Contains("BlackHole") || 
-                    obj.name.Contains("EventHorizon") || 
-                    obj.name.Contains("GravityParticle")))
+                if (obj != null && obj != gameObject) // Don't destroy self
                 {
-                    Destroy(obj);
+                    Destroy(obj, 0.1f); // Small delay to ensure cleanup
                 }
             }
+            
+            // Also stop any remaining coroutines
+            StopAllCoroutines();
         }
         
         protected override void WhenAttackAfter()
