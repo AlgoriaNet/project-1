@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8909142666391408736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8909142666391408735}
+  - component: {fileID: 8909142666391408734}
+  - component: {fileID: 8909142666391408733}
+  m_Layer: 0
+  m_Name: Skill_Black_Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8909142666391408735
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909142666391408736}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8909142666391408734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909142666391408736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 690cfe5215194574a7b4029887f80811, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Living: {fileID: 0}
+  Skill: 
+    Name: 
+    Icon: 
+    Description: 
+    ReleaseCount: 1
+    LaunchesCount: 1
+    ReleaseUltimateCount: 10
+    SplitCount: 3
+    MaxAngle: 60
+    Speed: 20
+    DestroyDelay: 0
+    LaunchesInterval: 0
+    Duration: 4.5
+    Cd: 15
+    Scope: 1
+    DamageRatio: 1
+    TwoStageDamageRatio: 0
+    ThreeStageDamageRatio: 0
+    ExtraDamageGain: 0
+    IsDynamic: 0
+    IsLivingPositionRelease: 1
+    IsImpenetrability: 1
+    IsTraceMonster: 0
+    IsCdRestByReleased: 0
+    DamageType: 5
+    SkillTargetType: 0
+    ActiveCharacter: []
+  targetIndex: 0
+  targetDirection: {x: 0, y: 0}
+--- !u!114 &8909142666391408733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8909142666391408736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b25767394294851ada2faa8d838465, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravitationalEffects: {fileID: 0}
+  gravitationalTrails: []
