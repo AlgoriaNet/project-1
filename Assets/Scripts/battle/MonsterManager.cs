@@ -101,8 +101,9 @@ public class MonsterManager : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (isDead) return;
-        if (collision.gameObject.CompareTag("Finish"))
+        if (collision.gameObject.CompareTag("Finish") || collision.gameObject.name.Contains("FinishLine"))
         {
+            Debug.Log($"[MonsterManager] {Monster.Name} reached the finish line!");
             Audio.Play();
         }
 
@@ -122,15 +123,30 @@ public class MonsterManager : MonoBehaviour
     {
         if (isDead) return;
 
-        if (other.CompareTag("Finish"))
+        if (other.CompareTag("Finish") || other.gameObject.name.Contains("FinishLine"))
         {
             _timedata += Time.deltaTime;
-            if (_timedata > AttackTime + 1f)
+            if (_timedata > AttackTime)  // Reduced from AttackTime + 1f to just AttackTime
             {
                 var rampart = BattleManager.Instance.Rampart;
-                if (rampart == null) return;
+                if (rampart == null) 
+                {
+                    Debug.LogError("[MonsterManager] Rampart is null!");
+                    return;
+                }
                 var attackDamage = Monster.Attack(DamageType.Physics, rampart);
-                BattleManager.Instance.ReduceHp(attackDamage.Damage);
+                Debug.Log($"[MonsterManager] {Monster.Name} attacking rampart for {attackDamage.Damage} damage. Rampart HP: {rampart.Hp}");
+                
+                // Use fence destruction system if available
+                if (FenceDestructionManager.Instance != null)
+                {
+                    FenceDestructionManager.Instance.OnMonsterAttack(attackDamage.Damage);
+                }
+                else
+                {
+                    // Fallback to old HP system
+                    BattleManager.Instance.ReduceHp(attackDamage.Damage);
+                }
                 _timedata = 0;
             }
         }

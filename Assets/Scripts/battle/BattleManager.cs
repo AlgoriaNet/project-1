@@ -50,10 +50,14 @@ public class BattleManager : MonoBehaviour
         {
             Hp = 2000,
         };
+        
+        // Setup finish line trigger for monster attacks
+        SetupFinishLine();
         State = new BattleState
         {
             Hp = 200,
             MaxHp = 200,
+            HpRate = 1.0f,  // Initialize HP bar to full
             UpgradeRequiredExperience = new List<int>(),
             MaxBattleLevel = 20,
             BattleLevel = 1,
@@ -71,6 +75,55 @@ public class BattleManager : MonoBehaviour
             speedUpButton.GetComponent<Button>().onClick.AddListener(ToggleSpeedUp);
         
         battleApi.Action("battle", new { data = "battle data" }, SetStatFromServer);
+    }
+    
+    private void SetupFinishLine()
+    {
+        Debug.Log("[BattleManager] Setting up Finish Line trigger...");
+        
+        // First, try to create/ensure Finish tag exists
+        try
+        {
+            // Check if finish line already exists by name instead of tag (since tag might not work)
+            GameObject existingFinishLine = GameObject.Find("FinishLine");
+            if (existingFinishLine != null)
+            {
+                Debug.Log("[BattleManager] FinishLine GameObject already exists, destroying and recreating...");
+                DestroyImmediate(existingFinishLine);
+            }
+            
+            // Create the finish line trigger GameObject
+            GameObject finishLine = new GameObject("FinishLine");
+            finishLine.transform.position = new Vector3(0f, -18f, 0f); // Position at rampart level
+            
+            // Try to set tag, but handle gracefully if it fails
+            try 
+            {
+                finishLine.tag = "Finish";
+                Debug.Log("[BattleManager] Successfully assigned 'Finish' tag");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[BattleManager] Failed to assign 'Finish' tag: {e.Message}");
+                Debug.LogError("[BattleManager] 'Finish' tag does not exist in Unity Tags! Please add it manually in Project Settings > Tags and Layers");
+                
+                // Use a different approach - use name-based detection in MonsterManager
+                finishLine.name = "FinishLineTrigger";
+                Debug.Log("[BattleManager] Using name-based detection instead");
+            }
+            
+            // Add a BoxCollider2D as trigger
+            BoxCollider2D trigger = finishLine.AddComponent<BoxCollider2D>();
+            trigger.isTrigger = true;
+            trigger.size = new Vector2(20f, 2f); // Wide enough to cover the screen width
+            
+            Debug.Log($"[BattleManager] Finish Line created at {finishLine.transform.position}");
+            Debug.Log("[BattleManager] Monsters should now attack the rampart when they reach this line!");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[BattleManager] Failed to setup finish line: {e.Message}");
+        }
     }
 
     private void SetStatFromServer(JObject obj)
@@ -163,6 +216,13 @@ public class BattleManager : MonoBehaviour
     {
         if (IsSuspend) return;
         UpdateBattleTime();
+        
+        // TEST: Press T to test HP reduction manually
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            Debug.Log("[BattleManager] TESTING: Manual HP reduction triggered!");
+            ReduceHp(10);
+        }
     }
 
 
@@ -204,10 +264,16 @@ public class BattleManager : MonoBehaviour
 
     public void ReduceHp(int hp)
     {
+        Debug.Log($"[BattleManager] ReduceHp called with {hp} damage. Current HP: {State.Hp}");
         var isDead = State.ReduceHp(hp);
+        Debug.Log($"[BattleManager] After damage: HP={State.Hp}, HpRate={State.HpRate}, isDead={isDead}");
         if (hpText != null) hpText.text = State.Hp.ToString();
         if (hpBar != null) hpBar.localScale = new Vector3(State.HpRate, 1, 1);
-        if (isDead) GameOver(false);
+        if (isDead) 
+        {
+            Debug.Log("[BattleManager] Player is dead! Calling GameOver(false)");
+            GameOver(false);
+        }
     }
 
     private void LevelUp()

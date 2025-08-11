@@ -62,8 +62,6 @@ namespace battle
                 Def = 10,
                 Skill = blackHoleSkill
             };
-            
-            Debug.Log("[SkillTester] Test setup complete. Press 'B' for Black Hole, 'L' for Chain Lightning!");
         }
         
         void Update()
@@ -81,10 +79,8 @@ namespace battle
         
         private void TestBlackHole()
         {
-            Vector3 spawnPosition = spawnPoint ? spawnPoint.position : transform.position;
-            
-            Debug.Log($"[SkillTester] Testing Black Hole at {spawnPosition}");
-            
+            Vector3 spawnPosition = spawnPoint ? spawnPoint.position : transform.position;            
+          
             // Use SkillFactory to create the black hole from prefab (production system)
             var blackHoleObject = SkillFactory.Create(
                 "Black_Hole", 
@@ -94,23 +90,11 @@ namespace battle
                 Vector2.right, 
                 spawnPosition
             );
-            
-            if (blackHoleObject)
-            {
-                Debug.Log("[SkillTester] 🌌 Black Hole test created successfully!");
-                Debug.Log("[SkillTester] Watch for the gravitational vortex effect!");
-            }
-            else
-            {
-                Debug.LogError("[SkillTester] Failed to create Black Hole - check if prefab exists!");
-            }
         }
         
         private void TestChainLightning()
         {
             Vector3 spawnPosition = spawnPoint ? spawnPoint.position : transform.position;
-            
-            Debug.Log($"[SkillTester] Testing Chain Lightning at {spawnPosition}");
             
             // Use SkillFactory to create the chain lightning from prefab
             var lightningObject = SkillFactory.Create(
@@ -120,17 +104,7 @@ namespace battle
                 0, 
                 Vector2.right, 
                 spawnPosition
-            );
-            
-            if (lightningObject)
-            {
-                Debug.Log("[SkillTester] ⚡ Chain Lightning test created successfully!");
-                Debug.Log("[SkillTester] Watch for the chaining lightning effect!");
-            }
-            else
-            {
-                Debug.LogError("[SkillTester] Failed to create Chain Lightning - check if prefab exists!");
-            }
+            );            
         }
         
         private void OnGUI()
