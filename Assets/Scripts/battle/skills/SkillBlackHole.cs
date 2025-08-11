@@ -78,7 +78,7 @@ namespace battle
             GameObject blackHoleSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             blackHoleSphere.name = "BlackHoleSphere";
             blackHoleSphere.transform.position = blackHoleCenter;
-            blackHoleSphere.transform.localScale = Vector3.one * 0.8f;
+            blackHoleSphere.transform.localScale = Vector3.one * 1.5f;
             
             // Black material for the void - MUCH darker
             var renderer = blackHoleSphere.GetComponent<Renderer>();
@@ -112,7 +112,7 @@ namespace battle
             
             var renderer = eventHorizon.GetComponent<Renderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
-            renderer.material.color = new Color(0.15f, 0.15f, 0.2f, 0.8f); // Much darker grey
+            renderer.material.color = new Color(0.02f, 0.02f, 0.03f, 0.8f); // Same black as main sphere
 
             Destroy(eventHorizon.GetComponent<Collider>());
             
@@ -248,7 +248,7 @@ namespace battle
                 if (renderer != null)
                 {
                     float intensity = 0.6f + Mathf.Sin(elapsed * 2f) * 0.2f;
-                    renderer.material.color = new Color(0.3f, 0.3f, 0.4f, intensity);
+                    renderer.material.color = new Color(0.02f, 0.02f, 0.03f, intensity);
                 }
 
                 elapsed += Time.deltaTime;
