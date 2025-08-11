@@ -46345,7 +46345,7 @@ GameObject:
   - component: {fileID: 715651369}
   - component: {fileID: 715651371}
   m_Layer: 0
-  m_Name: BattleTestGridManager
+  m_Name: BattleTestManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46394,7 +46394,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 715651368}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a520eab9be544adb9c980aa86434534, type: 3}
+  m_Script: {fileID: 11500000, guid: 0e8102a07084c49949960990602f7553, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   blackHoleKey: 98
