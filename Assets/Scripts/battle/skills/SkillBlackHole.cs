@@ -14,14 +14,20 @@ namespace battle
         
         private List<MonsterManager> affectedEnemies = new List<MonsterManager>();
         private Vector3 blackHoleCenter;
-        private float blackHoleDuration = 4.5f;
-        private float pullRange = 7f;
-        private float pullStrength = 3f;
-        private float baseDamageInterval = 0.3f; // Damage every 0.3 seconds
-        private float maxDamageMultiplier = 3f; // 3x damage at center
+        
+        [Header("Black Hole Size & Power")]
+        private float blackHoleScale = 1.5f;            // Black hole visual size  
+        private float blackHoleDuration = 4.5f;         // How long black hole lasts
+        private float pullRange = 3f;                   // Attack radius (2x visual scale)
+        private float pullStrength = 2f;                // Pull force (scaled proportionally)
+        private float baseDamageInterval = 0.3f;        // Damage every 0.3 seconds
+        private float maxDamageMultiplier = 3f;         // 3x damage at center
         
         protected override void Init()
         {
+            // Calculate proportional pull range from visual size
+            pullRange = blackHoleScale * 2f; // 2x visual size for attack radius
+            
             // Set black hole position - either at target or skill spawn point
             if (BattleGridManager.Instance != null)
             {
@@ -74,53 +80,33 @@ namespace battle
         
         private void CreateBlackHoleVisuals()
         {
-            // Create main black hole sphere
-            GameObject blackHoleSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            blackHoleSphere.name = "BlackHoleSphere";
-            blackHoleSphere.transform.position = blackHoleCenter;
-            blackHoleSphere.transform.localScale = Vector3.one * 1.5f;
-            
-            // Black material for the void - MUCH darker
-            var renderer = blackHoleSphere.GetComponent<Renderer>();
-            renderer.material = new Material(Shader.Find("Unlit/Color"));
-            renderer.material.color = new Color(0.02f, 0.02f, 0.03f, 0.95f); // Almost black
-            
-            // Remove collider
-            Destroy(blackHoleSphere.GetComponent<Collider>());
-            
-            // IMPORTANT: Destroy sphere after exact duration
-            Destroy(blackHoleSphere, blackHoleDuration + 0.1f);
-            
-            // Create event horizon ring
-            CreateEventHorizonRing();
+            // Create main black hole disk
+            CreateBlackHoleDisk();
             
             // Create gravitational distortion effects
             CreateGravitationalParticles();
-            
-            // Animate the black hole
-            StartCoroutine(AnimateBlackHole(blackHoleSphere));
         }
         
-        private void CreateEventHorizonRing()
+        private void CreateBlackHoleDisk()
         {
-            // Create glowing ring around black hole
-            GameObject eventHorizon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            eventHorizon.name = "EventHorizon";
-            eventHorizon.transform.position = blackHoleCenter;
-            eventHorizon.transform.localScale = new Vector3(3f, 0.05f, 3f); // Flat ring
-            eventHorizon.transform.Rotate(90, 0, 0); // Rotate to be horizontal
+            // Create black hole disk
+            GameObject blackHoleDisk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            blackHoleDisk.name = "BlackHoleDisk";
+            blackHoleDisk.transform.position = blackHoleCenter;
+            blackHoleDisk.transform.localScale = new Vector3(blackHoleScale, 0.05f, blackHoleScale); // Flat disk
+            blackHoleDisk.transform.Rotate(90, 0, 0); // Rotate to be horizontal
             
-            var renderer = eventHorizon.GetComponent<Renderer>();
+            var renderer = blackHoleDisk.GetComponent<Renderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
-            renderer.material.color = new Color(0.02f, 0.02f, 0.03f, 0.8f); // Same black as main sphere
+            renderer.material.color = new Color(0.02f, 0.02f, 0.03f, 0.8f); // Deep black
 
-            Destroy(eventHorizon.GetComponent<Collider>());
+            Destroy(blackHoleDisk.GetComponent<Collider>());
             
-            // IMPORTANT: Destroy ring after exact duration
-            Destroy(eventHorizon, blackHoleDuration + 0.1f);
+            // IMPORTANT: Destroy disk after exact duration
+            Destroy(blackHoleDisk, blackHoleDuration + 0.1f);
             
-            // Animate ring pulsing
-            StartCoroutine(AnimateEventHorizon(eventHorizon));
+            // Animate disk pulsing
+            StartCoroutine(AnimateBlackHoleDisk(blackHoleDisk));
         }
         
         private void CreateGravitationalParticles()
@@ -213,38 +199,19 @@ namespace battle
             }
         }
         
-        private IEnumerator AnimateBlackHole(GameObject blackHole)
+        private IEnumerator AnimateBlackHoleDisk(GameObject blackHoleDisk)
         {
             float elapsed = 0f;
-            Vector3 originalScale = blackHole.transform.localScale;
+            Vector3 originalScale = blackHoleDisk.transform.localScale;
             
-            while (elapsed < blackHoleDuration && blackHole != null)
+            while (elapsed < blackHoleDuration && blackHoleDisk != null)
             {
                 // Pulsing effect
-                float pulse = 1f + Mathf.Sin(elapsed * 4f) * 0.1f;
-                blackHole.transform.localScale = originalScale * pulse;
-                
-                // Slow rotation
-                blackHole.transform.Rotate(0, 0, 30f * Time.deltaTime);
-                
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-        }
-        
-        private IEnumerator AnimateEventHorizon(GameObject ring)
-        {
-            float elapsed = 0f;
-            Vector3 originalScale = ring.transform.localScale;
-            
-            while (elapsed < blackHoleDuration && ring != null)
-            {
-                // Pulsing glow
                 float pulse = 1f + Mathf.Sin(elapsed * 3f) * 0.3f;
-                ring.transform.localScale = new Vector3(originalScale.x * pulse, originalScale.y, originalScale.z * pulse);
+                blackHoleDisk.transform.localScale = new Vector3(originalScale.x * pulse, originalScale.y, originalScale.z * pulse);
                 
                 // Color intensity variation
-                var renderer = ring.GetComponent<Renderer>();
+                var renderer = blackHoleDisk.GetComponent<Renderer>();
                 if (renderer != null)
                 {
                     float intensity = 0.6f + Mathf.Sin(elapsed * 2f) * 0.2f;
@@ -335,7 +302,6 @@ namespace battle
             // Clean up any remaining visual effects more aggressively
             var blackHoles = GameObject.FindGameObjectsWithTag("Untagged").Where(obj => 
                 obj.name.Contains("BlackHole") || 
-                obj.name.Contains("EventHorizon") || 
                 obj.name.Contains("GravityParticle")).ToArray();
             
             foreach (var obj in blackHoles)

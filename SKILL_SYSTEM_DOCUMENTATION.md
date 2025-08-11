@@ -115,6 +115,7 @@ Available targeting modes (`SkillTargetType` enum):
 ### Dark Skills
 - **Skill_Dark_Touch** - Dark magic attack
 - **Skill_Undead_Summoning** - Necromancy skill
+- **Skill_Black_Hole** - Creates a gravitational vortex that pulls and damages enemies
 
 ## Implementation Guide
 
