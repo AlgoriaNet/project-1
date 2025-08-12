@@ -62,8 +62,12 @@ public class MonsterManager : MonoBehaviour
         }
         else
         {
-            // Basic logic: just check if we should stop
-            // No fancy resume logic for now
+            // Check if monster should resume movement when fence state changes
+            if (!canMove && ShouldResumeMovement())
+            {
+                canMove = true;
+                Debug.Log($"[MonsterManager] {Monster.Name} resuming movement at Y={transform.position.y:F2} due to fence state change");
+            }
             
             if (!canMove)
             {
@@ -137,11 +141,10 @@ public class MonsterManager : MonoBehaviour
         var currentState = FenceDestructionManager.Instance.currentState;
         float currentY = transform.position.y;
         
-        // If wood is destroyed but we're still at wood position, move closer to steel
-        // Only resume if we're clearly above the steel position (not at or below it)
-        if (currentState >= FenceDestructionManager.FenceState.SteelDamage1 && currentY > -7.5f)
+        // If we're in steel phase but stopped at wood position, resume movement
+        if (currentState >= FenceDestructionManager.FenceState.SteelGood && currentY > -7.3f)
         {
-            Debug.Log($"[MonsterManager] {Monster.Name} should resume: state={currentState}, Y={currentY:F2}");
+            Debug.Log($"[MonsterManager] {Monster.Name} should resume: state={currentState}, Y={currentY:F2} (wood destroyed, advancing to steel)");
             return true;
         }
         
