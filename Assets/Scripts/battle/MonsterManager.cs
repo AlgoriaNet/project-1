@@ -106,7 +106,7 @@ public class MonsterManager : MonoBehaviour
         if (currentState >= FenceDestructionManager.FenceState.WoodGood && 
             currentState <= FenceDestructionManager.FenceState.WoodDamage3)
         {
-            bool shouldStop = currentY <= -7.1f;
+            bool shouldStop = currentY <= -6.8f;
             if (shouldStop)
             {
                 Debug.Log($"[MonsterManager] {Monster.Name} SHOULD STOP at Y={currentY:F2} (wood phase, target Y=-7.1)");
@@ -115,10 +115,10 @@ public class MonsterManager : MonoBehaviour
         }
         
         // Steel phase: Stop at Y=-7.8 (just before SteelGroup at Y=-7.92)
-        if (currentState >= FenceDestructionManager.FenceState.SteelDamage1 && 
+        if (currentState >= FenceDestructionManager.FenceState.SteelGood && 
             currentState <= FenceDestructionManager.FenceState.SteelDamage3)
         {
-            bool shouldStop = currentY <= -7.8f;
+            bool shouldStop = currentY <= -7.3f;
             if (shouldStop)
             {
                 Debug.Log($"[MonsterManager] {Monster.Name} SHOULD STOP at Y={currentY:F2} (steel phase, target Y=-7.8)");

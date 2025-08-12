@@ -22,10 +22,11 @@ namespace battle
             WoodDamage1 = 1,   // Wood_1, Steel_0 active
             WoodDamage2 = 2,   // Wood_2, Steel_0 active  
             WoodDamage3 = 3,   // Wood_3, Steel_0 active
-            SteelDamage1 = 4,  // Steel_1 active only
-            SteelDamage2 = 5,  // Steel_2 active only
-            SteelDamage3 = 6,  // Steel_3 active only
-            Failure = 7        // All inactive
+            SteelGood = 4,     // Steel_0 active only (wood destroyed)
+            SteelDamage1 = 5,  // Steel_1 active only
+            SteelDamage2 = 6,  // Steel_2 active only
+            SteelDamage3 = 7,  // Steel_3 active only
+            Failure = 8        // All inactive
         }
         
         public FenceState currentState = FenceState.WoodGood;
@@ -94,13 +95,16 @@ namespace battle
         {
             FenceState oldState = currentState;
             
-            if (currentWoodHp > 375) currentState = FenceState.WoodGood;
-            else if (currentWoodHp > 250) currentState = FenceState.WoodDamage1;
-            else if (currentWoodHp > 125) currentState = FenceState.WoodDamage2;
-            else if (currentWoodHp > 0) currentState = FenceState.WoodDamage3;
-            else if (currentSteelHp > 225) currentState = FenceState.SteelDamage1;
-            else if (currentSteelHp > 150) currentState = FenceState.SteelDamage2;
-            else if (currentSteelHp > 0) currentState = FenceState.SteelDamage3;
+            // Wood HP: 4 states, 25% each (75%, 50%, 25%, 0%)
+            if (currentWoodHp > maxWoodHp * 0.75f) currentState = FenceState.WoodGood;        // 100% to 75%
+            else if (currentWoodHp > maxWoodHp * 0.5f) currentState = FenceState.WoodDamage1; // 75% to 50%  
+            else if (currentWoodHp > maxWoodHp * 0.25f) currentState = FenceState.WoodDamage2; // 50% to 25%
+            else if (currentWoodHp > 0) currentState = FenceState.WoodDamage3;                 // 25% to 0%
+            // Steel HP: 4 states, 25% each (75%, 50%, 25%, 0%)  
+            else if (currentSteelHp > maxSteelHp * 0.75f) currentState = FenceState.SteelGood;     // 100% to 75%
+            else if (currentSteelHp > maxSteelHp * 0.5f) currentState = FenceState.SteelDamage1;  // 75% to 50%
+            else if (currentSteelHp > maxSteelHp * 0.25f) currentState = FenceState.SteelDamage2; // 50% to 25%
+            else if (currentSteelHp > 0) currentState = FenceState.SteelDamage3;                  // 25% to 0%
             else currentState = FenceState.Failure;
             
             if (oldState != currentState)
@@ -138,6 +142,9 @@ namespace battle
                     break;
                 case FenceState.WoodDamage3:
                     if (Wood_3) Wood_3.SetActive(true);
+                    if (Steel_0) Steel_0.SetActive(true);
+                    break;
+                case FenceState.SteelGood:
                     if (Steel_0) Steel_0.SetActive(true);
                     break;
                 case FenceState.SteelDamage1:
