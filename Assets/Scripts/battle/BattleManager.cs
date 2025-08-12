@@ -26,6 +26,7 @@ public class BattleManager : MonoBehaviour
     public Image experienceBar;
     
     public GameObject End;
+    public GameOverUI gameOverUI; // Direct reference - assign in Inspector
     private SkillLevelUpController _skillLevelUpController = new();
 
     [Tooltip("从后端获取数据, 并初始化")] public BattleState State { get; set; }
@@ -228,15 +229,38 @@ public class BattleManager : MonoBehaviour
 
     public void GameOver(bool isWin)
     {
+        Debug.Log($"[BattleManager] Game Over called - Win: {isWin}");
+        
+        // Stop the game completely
         Time.timeScale = 0; // Pause the game
-        MonsterInsManager.Instant.gameObject.SetActive(false);
+        IsSuspend = true; // Stop battle updates
+        
+        // Disable monster spawning
+        if (MonsterInsManager.Instant != null) 
+            MonsterInsManager.Instant.gameObject.SetActive(false);
+        
+        // Clean up all battle objects
         var sidekicks = FindObjectsOfType<SidekickManager>();
         var skills = FindObjectsOfType<SkillWrapperManager>();
         foreach (var t in BattleGridManager.Instance.monsters) Destroy(t.gameObject);
         foreach (var item in prop) item.gameObject.SetActive(false);
         foreach (var sidekick in sidekicks) Destroy(sidekick.gameObject);
         foreach (var skill in skills) Destroy(skill.gameObject);
-        End.SetActive(true);
+        
+        Debug.Log("[BattleManager] Battle stopped and cleaned up");
+        
+        // Always activate End panel first (the original working behavior)
+        if (End != null) End.SetActive(true);
+        
+        // Then use GameOverUI if available for win/lose page logic
+        if (gameOverUI != null)
+        {
+            gameOverUI.ShowGameOver(isWin);
+        }
+        else
+        {
+            Debug.LogWarning("[BattleManager] GameOverUI reference not assigned! Using basic End panel.");
+        }
     }
 
     public void TimeReset()
