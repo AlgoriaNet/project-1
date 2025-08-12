@@ -56,15 +56,96 @@ public class MonsterManager : MonoBehaviour
 
     private void CheckMove()
     {
-        if (Monster.IsFrozen || !canMove)
+        if (Monster.IsFrozen)
         {
             moveAnimator.speed = 0;
         }
         else
         {
-            moveAnimator.speed = 1;
-            transform.position -= new Vector3(0, Monster.Speed * Time.deltaTime / 100, 0);
+            // Basic logic: just check if we should stop
+            // No fancy resume logic for now
+            
+            if (!canMove)
+            {
+                moveAnimator.speed = 0;
+            }
+            else
+            {
+                // Check if monster should stop based on fence destruction state
+                bool shouldStop = ShouldStopAtFence();
+                
+                if (shouldStop)
+                {
+                    canMove = false;
+                    moveAnimator.speed = 0;
+                    Debug.Log($"[MonsterManager] {Monster.Name} stopped at Y={transform.position.y:F2} due to fence state: {FenceDestructionManager.Instance.currentState}");
+                }
+                else
+                {
+                    moveAnimator.speed = 1;
+                    transform.position -= new Vector3(0, Monster.Speed * Time.deltaTime / 100, 0);
+                }
+            }
         }
+    }
+
+    private bool ShouldStopAtFence()
+    {
+        if (FenceDestructionManager.Instance == null) return false;
+        
+        var currentState = FenceDestructionManager.Instance.currentState;
+        float currentY = transform.position.y;
+        
+        // DEBUG: Log every few frames to see monster position and state
+        if (Time.frameCount % 60 == 0) // Every 60 frames
+        {
+            Debug.Log($"[MonsterManager] {Monster.Name} at Y={currentY:F2}, fence state={currentState}");
+        }
+        
+        // Wood phase: Stop at Y=-7.1 (just before WoodGroup at Y=-7.22)
+        if (currentState >= FenceDestructionManager.FenceState.WoodGood && 
+            currentState <= FenceDestructionManager.FenceState.WoodDamage3)
+        {
+            bool shouldStop = currentY <= -7.1f;
+            if (shouldStop)
+            {
+                Debug.Log($"[MonsterManager] {Monster.Name} SHOULD STOP at Y={currentY:F2} (wood phase, target Y=-7.1)");
+            }
+            return shouldStop;
+        }
+        
+        // Steel phase: Stop at Y=-7.8 (just before SteelGroup at Y=-7.92)
+        if (currentState >= FenceDestructionManager.FenceState.SteelDamage1 && 
+            currentState <= FenceDestructionManager.FenceState.SteelDamage3)
+        {
+            bool shouldStop = currentY <= -7.8f;
+            if (shouldStop)
+            {
+                Debug.Log($"[MonsterManager] {Monster.Name} SHOULD STOP at Y={currentY:F2} (steel phase, target Y=-7.8)");
+            }
+            return shouldStop;
+        }
+        
+        // Fence completely destroyed - monsters can pass through
+        return false;
+    }
+
+    private bool ShouldResumeMovement()
+    {
+        if (FenceDestructionManager.Instance == null) return false;
+        
+        var currentState = FenceDestructionManager.Instance.currentState;
+        float currentY = transform.position.y;
+        
+        // If wood is destroyed but we're still at wood position, move closer to steel
+        // Only resume if we're clearly above the steel position (not at or below it)
+        if (currentState >= FenceDestructionManager.FenceState.SteelDamage1 && currentY > -7.5f)
+        {
+            Debug.Log($"[MonsterManager] {Monster.Name} should resume: state={currentState}, Y={currentY:F2}");
+            return true;
+        }
+        
+        return false;
     }
 
     private void CheckBuffs()
@@ -126,7 +207,7 @@ public class MonsterManager : MonoBehaviour
         if (other.CompareTag("Finish") || other.gameObject.name.Contains("FinishLine"))
         {
             _timedata += Time.deltaTime;
-            if (_timedata > AttackTime)  // Reduced from AttackTime + 1f to just AttackTime
+            if (_timedata > AttackTime)
             {
                 var rampart = BattleManager.Instance.Rampart;
                 if (rampart == null) 
@@ -151,6 +232,7 @@ public class MonsterManager : MonoBehaviour
             }
         }
     }
+
 
     public Boolean CheckDead()
     {

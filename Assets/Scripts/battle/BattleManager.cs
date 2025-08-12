@@ -52,7 +52,7 @@ public class BattleManager : MonoBehaviour
         };
         
         // Setup finish line trigger for monster attacks
-        SetupFinishLine();
+        // SetupFinishLine(); // Disabled - Rampart now has proper trigger collider
         State = new BattleState
         {
             Hp = 200,
@@ -228,6 +228,7 @@ public class BattleManager : MonoBehaviour
 
     public void GameOver(bool isWin)
     {
+        Time.timeScale = 0; // Pause the game
         MonsterInsManager.Instant.gameObject.SetActive(false);
         var sidekicks = FindObjectsOfType<SidekickManager>();
         var skills = FindObjectsOfType<SkillWrapperManager>();
