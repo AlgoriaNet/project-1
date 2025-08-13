@@ -89,6 +89,14 @@ namespace battle
         
 
 
+        public void ResetState()
+        {
+            _times = 0;
+            isGenerateOver = false;
+            _isFormation = false;
+            Debug.Log("[MonsterInsManager] State reset - ready for new battle");
+        }
+
         Vector3 Pos()
         {
             return new Vector3(

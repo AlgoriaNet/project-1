@@ -44,6 +44,140 @@ public class BattleManager : MonoBehaviour
         else Destroy(this);
         battleApi = BattleWebSocketApi.Instance;
     }
+    
+    public void ResetBattle()
+    {
+        Debug.Log("[BattleManager] Resetting battle for new game");
+        
+        // Reset battle time
+        BattleTime = 0f;
+        
+        // Reset suspend state
+        IsSuspend = false;
+        
+        // Reset battle speed to normal (X1)
+        BattleSpeed = 1f;
+        
+        // Reset time scale
+        Time.timeScale = 1f;
+        
+        // Reset UI button states
+        if (speedUpButton != null)
+        {
+            var text = speedUpButton.GetComponentInChildren<TMPro.TMP_Text>();
+            if (text != null)
+            {
+                text.text = "X1";
+                Debug.Log("[BattleManager] Speed button reset to X1");
+            }
+        }
+        
+        // Ensure pause button shows correct state (unpaused)
+        if (pauseButton != null)
+        {
+            var pauseText = pauseButton.GetComponentInChildren<TMPro.TMP_Text>();
+            if (pauseText != null)
+            {
+                pauseText.text = "Pause"; // or whatever the default pause text should be
+            }
+        }
+        
+        // Reset State HP and experience
+        if (State != null)
+        {
+            State.Hp = State.MaxHp;
+            State.HpRate = 1.0f;
+            State.Experience = 0;
+            State.BattleLevel = 1;
+            
+            // Update UI
+            if (hpText != null) hpText.text = State.Hp.ToString();
+            if (hpBar != null) hpBar.localScale = new Vector3(State.HpRate, 1, 1);
+            if (levelText != null) levelText.text = State.LevelTxt();
+            if (experienceBar != null) experienceBar.fillAmount = State.ExperienceRate;
+        }
+        
+        // Reset battle time display
+        if (battleTimeText != null)
+        {
+            battleTimeText.text = "0.00";
+            Debug.Log("[BattleManager] Battle time display reset to 0.00");
+        }
+        
+        // Ensure level up popup is hidden
+        if (AddMoveWap != null)
+        {
+            AddMoveWap.SetActive(false);
+            Debug.Log("[BattleManager] Level up popup hidden");
+        }
+        
+        // Ensure game over UI is hidden
+        if (End != null)
+        {
+            End.SetActive(false);
+        }
+        if (gameOverUI != null)
+        {
+            gameOverUI.gameObject.SetActive(false);
+        }
+        
+        // Reset fence destruction manager
+        if (FenceDestructionManager.Instance != null)
+        {
+            FenceDestructionManager.Instance.ResetFence();
+        }
+        
+        // Reactivate monster spawning
+        if (MonsterInsManager.Instant != null)
+        {
+            MonsterInsManager.Instant.gameObject.SetActive(true);
+            MonsterInsManager.Instant.ResetState();
+            Debug.Log("[BattleManager] MonsterInsManager reactivated and state reset");
+        }
+        else
+        {
+            Debug.LogError("[BattleManager] MonsterInsManager.Instant is null!");
+        }
+        
+        // Reactivate props
+        foreach (var item in prop) 
+        {
+            if (item != null) item.SetActive(true);
+        }
+        
+        // Clear and reset BattleGridManager monsters list
+        if (BattleGridManager.Instance != null && BattleGridManager.Instance.monsters != null)
+        {
+            BattleGridManager.Instance.monsters.Clear();
+            Debug.Log("[BattleManager] BattleGridManager monsters list cleared");
+        }
+        
+        // Find and reactivate hero components
+        PlayermaskManager playermaskManager = FindObjectOfType<PlayermaskManager>();
+        if (playermaskManager != null)
+        {
+            playermaskManager.gameObject.SetActive(true);
+            Debug.Log("[BattleManager] Hero reactivated");
+        }
+        else
+        {
+            Debug.LogError("[BattleManager] PlayermaskManager not found!");
+        }
+        
+        // Reset hero manager state
+        HeroManager heroManager = FindObjectOfType<HeroManager>();
+        if (heroManager != null)
+        {
+            heroManager.ResetHeroState();
+            Debug.Log("[BattleManager] HeroManager state reset");
+        }
+        else
+        {
+            Debug.LogError("[BattleManager] HeroManager not found!");
+        }
+        
+        Debug.Log("[BattleManager] Battle reset complete");
+    }
 
     private void Start()
     {
@@ -239,13 +373,37 @@ public class BattleManager : MonoBehaviour
         if (MonsterInsManager.Instant != null) 
             MonsterInsManager.Instant.gameObject.SetActive(false);
         
-        // Clean up all battle objects
+        // Clean up battle objects (but preserve hero)
         var sidekicks = FindObjectsOfType<SidekickManager>();
         var skills = FindObjectsOfType<SkillWrapperManager>();
-        foreach (var t in BattleGridManager.Instance.monsters) Destroy(t.gameObject);
-        foreach (var item in prop) item.gameObject.SetActive(false);
-        foreach (var sidekick in sidekicks) Destroy(sidekick.gameObject);
-        foreach (var skill in skills) Destroy(skill.gameObject);
+        
+        // Clear monsters
+        if (BattleGridManager.Instance != null && BattleGridManager.Instance.monsters != null)
+        {
+            foreach (var t in BattleGridManager.Instance.monsters) 
+            {
+                if (t != null) Destroy(t.gameObject);
+            }
+            BattleGridManager.Instance.monsters.Clear();
+        }
+        
+        // Disable props (don't destroy them)
+        foreach (var item in prop) 
+        {
+            if (item != null) item.SetActive(false);
+        }
+        
+        // Destroy sidekicks and skills (these can be recreated)
+        foreach (var sidekick in sidekicks) 
+        {
+            if (sidekick != null) Destroy(sidekick.gameObject);
+        }
+        foreach (var skill in skills) 
+        {
+            if (skill != null) Destroy(skill.gameObject);
+        }
+        
+        // DON'T destroy hero - it should persist between battles
         
         Debug.Log("[BattleManager] Battle stopped and cleaned up");
         

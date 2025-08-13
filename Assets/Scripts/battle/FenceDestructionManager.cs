@@ -46,11 +46,18 @@ namespace battle
         
         void Start()
         {
+            ResetFence();
+        }
+        
+        public void ResetFence()
+        {
             currentWoodHp = maxWoodHp;
             currentSteelHp = maxSteelHp;
+            currentState = FenceState.WoodGood;
             UpdateFenceVisuals();
+            UpdateBattleManagerHP();
             
-            Debug.Log($"[FenceDestruction] Started with Wood HP: {currentWoodHp}, Steel HP: {currentSteelHp}");
+            Debug.Log($"[FenceDestruction] Fence reset with Wood HP: {currentWoodHp}, Steel HP: {currentSteelHp}, State: {currentState}");
         }
         
         public void TakeDamage(int damage)

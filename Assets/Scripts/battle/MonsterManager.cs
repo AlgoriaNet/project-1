@@ -188,7 +188,22 @@ public class MonsterManager : MonoBehaviour
         if (collision.gameObject.CompareTag("Finish") || collision.gameObject.name.Contains("FinishLine"))
         {
             Debug.Log($"[MonsterManager] {Monster.Name} reached the finish line!");
-            Audio.Play();
+            
+            // Add experience reward for monster reaching finish (placeholder)
+            if (BattleManager.Instance != null)
+            {
+                BattleManager.Instance.UpdateExperience(Monster.Exp / 2); // Half experience for reaching finish
+            }
+            
+            // Safe audio play
+            if (Audio != null)
+            {
+                Audio.Play();
+            }
+            else
+            {
+                Debug.LogWarning($"[MonsterManager] Audio component missing for {Monster.Name}");
+            }
         }
 
         if (collision.gameObject.CompareTag("Bullet"))

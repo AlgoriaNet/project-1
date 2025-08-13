@@ -205,6 +205,33 @@ public class HeroManager : MonoBehaviour
     }
     
     // Animate hero back sprites
+    public void ResetHeroState()
+    {
+        Debug.Log("[HeroManager] Resetting hero state for new battle");
+        
+        // Stop all running coroutines
+        StopAllCoroutines();
+        
+        // Reset shooting state
+        _isShooting = false;
+        time = 0;
+        attacktime = 0f;
+        
+        // Reset monster tracking
+        _closestMonster = null;
+        
+        // Restart the enumerator
+        _enumerator = ShootingDelay();
+        
+        // Restart hero back animation
+        if (heroBack != null)
+        {
+            StartCoroutine(AnimateHeroBack());
+        }
+        
+        Debug.Log("[HeroManager] Hero state reset complete - ready for new battle");
+    }
+    
     private IEnumerator AnimateHeroBack()
     {
         if (heroBack == null)
