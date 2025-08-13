@@ -297,7 +297,7 @@ public class HeroBlockSetup : MonoBehaviour
         }
 
         // 1. Exclude unwanted keys
-        var excludeKeys = new HashSet<string> { "heroKey", "rareKey", "epicKey", "crystal", "SKb_00_Hero" };
+        var excludeKeys = new HashSet<string> { "heroKey", "rareKey", "epicKey", "crystal", "equipScroll" };
 
         // 2. Group and sum by true item name (shard/skillbook logic)
         var grouped = new Dictionary<string, int>(); // key: fileName, value: total qnty
