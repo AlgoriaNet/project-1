@@ -27,6 +27,7 @@ public class BattleManager : MonoBehaviour
     
     public GameObject End;
     public GameOverUI gameOverUI; // Direct reference - assign in Inspector
+    public PauseUI pauseUI; // Direct reference - assign in Inspector
     private SkillLevelUpController _skillLevelUpController = new();
 
     [Tooltip("从后端获取数据, 并初始化")] public BattleState State { get; set; }
@@ -121,6 +122,12 @@ public class BattleManager : MonoBehaviour
             gameOverUI.gameObject.SetActive(false);
         }
         
+        // Ensure pause UI is hidden
+        if (pauseUI != null)
+        {
+            pauseUI.HidePauseMenu();
+        }
+        
         // Reset fence destruction manager
         if (FenceDestructionManager.Instance != null)
         {
@@ -204,8 +211,9 @@ public class BattleManager : MonoBehaviour
         UpdateExperience(0);
         
         // Setup button listeners
-        if (pauseButton != null)
-            pauseButton.GetComponent<Button>().onClick.AddListener(TogglePause);
+        // Pause button should be connected directly to PauseUI.ShowPauseMenu in inspector
+        // if (pauseButton != null)
+        //     pauseButton.GetComponent<Button>().onClick.AddListener(TogglePause);
         if (speedUpButton != null)
             speedUpButton.GetComponent<Button>().onClick.AddListener(ToggleSpeedUp);
         
@@ -426,6 +434,85 @@ public class BattleManager : MonoBehaviour
         Time.timeScale = 1;
     }
 
+    public void QuitBattle()
+    {
+        Debug.Log("[BattleManager] Quit battle called - cleaning up and returning to main menu");
+        
+        // Stop the game completely
+        Time.timeScale = 0; 
+        IsSuspend = true; 
+        
+        // Disable monster spawning
+        if (MonsterInsManager.Instant != null) 
+            MonsterInsManager.Instant.gameObject.SetActive(false);
+        
+        // Clean up battle objects
+        var sidekicks = FindObjectsOfType<SidekickManager>();
+        var skills = FindObjectsOfType<SkillWrapperManager>();
+        
+        // Clear monsters
+        if (BattleGridManager.Instance != null && BattleGridManager.Instance.monsters != null)
+        {
+            foreach (var t in BattleGridManager.Instance.monsters) 
+            {
+                if (t != null) Destroy(t.gameObject);
+            }
+            BattleGridManager.Instance.monsters.Clear();
+        }
+        
+        // Disable props
+        foreach (var item in prop) 
+        {
+            if (item != null) item.SetActive(false);
+        }
+        
+        // Destroy sidekicks and skills
+        foreach (var sidekick in sidekicks) 
+        {
+            if (sidekick != null) Destroy(sidekick.gameObject);
+        }
+        foreach (var skill in skills) 
+        {
+            if (skill != null) Destroy(skill.gameObject);
+        }
+        
+        Debug.Log("[BattleManager] Battle cleanup complete - returning to main menu");
+        
+        // Return to main canvas (same as GameOverUI close logic)
+        GameObject mainCanvas = GameObject.Find("Main Canvas");
+        if (mainCanvas != null)
+        {
+            mainCanvas.SetActive(true);
+            
+            // Enable the Canvas component specifically
+            Canvas canvasComponent = mainCanvas.GetComponent<Canvas>();
+            if (canvasComponent != null)
+            {
+                canvasComponent.enabled = true;
+                Debug.Log("[BattleManager] Main Canvas component enabled");
+            }
+            else
+            {
+                Debug.LogError("[BattleManager] Canvas component not found on Main Canvas!");
+            }
+        }
+        else
+        {
+            Debug.LogError("[BattleManager] Main Canvas not found!");
+        }
+        
+        // Disable battle object
+        GameObject battleObject = GameObject.Find("Battle");
+        if (battleObject != null) 
+        {
+            battleObject.SetActive(false);
+            Debug.Log("[BattleManager] Battle disabled");
+        }
+        
+        // Resume time scale for main menu
+        Time.timeScale = 1f;
+    }
+
     public void GameRestart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -488,8 +575,38 @@ public class BattleManager : MonoBehaviour
 
     public void TogglePause()
     {
-        IsSuspend = !IsSuspend;
-        Time.timeScale = IsSuspend ? 0 : BattleSpeed;
+        // Show pause confirmation UI instead of directly toggling
+        if (pauseUI != null)
+        {
+            pauseUI.ShowPauseMenu();
+        }
+        else
+        {
+            // Fallback to old behavior if PauseUI not assigned
+            Debug.LogWarning("[BattleManager] PauseUI not assigned, using fallback pause");
+            IsSuspend = !IsSuspend;
+            Time.timeScale = IsSuspend ? 0 : BattleSpeed;
+        }
+    }
+
+    /// <summary>
+    /// Public method to pause the battle (for PauseUI)
+    /// </summary>
+    public void PauseBattle()
+    {
+        IsSuspend = true;
+        Time.timeScale = 0f;
+        Debug.Log("[BattleManager] Battle paused");
+    }
+
+    /// <summary>
+    /// Public method to resume the battle (for PauseUI)
+    /// </summary>
+    public void ResumeBattle()
+    {
+        IsSuspend = false;
+        Time.timeScale = BattleSpeed;
+        Debug.Log("[BattleManager] Battle resumed");
     }
 
     public void ToggleSpeedUp()
