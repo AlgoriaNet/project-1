@@ -11,6 +11,10 @@ public class GameOverUI : MonoBehaviour
     [Header("Shared Buttons")]
     public Button watchAdsButton;
     public Button closeButton;
+    
+    [Header("UI Elements")]
+    public GameObject buttonGroup;
+    public GameObject clickTextPanel;
 
     
     void Start()
@@ -34,26 +38,24 @@ public class GameOverUI : MonoBehaviour
     /// Show game over screen based on win/lose result
     /// </summary>
     public void ShowGameOver(bool isWin)
-    {
-        Debug.Log($"[GameOverUI] Showing game over screen - Win: {isWin}");
-        
+    {       
         // Activate the parent GameObject (End) first
         gameObject.SetActive(true);
-        Debug.Log($"[GameOverUI] Activated parent GameObject: {gameObject.name}");
+        buttonGroup.SetActive(true);
+        clickTextPanel.SetActive(false);
         
+
         if (isWin)
         {
             // Show win page
             if (winPage) winPage.SetActive(true);
             if (losePage) losePage.SetActive(false);
-            Debug.Log("[GameOverUI] Win page displayed");
         }
         else
         {
             // Show lose page
             if (losePage) losePage.SetActive(true);
             if (winPage) winPage.SetActive(false);
-            Debug.Log("[GameOverUI] Lose page displayed");
         }
     }
     
@@ -61,9 +63,7 @@ public class GameOverUI : MonoBehaviour
     /// (1) Close game over UI and return to main game
     /// </summary>
     public void CloseGameOver()
-    {
-        Debug.Log("[GameOverUI] Closing game over screen");
-        
+    {       
         // Hide both pages
         if (winPage) winPage.SetActive(false);
         if (losePage) losePage.SetActive(false);
@@ -85,40 +85,54 @@ public class GameOverUI : MonoBehaviour
             if (canvasComponent != null)
             {
                 canvasComponent.enabled = true;
-                Debug.Log("[GameOverUI] Main Canvas component enabled");
-            }
-            else
-            {
-                Debug.LogError("[GameOverUI] Canvas component not found on Main Canvas!");
             }
         }
-        else
-        {
-            Debug.LogError("[GameOverUI] Main Canvas not found!");
-        }
-        
+
         // Disable battle object
         if (battleObject) 
         {
             battleObject.SetActive(false);
-            Debug.Log("[GameOverUI] Battle disabled");
         }
     }
     
     /// <summary>
-    /// (2) Watch ads for rewards - placeholder implementation
+    /// (2) Watch ads for rewards - integrated with GoogleMobileAds
     /// </summary>
     public void WatchAds()
     {
         Debug.Log("[GameOverUI] Watch ads button clicked");
         
-        // TODO: Integrate with ad system
-        // Placeholder implementation:
-        
-        Debug.Log("[GameOverUI] PLACEHOLDER: Showing rewarded ad...");
-        
-        // Simulate ad watched and reward given
-        StartCoroutine(SimulateAdWatching());
+        // Use the same ad pattern as gacha system
+        if (GoogleMobileAdsScript.This.CheckRewardedAd())
+        {
+            GoogleMobileAdsScript.This.ShowRewardedAd("battle_reward", () =>
+            {
+                // TODO: Implement double rewards from battle
+                Debug.Log("[GameOverUI] Rewarded ad watched - giving double battle rewards!");
+                
+                // Placeholder: Double coins, gems, experience from battle
+                Debug.Log("[GameOverUI] PLACEHOLDER: Double rewards awarded!");
+                
+                // Hide button group and show click text after ad
+                if (buttonGroup) buttonGroup.SetActive(false);
+                if (clickTextPanel) clickTextPanel.SetActive(true);
+            });
+        }
+        else
+        {
+            GoogleMobileAdsScript.This.ShowInterstitialAd(() =>
+            {
+                // TODO: Implement double rewards from battle  
+                Debug.Log("[GameOverUI] Interstitial ad watched - giving double battle rewards!");
+                
+                // Placeholder: Double coins, gems, experience from battle
+                Debug.Log("[GameOverUI] PLACEHOLDER: Double rewards awarded!");
+                
+                // Hide button group and show click text after ad
+                if (buttonGroup) buttonGroup.SetActive(false);
+                if (clickTextPanel) clickTextPanel.SetActive(true);
+            });
+        }
     }
     
     /// <summary>
@@ -137,9 +151,7 @@ public class GameOverUI : MonoBehaviour
     /// Restart the battle (only available on lose page)
     /// </summary>
     public void RestartBattle()
-    {
-        Debug.Log("[GameOverUI] Restart battle button clicked");
-        
+    {      
         // Hide game over UI
         if (winPage) winPage.SetActive(false);
         if (losePage) losePage.SetActive(false);
@@ -149,11 +161,6 @@ public class GameOverUI : MonoBehaviour
         if (battleStarter != null)
         {
             battleStarter.StartBattle();
-            Debug.Log("[GameOverUI] Battle restarted successfully");
-        }
-        else
-        {
-            Debug.LogError("[GameOverUI] BattleStarter not found! Cannot restart battle.");
         }
     }
     
@@ -161,9 +168,7 @@ public class GameOverUI : MonoBehaviour
     /// Simulate ad watching with coroutine
     /// </summary>
     private System.Collections.IEnumerator SimulateAdWatching()
-    {
-        Debug.Log("[GameOverUI] Ad started playing...");
-        
+    {       
         // Simulate 3 second ad
         yield return new WaitForSecondsRealtime(3f);
         
@@ -185,10 +190,6 @@ public class GameOverUI : MonoBehaviour
         if (gameOverUI != null)
         {
             gameOverUI.ShowGameOver(isWin);
-        }
-        else
-        {
-            Debug.LogError("[GameOverUI] GameOverUI instance not found in scene!");
         }
     }
 }
