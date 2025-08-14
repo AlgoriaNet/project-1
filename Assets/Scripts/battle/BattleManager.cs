@@ -38,6 +38,9 @@ public class BattleManager : MonoBehaviour
     public float BattleSpeed { get; private set; } = 1;
 
     public BattleWebSocketApi battleApi { get; private set; }
+    
+    // Store victory status for ad rewards API call
+    private bool lastBattleVictory;
 
     private void Awake()
     {
@@ -295,8 +298,15 @@ public class BattleManager : MonoBehaviour
         Debug.Log("sidekickList.Count: " + sidekickList.Count);
         foreach (var sidekick in sidekickList)
         {
-            Debug.Log("Sidekick Skill name: " + sidekick.Skill.Name);
-            Debug.Log("Sidekick Skill target type: " + sidekick.Skill.SkillTargetType);
+            if (sidekick.Skill != null)
+            {
+                Debug.Log("Sidekick Skill name: " + sidekick.Skill.Name);
+                Debug.Log("Sidekick Skill target type: " + sidekick.Skill.SkillTargetType);
+            }
+            else
+            {
+                Debug.LogWarning($"Sidekick {sidekick?.Name ?? "Unknown"} has null Skill!");
+            }
             BattleGridManager.Instance.Sidekicks.Add(sidekick);
         }
     }
@@ -414,6 +424,145 @@ public class BattleManager : MonoBehaviour
         // DON'T destroy hero - it should persist between battles
         
         Debug.Log("[BattleManager] Battle stopped and cleaned up");
+        
+        // Show game over UI immediately (original behavior)
+        ShowGameOverImmediately(isWin);
+        
+        // Call battle_complete API to get rewards (this will update the UI with rewards)
+        CallBattleCompleteAPI(isWin);
+    }
+    
+    private void CallBattleCompleteAPI(bool isWin)
+    {
+        Debug.Log($"[BattleManager] Calling battle_complete API for Rewards A - Victory: {isWin}");
+        
+        // Store victory status for potential ad rewards call
+        lastBattleVictory = isWin;
+        
+        var battleData = new 
+        {
+            victory = isWin
+        };
+        
+        battleApi.Action("battle_complete", battleData, HandleFirstRewards, HandleBattleRewardsError);
+    }
+    
+    /// <summary>
+    /// Call battle_complete API again after ad is watched successfully
+    /// </summary>
+    public void CallAdRewardsAPI()
+    {
+        Debug.Log($"[BattleManager] Calling battle_complete API for Rewards B (Ad rewards) - Victory: {lastBattleVictory}");
+        
+        var battleData = new 
+        {
+            victory = lastBattleVictory
+        };
+        
+        battleApi.Action("battle_complete", battleData, HandleAdRewards, HandleAdRewardsError);
+    }
+    
+    private void HandleFirstRewards(JObject response)
+    {
+        Debug.Log($"[BattleManager] First rewards (A) received: {response}");
+        
+        if (response == null)
+        {
+            Debug.LogError("[BattleManager] Received null response from battle_complete API");
+            return;
+        }
+        
+        // The API response format is: { "victory": bool, "rewards": {...}, "updated_player": {...} }
+        if (response["rewards"] != null)
+        {
+            // Store rewards data for display
+            var rewards = response["rewards"];
+            var updatedPlayer = response["updated_player"];
+            
+            Debug.Log($"[BattleManager] Processing rewards: {rewards}");
+            
+            // Update player profile with new data
+            if (updatedPlayer != null)
+            {
+                var player = updatedPlayer.ToObject<Player>();
+                PlayerProfile.Data.SetPlayer(player);
+                Debug.Log("[BattleManager] Player profile updated with first rewards");
+            }
+            
+            // Display first rewards in UI
+            DisplayRewardsInUI(rewards, false); // false = not from ads
+        }
+        else
+        {
+            Debug.LogError($"[BattleManager] Response missing 'rewards' field: {response}");
+        }
+    }
+    
+    private void HandleAdRewards(JObject response)
+    {
+        Debug.Log($"[BattleManager] Ad rewards (B) received: {response}");
+        
+        if (response != null && response["rewards"] != null)
+        {
+            // Store rewards data for display
+            var rewards = response["rewards"];
+            var updatedPlayer = response["updated_player"];
+            
+            // Update player profile with new data
+            if (updatedPlayer != null)
+            {
+                var player = updatedPlayer.ToObject<Player>();
+                PlayerProfile.Data.SetPlayer(player);
+                Debug.Log("[BattleManager] Player profile updated with ad rewards");
+            }
+            
+            // Display ad rewards in UI (refresh and add B rewards)
+            DisplayRewardsInUI(rewards, true); // true = from ads
+        }
+        else
+        {
+            Debug.LogError($"[BattleManager] Ad rewards API failed with code: {response["code"]}");
+        }
+    }
+    
+    private void HandleBattleRewardsError(JObject error)
+    {
+        Debug.LogError($"[BattleManager] First rewards API error: {error}");
+    }
+    
+    private void HandleAdRewardsError(JObject error)
+    {
+        Debug.LogError($"[BattleManager] Ad rewards API error: {error}");
+        // Ad rewards failed, but user still has first rewards - no additional action needed
+    }
+    
+    /// <summary>
+    /// Display rewards in the game over UI. Called for both A and B rewards.
+    /// </summary>
+    private void DisplayRewardsInUI(JToken rewards, bool isFromAds)
+    {
+        string rewardType = isFromAds ? "B (Ad rewards)" : "A (Battle rewards)";
+        Debug.Log($"[BattleManager] Displaying rewards {rewardType} in UI");
+        
+        if (gameOverUI != null)
+        {
+            var gameOverComponent = gameOverUI.GetComponent<GameOverUI>();
+            if (gameOverComponent != null)
+            {
+                gameOverComponent.DisplayRewards(rewards, isFromAds);
+                Debug.Log($"[BattleManager] Rewards {rewardType} displayed in game over UI");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[BattleManager] GameOverUI reference not assigned! Cannot display rewards.");
+        }
+    }
+    
+    private void ShowGameOverImmediately(bool isWin)
+    {
+        // Original working behavior - show UI immediately
+        Debug.Log("[BattleManager] Showing game over UI immediately");
         
         // Always activate End panel first (the original working behavior)
         if (End != null) End.SetActive(true);
