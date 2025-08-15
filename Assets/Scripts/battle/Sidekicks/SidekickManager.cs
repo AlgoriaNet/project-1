@@ -29,8 +29,11 @@ namespace battle
         protected void Start()
         {
             _animator = GetComponentInChildren<Animator>();
-            _animator.Play($"_{_sidekick.Name}_Attack");
-            isActive = true;
+            if (_sidekick != null)
+            {
+                _animator.Play($"_{_sidekick.Name}_Attack");
+                isActive = true;
+            }
         }
 
         protected virtual void Update()
@@ -49,8 +52,15 @@ namespace battle
             _waitingTime = 0;
             _waitLaunchesIntervalTime = 0;
             
+            // Start animation if animator is ready
+            if (_animator != null)
+            {
+                _animator.Play($"_{_sidekick.Name}_Attack");
+                isActive = true;
+            }
+            
             // Load sidekick sprite with validation
-            string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name);
+            string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name, sidekick.Id.ToString());
             Debug.Log($"[SidekickManager] Loading sidekick sprite for {sidekick.Name} from path: {spritePath}");
             
             Sprite sidekickSprite = Resources.Load<Sprite>(spritePath);
