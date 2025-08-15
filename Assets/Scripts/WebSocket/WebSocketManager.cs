@@ -61,6 +61,7 @@ public class WebSocketManager : MonoBehaviour
             EquipmentWebSocketApi.Instance.Subscribe();
             GemWebSocketApi.Instance.Subscribe();
             BattleWebSocketApi.Instance.Subscribe();
+            PlayerLevelWebSocketApi.Instance.Subscribe();
             // EnergyWebSocketApi.Instance.Subscribe(); // TODO: Add when Unity recognizes the file
             PlayerWebSocketApi.Instance.Action("profile", new { }, SetProfileFromServer);
             PlayerWebSocketApi.Instance.AddBroadcastAcceptor("send_periodic_rewards",result =>
@@ -79,6 +80,7 @@ public class WebSocketManager : MonoBehaviour
             EquipmentWebSocketApi.Instance.Disconnect();
             GemWebSocketApi.Instance.Disconnect();
             BattleWebSocketApi.Instance.Disconnect();
+            PlayerLevelWebSocketApi.Instance.Disconnect();
             // EnergyWebSocketApi.Instance.Disconnect(); // TODO: Add when Unity recognizes the file
             _instance = null;
         };
@@ -150,6 +152,12 @@ public class WebSocketManager : MonoBehaviour
 
     public void Subscribe(string channel)
     {
+        if (_ws == null)
+        {
+            Debug.LogWarning($"WebSocket not connected yet, cannot subscribe to channel: {channel}");
+            return;
+        }
+        
         var subscriptionMessage = new
         {
             command = "subscribe",

@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using model;
+using Newtonsoft.Json.Linq;
+using WebSocket;
 
 
 public class HeroMenuPopup : MonoBehaviour
@@ -24,7 +27,12 @@ public class HeroMenuPopup : MonoBehaviour
 
     public GameObject skillItemPrefab; // Assign SkillItem prefab in Inspector
     public Transform skillContentPanel;  // Assign "Content" inside ScrollView
-    private GameObject activeDescription = null; 
+    private GameObject activeDescription = null;
+    
+    // Level and EXP display components
+    [SerializeField] private TMP_Text levelText;
+    [SerializeField] private RectTransform expBar;
+    private bool _isRefreshingLevelInfo = false; 
 
 
     // Mock List for test only, Need to delete later. 
@@ -59,6 +67,9 @@ public class HeroMenuPopup : MonoBehaviour
         closeGunButton.onClick.AddListener(CloseGunPage);
         closeGemButton.onClick.AddListener(CloseGemPage);
         closeSkinButton.onClick.AddListener(CloseSkinPage); // Assign listener for skin page close button
+        
+        // Subscribe to player data updates for level/EXP display
+        PlayerProfile.Data.AddListener(UpdateHeroMenuInfo, "Player");
     }
 
     private void OpenSkinPage()
@@ -219,5 +230,122 @@ public class HeroMenuPopup : MonoBehaviour
 
         // Update activeDescription reference
         activeDescription = selectedDesc.gameObject.activeSelf ? selectedDesc.gameObject : null;
+    }
+    
+    /// <summary>
+    /// Update Hero Menu level and EXP display when player data changes
+    /// </summary>
+    private void UpdateHeroMenuInfo(ApplicationModel model)
+    {
+        var player = PlayerProfile.Data.Player;
+        
+        // Don't try to refresh level info if player data is not loaded yet
+        if (player == null)
+        {
+            Debug.Log("[HeroMenuPopup] Player data not loaded yet, skipping level refresh");
+            return;
+        }
+        
+        // Update basic level display first
+        if (levelText != null) levelText.text = $"Level {player.Level}";
+        
+        // Only refresh detailed level info if we're not already in the middle of a level refresh
+        if (!_isRefreshingLevelInfo)
+        {
+            RefreshHeroMenuLevelInfo();
+        }
+    }
+    
+    /// <summary>
+    /// Call get_level_info API to refresh Hero Menu level and EXP display with server calculations
+    /// </summary>
+    public void RefreshHeroMenuLevelInfo()
+    {
+        if (_isRefreshingLevelInfo)
+        {
+            Debug.Log("[HeroMenuPopup] Already refreshing level info, skipping duplicate request");
+            return;
+        }
+        
+        Debug.Log("[HeroMenuPopup] Calling get_level_info API to refresh Hero Menu level data");
+        _isRefreshingLevelInfo = true;
+        
+        PlayerLevelWebSocketApi.Instance.Action("get_level_info", new { }, HandleHeroMenuLevelInfo, HandleHeroMenuLevelError);
+    }
+    
+    /// <summary>
+    /// Handle successful level info response for Hero Menu
+    /// </summary>
+    private void HandleHeroMenuLevelInfo(JObject response)
+    {
+        _isRefreshingLevelInfo = false;
+        Debug.Log($"[HeroMenuPopup] Level info received: {response}");
+        
+        var levelInfo = response["level_info"];
+        
+        if (levelInfo != null)
+        {
+            UpdateHeroMenuLevelDisplay(levelInfo);
+            Debug.Log("[HeroMenuPopup] Hero Menu level display updated successfully");
+        }
+        
+        Debug.Log("[HeroMenuPopup] Hero Menu level API response processed successfully");
+    }
+    
+    /// <summary>
+    /// Handle level info API error for Hero Menu
+    /// </summary>
+    private void HandleHeroMenuLevelError(JObject error)
+    {
+        _isRefreshingLevelInfo = false;
+        Debug.LogError($"[HeroMenuPopup] Level info API error: {error}");
+    }
+    
+    /// <summary>
+    /// Update Hero Menu level and EXP bar display with server data
+    /// </summary>
+    private void UpdateHeroMenuLevelDisplay(JToken levelInfo)
+    {
+        var currentLevel = levelInfo["current_level"]?.Value<int>() ?? 1;
+        var currentExp = levelInfo["current_exp"]?.Value<int>() ?? 0;
+        var isMaxLevel = levelInfo["is_max_level"]?.Value<bool>() ?? false;
+        var totalExpForNextLevel = levelInfo["total_exp_for_next_level"]?.Value<int>() ?? 0;
+        
+        // Calculate simple progress percentage: currentExp / totalExpForNextLevel
+        float progressPercentage = 0f;
+        if (!isMaxLevel && totalExpForNextLevel > 0)
+        {
+            progressPercentage = ((float)currentExp / totalExpForNextLevel) * 100f;
+        }
+        
+        // Update level text
+        if (levelText != null) 
+        {
+            levelText.text = isMaxLevel ? "Level MAX" : $"Level {currentLevel}";
+        }
+        
+        // Update EXP bar (exactly like BattleManager HP bar)
+        if (expBar != null)
+        {
+            if (isMaxLevel)
+            {
+                expBar.localScale = new Vector3(1.0f, 1, 1); // Full bar for max level
+            }
+            else
+            {
+                float expRate = progressPercentage / 100f; // Simple calculation
+                expBar.localScale = new Vector3(expRate, 1, 1); // Scale X-axis like HP bar
+            }
+        }
+        
+        Debug.Log($"[HeroMenuPopup] Hero Menu level display updated: Level {currentLevel}, EXP {currentExp}/{totalExpForNextLevel} ({progressPercentage:F1}%)");
+    }
+    
+    /// <summary>
+    /// Clean up listeners when destroyed
+    /// </summary>
+    private void OnDestroy()
+    {
+        PlayerProfile.Data.RemoveListener(UpdateHeroMenuInfo, "Player");
     }
 }

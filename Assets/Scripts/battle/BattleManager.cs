@@ -491,6 +491,9 @@ public class BattleManager : MonoBehaviour
             
             // Display first rewards in UI
             DisplayRewardsInUI(rewards, false); // false = not from ads
+            
+            // Refresh level info since EXP was gained from battle
+            RefreshPlayerLevelAfterBattle();
         }
         else
         {
@@ -518,6 +521,9 @@ public class BattleManager : MonoBehaviour
             
             // Display ad rewards in UI (refresh and add B rewards)
             DisplayRewardsInUI(rewards, true); // true = from ads
+            
+            // Refresh level info since EXP was gained from ads
+            RefreshPlayerLevelAfterBattle();
         }
         else
         {
@@ -575,6 +581,25 @@ public class BattleManager : MonoBehaviour
         else
         {
             Debug.LogWarning("[BattleManager] GameOverUI reference not assigned! Using basic End panel.");
+        }
+    }
+    
+    /// <summary>
+    /// Refresh player level info after battle rewards (which may include EXP)
+    /// </summary>
+    private void RefreshPlayerLevelAfterBattle()
+    {
+        Debug.Log("[BattleManager] Refreshing player level after battle rewards");
+        
+        // Find PlayerController and refresh level info
+        var playerController = FindObjectOfType<UI_Controller.PlayerController>();
+        if (playerController != null)
+        {
+            playerController.RefreshLevelInfo();
+        }
+        else
+        {
+            Debug.LogWarning("[BattleManager] Could not find PlayerController to refresh level info");
         }
     }
 
