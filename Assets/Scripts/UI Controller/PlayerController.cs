@@ -106,11 +106,14 @@ namespace UI_Controller
             var isMaxLevel = levelInfo["is_max_level"]?.Value<bool>() ?? false;
             var totalExpForNextLevel = levelInfo["total_exp_for_next_level"]?.Value<int>() ?? 0;
             
-            // Calculate simple progress percentage: currentExp / totalExpForNextLevel
+            // Calculate progress within current level range
+            var totalExpForCurrentLevel = levelInfo["total_exp_for_current_level"]?.Value<int>() ?? 0;
             float progressPercentage = 0f;
-            if (!isMaxLevel && totalExpForNextLevel > 0)
+            if (!isMaxLevel && totalExpForNextLevel > totalExpForCurrentLevel)
             {
-                progressPercentage = ((float)currentExp / totalExpForNextLevel) * 100f;
+                float expInCurrentLevel = currentExp - totalExpForCurrentLevel;
+                float expNeededForNextLevel = totalExpForNextLevel - totalExpForCurrentLevel;
+                progressPercentage = (expInCurrentLevel / expNeededForNextLevel) * 100f;
             }
             
             // Update basic level and EXP display
