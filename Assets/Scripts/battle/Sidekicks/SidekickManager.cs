@@ -64,8 +64,9 @@ namespace battle
             // Don't use Animator - it's disabled. Animation will be handled manually like HeroManager
             isActive = true;
             
-            // TODO: Implement manual sprite animation like HeroManager.AnimateHeroBack()
-            Debug.Log($"[SidekickManager] Sidekick {sidekick.Name} initialized - using manual sprite animation");
+            // Start manual sprite animation like HeroManager does
+            Debug.Log($"[SidekickManager] Sidekick {sidekick.Name} initialized - starting manual sprite animation");
+            StartCoroutine(AnimateSidekickBack());
             
             // Load sidekick sprite with validation
             // Map API IDs to actual sprite file IDs (API sends 5,7,9,4 but files are B_01_, B_02_, etc.)
@@ -221,9 +222,12 @@ namespace battle
         {
             if (sidekickBack == null) return;
             
-            // Set appropriate sorting order - always below hero (hero uses 50)
-            const int SIDEKICK_MAX_SORTING_ORDER = 40;
+            // Set appropriate sorting order - much higher to overcome Canvas/UI blocking
+            const int SIDEKICK_MAX_SORTING_ORDER = 150;
             sidekickBack.sortingOrder = SIDEKICK_MAX_SORTING_ORDER;
+            
+            // Also set sorting layer to ensure it's above UI
+            sidekickBack.sortingLayerName = "Default";
             
             // Find hero position to avoid overlap
             var heroManager = FindObjectOfType<HeroManager>();
@@ -253,7 +257,10 @@ namespace battle
                 }
             }
             
-            Debug.Log($"[SidekickManager] Configured {_sidekick.Name} positioning - SortingOrder: {sidekickBack.sortingOrder}, Position: {transform.position}");
+            Debug.Log($"[SidekickManager] Configured {_sidekick.Name} positioning - SortingOrder: {sidekickBack.sortingOrder}, SortingLayer: {sidekickBack.sortingLayerName}, Position: {transform.position}");
+            
+            // Debug: Check what might be blocking us
+            Debug.Log($"[SidekickManager] {_sidekick.Name} final state - Enabled: {sidekickBack.enabled}, Active: {sidekickBack.gameObject.activeInHierarchy}, Sprite: {sidekickBack.sprite?.name}");
         }
         
         /// <summary>
@@ -274,6 +281,46 @@ namespace battle
                 default:
                     Debug.LogWarning($"[SidekickManager] Unknown sidekick name: {sidekickName}, using ID 1 as fallback");
                     return 1;
+            }
+        }
+        
+        /// <summary>
+        /// Manual sprite animation like HeroManager.AnimateHeroBack()
+        /// Cycles between sprite 1 and sprite 2 for each sidekick
+        /// </summary>
+        private IEnumerator AnimateSidekickBack()
+        {
+            if (sidekickBack == null || _sidekick == null)
+            {
+                yield break;
+            }
+            
+            int spriteId = GetSpriteIdForSidekick(_sidekick.Name);
+            string[] spriteNames = { $"B_{spriteId:00}_1", $"B_{spriteId:00}_2" };
+            int currentFrame = 0;
+            
+            Debug.Log($"[SidekickManager] Starting animation for {_sidekick.Name} with sprites: {string.Join(", ", spriteNames)}");
+            
+            while (true)
+            {
+                string currentSpriteName = spriteNames[currentFrame];
+                string spritePath = $"Sidekicks/Back/B_{spriteId:00}_{_sidekick.Name}/{currentSpriteName}";
+                
+                Sprite sprite = Resources.Load<Sprite>(spritePath);
+                if (sprite != null && sidekickBack != null)
+                {
+                    sidekickBack.sprite = sprite;
+                    Debug.Log($"[SidekickManager] Animated {_sidekick.Name} to frame {currentFrame}: {currentSpriteName}");
+                }
+                else
+                {
+                    Debug.LogWarning($"[SidekickManager] Failed to load animation frame: {spritePath}");
+                }
+                
+                // Toggle between frame 0 and 1
+                currentFrame = 1 - currentFrame;
+                
+                yield return new WaitForSeconds(0.2f); // 4x speed - was 0.8f
             }
         }
     }
