@@ -222,45 +222,11 @@ namespace battle
         {
             if (sidekickBack == null) return;
             
-            // Set appropriate sorting order - much higher to overcome Canvas/UI blocking
-            const int SIDEKICK_MAX_SORTING_ORDER = 150;
-            sidekickBack.sortingOrder = SIDEKICK_MAX_SORTING_ORDER;
-            
-            // Also set sorting layer to ensure it's above UI
+            // Set sorting layer to match hero's "Default" layer
             sidekickBack.sortingLayerName = "Default";
+            sidekickBack.sortingOrder = 200;
             
-            // Find hero position to avoid overlap
-            var heroManager = FindObjectOfType<HeroManager>();
-            if (heroManager != null)
-            {
-                float distanceToHero = Vector3.Distance(transform.position, heroManager.transform.position);
-                
-                // If sidekick is too close to hero position, move it away
-                if (distanceToHero < 1.5f)
-                {
-                    Vector3 directionFromHero = (transform.position - heroManager.transform.position).normalized;
-                    Vector3 newPosition = heroManager.transform.position + directionFromHero * 2.0f;
-                    transform.position = newPosition;
-                    
-                    Debug.LogWarning($"[SidekickManager] Moved sidekick {_sidekick.Name} away from hero. New position: {newPosition}");
-                }
-                
-                // Special handling for flame-type sidekicks to prevent visual confusion
-                if (_sidekick.Name.ToLower().Contains("flame"))
-                {
-                    // Move flame sidekicks further from hero and lower their priority
-                    Vector3 flamePosition = heroManager.transform.position + Vector3.right * 3.0f;
-                    transform.position = flamePosition;
-                    sidekickBack.sortingOrder = SIDEKICK_MAX_SORTING_ORDER - 10; // Even lower priority
-                    
-                    Debug.LogWarning($"[SidekickManager] Applied special positioning for flame sidekick {_sidekick.Name} at {flamePosition}");
-                }
-            }
-            
-            Debug.Log($"[SidekickManager] Configured {_sidekick.Name} positioning - SortingOrder: {sidekickBack.sortingOrder}, SortingLayer: {sidekickBack.sortingLayerName}, Position: {transform.position}");
-            
-            // Debug: Check what might be blocking us
-            Debug.Log($"[SidekickManager] {_sidekick.Name} final state - Enabled: {sidekickBack.enabled}, Active: {sidekickBack.gameObject.activeInHierarchy}, Sprite: {sidekickBack.sprite?.name}");
+            Debug.Log($"[SidekickManager] Set {_sidekick.Name} to Default sorting layer with order 200");
         }
         
         /// <summary>

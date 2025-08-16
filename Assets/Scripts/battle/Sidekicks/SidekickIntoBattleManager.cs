@@ -48,10 +48,10 @@ namespace battle
                 Vector3 targetPosition = sidekickPositions[index].position;
                 
                 // Adjust sidekick positioning: move up and spread out slightly
-                targetPosition.y += 1.0f; // Move up so feet aren't off screen
+                targetPosition.y += 0.5f; // Move up so feet aren't off screen
                 
                 // Spread them out more horizontally based on index
-                float spreadOffset = (index - 1.5f) * 0.3f; // -0.45, -0.15, +0.15, +0.45
+                float spreadOffset = (index - 1.5f) * 0.4f; // -0.45, -0.15, +0.15, +0.45
                 targetPosition.x += spreadOffset;
                 
                 // Special positioning for flame sidekicks to prevent hero visual confusion
