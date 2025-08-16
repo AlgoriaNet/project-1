@@ -61,7 +61,7 @@ namespace battle
                     parent.transform);
                 var sidekickManager = sidekickObj.GetComponent<SidekickManager>();
                 sidekickManager.Init(sidekick);
-                sidekickPositions[index].gameObject.SetActive(false);
+                // Don't disable position markers - they should stay active for proper sidekick visibility
                 SetSkillCd(index, sidekick, sidekickManager);
                 
                 Debug.Log($"[SidekickIntoBattle] Successfully spawned {sidekick.Name} at position {targetPosition}");
@@ -83,8 +83,21 @@ namespace battle
             rectTransform.localScale = new Vector3(1, 1, 1);
             
             var image = skillCd.GetComponent<Image>();
+            
+            // Check if sidekick has a valid skill before trying to load icon
+            if (sidekick.Skill == null)
+            {
+                Debug.LogWarning($"[SidekickIntoBattleManager] Sidekick {sidekick.Name} has null Skill - cannot set skill CD UI");
+                return;
+            }
+            
             Sprite icon = sidekick.Skill.LoadIconSprite();
-            if (icon == null) return;
+            if (icon == null) 
+            {
+                Debug.LogWarning($"[SidekickIntoBattleManager] Could not load skill icon for {sidekick.Name}");
+                return;
+            }
+            
             image.sprite = icon;
             GameObject mask = skillCd.transform.Find("skillCD_Mask").gameObject;
             mask.GetComponent<Image>().sprite = icon;

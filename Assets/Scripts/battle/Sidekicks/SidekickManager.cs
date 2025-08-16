@@ -29,16 +29,17 @@ namespace battle
         protected void Start()
         {
             _animator = GetComponentInChildren<Animator>();
-            if (_sidekick != null)
+            // Disable animator like HeroManager does - use manual sprite animation instead
+            if (_animator != null)
             {
-                _animator.Play($"_{_sidekick.Name}_Attack");
-                isActive = true;
+                _animator.enabled = false;
+                Debug.Log($"[SidekickManager] Disabled Animator for manual sprite animation");
             }
         }
 
         protected virtual void Update()
         {
-            if (!isActive) return;
+            if (!isActive || _sidekick == null || _sidekick.Skill == null) return;
             UpdateWaitingTime();
             UpdateSkillCooldownUI();
             if (_waitingTime >= _sidekick.Skill.Cd) HandleSkillRelease();
@@ -46,31 +47,94 @@ namespace battle
 
         public void Init(Sidekick sidekick)
         {
+            if (sidekick == null)
+            {
+                Debug.LogError("[SidekickManager] Cannot init with null sidekick!");
+                return;
+            }
+            
             _sidekick = sidekick;
             _isReleasing = false;
             _launchesTimes = 0;
             _waitingTime = 0;
             _waitLaunchesIntervalTime = 0;
             
-            // Start animation if animator is ready
-            if (_animator != null)
-            {
-                _animator.Play($"_{_sidekick.Name}_Attack");
-                isActive = true;
-            }
+            Debug.Log($"[SidekickManager] Initializing sidekick: {sidekick.Name} (ID: {sidekick.Id})");
+            
+            // Don't use Animator - it's disabled. Animation will be handled manually like HeroManager
+            isActive = true;
+            
+            // TODO: Implement manual sprite animation like HeroManager.AnimateHeroBack()
+            Debug.Log($"[SidekickManager] Sidekick {sidekick.Name} initialized - using manual sprite animation");
             
             // Load sidekick sprite with validation
-            string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name, sidekick.Id.ToString());
-            Debug.Log($"[SidekickManager] Loading sidekick sprite for {sidekick.Name} from path: {spritePath}");
+            // Map API IDs to actual sprite file IDs (API sends 5,7,9,4 but files are B_01_, B_02_, etc.)
+            int spriteId = GetSpriteIdForSidekick(sidekick.Name);
+            string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name, spriteId.ToString("00"));
+            Debug.Log($"[SidekickManager] Loading sidekick sprite for {sidekick.Name} (API ID: {sidekick.Id}, Sprite ID: {spriteId}) from path: {spritePath}");
+            
+            // If sidekickBack is null, try to find the SpriteRenderer component
+            if (sidekickBack == null)
+            {
+                sidekickBack = GetComponentInChildren<SpriteRenderer>();
+                Debug.Log($"[SidekickManager] sidekickBack was null, found SpriteRenderer: {sidekickBack != null}");
+            }
+            
+            // DEBUG: Check all SpriteRenderer components
+            var allSpriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+            Debug.Log($"[SidekickManager] Found {allSpriteRenderers.Length} SpriteRenderer components:");
+            for (int i = 0; i < allSpriteRenderers.Length; i++)
+            {
+                Debug.Log($"[SidekickManager] SpriteRenderer[{i}]: {allSpriteRenderers[i].gameObject.name}, current sprite: {allSpriteRenderers[i].sprite?.name ?? "null"}");
+            }
             
             Sprite sidekickSprite = Resources.Load<Sprite>(spritePath);
+            Debug.Log($"[SidekickManager] sidekickBack null check: {sidekickBack == null}, sprite null check: {sidekickSprite == null}");
+            
+            // DEBUG: Test direct path that we know works
+            if (sidekickSprite == null)
+            {
+                string testPath = "Sidekicks/Back/B_05_Lyanna/B_05_1";
+                Sprite testSprite = Resources.Load<Sprite>(testPath);
+                Debug.Log($"[SidekickManager] DIRECT TEST: {testPath} -> {testSprite?.name ?? "NULL"}");
+            }
+            Debug.Log($"[SidekickManager] CRITICAL: Sprite loading result - Path: {spritePath}, Loaded sprite: {sidekickSprite?.name ?? "NULL - FILE NOT FOUND!"}");
+            
             if (sidekickSprite != null)
             {
-                sidekickBack.sprite = sidekickSprite;
-                Debug.Log($"[SidekickManager] SUCCESS: Loaded sidekick sprite: {sidekickSprite.name} for {sidekick.Name}");
-                
-                // Ensure sidekick doesn't overlay hero position and has proper sorting order
-                EnsureProperPositioning();
+                if (sidekickBack != null)
+                {
+                    Debug.Log($"[SidekickManager] About to assign sprite {sidekickSprite.name} to sidekickBack.sprite");
+                    Debug.Log($"[SidekickManager] sidekickBack reference: {sidekickBack}, enabled: {sidekickBack.enabled}");
+                    Debug.Log($"[SidekickManager] sidekickBack.gameObject: {sidekickBack.gameObject.name}");
+                    
+                    sidekickBack.sprite = sidekickSprite;
+                    
+                    Debug.Log($"[SidekickManager] After assignment - sidekickBack.sprite is: {sidekickBack.sprite?.name ?? "null"}");
+                    
+                    // Force assignment verification
+                    if (sidekickBack.sprite == null) {
+                        Debug.LogError($"[SidekickManager] CRITICAL: Sprite assignment failed! Trying direct assignment...");
+                        var spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+                        if (spriteRenderer != null) {
+                            spriteRenderer.sprite = sidekickSprite;
+                            Debug.Log($"[SidekickManager] Direct assignment result: {spriteRenderer.sprite?.name ?? "null"}");
+                        }
+                    }
+                    
+                    Debug.Log($"[SidekickManager] SUCCESS: Loaded sidekick sprite: {sidekickSprite.name} for {sidekick.Name}");
+                    
+                    // Ensure sidekick doesn't overlay hero position and has proper sorting order
+                    EnsureProperPositioning();
+                    
+                    // TEMPORARY: Make sidekicks bigger for testing visibility
+                    transform.localScale = Vector3.one; // Change from 0.25 to 1.0 for testing
+                    Debug.Log($"[SidekickManager] TEMP: Set {sidekick.Name} scale to 1.0 for testing");
+                }
+                else
+                {
+                    Debug.LogError($"[SidekickManager] ERROR: sidekickBack SpriteRenderer is null! Cannot assign sprite for {sidekick.Name}");
+                }
             }
             else
             {
@@ -190,6 +254,27 @@ namespace battle
             }
             
             Debug.Log($"[SidekickManager] Configured {_sidekick.Name} positioning - SortingOrder: {sidekickBack.sortingOrder}, Position: {transform.position}");
+        }
+        
+        /// <summary>
+        /// Maps sidekick names to their actual sprite file IDs
+        /// API IDs actually match the sprite folder names correctly!
+        /// </summary>
+        private int GetSpriteIdForSidekick(string sidekickName)
+        {
+            // The API IDs are correct - directories are B_01_Zorath, B_05_Lyanna, B_07_Elenya, etc.
+            // Just use the API ID directly
+            switch (sidekickName)
+            {
+                case "Zorath": return 1;
+                case "Lyanna": return 5; 
+                case "Elenya": return 7;
+                case "Liraen": return 9;
+                case "Aurelia": return 4;
+                default:
+                    Debug.LogWarning($"[SidekickManager] Unknown sidekick name: {sidekickName}, using ID 1 as fallback");
+                    return 1;
+            }
         }
     }
 }
