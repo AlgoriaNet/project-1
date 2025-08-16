@@ -33,7 +33,6 @@ namespace battle
             if (_animator != null)
             {
                 _animator.enabled = false;
-                Debug.Log($"[SidekickManager] Disabled Animator for manual sprite animation");
             }
         }
 
@@ -59,47 +58,24 @@ namespace battle
             _waitingTime = 0;
             _waitLaunchesIntervalTime = 0;
             
-            Debug.Log($"[SidekickManager] Initializing sidekick: {sidekick.Name} (ID: {sidekick.Id})");
-            
             // Don't use Animator - it's disabled. Animation will be handled manually like HeroManager
             isActive = true;
             
             // Start manual sprite animation like HeroManager does
-            Debug.Log($"[SidekickManager] Sidekick {sidekick.Name} initialized - starting manual sprite animation");
             StartCoroutine(AnimateSidekickBack());
             
             // Load sidekick sprite with validation
             // Map API IDs to actual sprite file IDs (API sends 5,7,9,4 but files are B_01_, B_02_, etc.)
             int spriteId = GetSpriteIdForSidekick(sidekick.Name);
             string spritePath = Path.GetPath(Path.SidekickBackSprite, sidekick.Name, spriteId.ToString("00"));
-            Debug.Log($"[SidekickManager] Loading sidekick sprite for {sidekick.Name} (API ID: {sidekick.Id}, Sprite ID: {spriteId}) from path: {spritePath}");
             
             // If sidekickBack is null, try to find the SpriteRenderer component
             if (sidekickBack == null)
             {
                 sidekickBack = GetComponentInChildren<SpriteRenderer>();
-                Debug.Log($"[SidekickManager] sidekickBack was null, found SpriteRenderer: {sidekickBack != null}");
-            }
-            
-            // DEBUG: Check all SpriteRenderer components
-            var allSpriteRenderers = GetComponentsInChildren<SpriteRenderer>();
-            Debug.Log($"[SidekickManager] Found {allSpriteRenderers.Length} SpriteRenderer components:");
-            for (int i = 0; i < allSpriteRenderers.Length; i++)
-            {
-                Debug.Log($"[SidekickManager] SpriteRenderer[{i}]: {allSpriteRenderers[i].gameObject.name}, current sprite: {allSpriteRenderers[i].sprite?.name ?? "null"}");
             }
             
             Sprite sidekickSprite = Resources.Load<Sprite>(spritePath);
-            Debug.Log($"[SidekickManager] sidekickBack null check: {sidekickBack == null}, sprite null check: {sidekickSprite == null}");
-            
-            // DEBUG: Test direct path that we know works
-            if (sidekickSprite == null)
-            {
-                string testPath = "Sidekicks/Back/B_05_Lyanna/B_05_1";
-                Sprite testSprite = Resources.Load<Sprite>(testPath);
-                Debug.Log($"[SidekickManager] DIRECT TEST: {testPath} -> {testSprite?.name ?? "NULL"}");
-            }
-            Debug.Log($"[SidekickManager] CRITICAL: Sprite loading result - Path: {spritePath}, Loaded sprite: {sidekickSprite?.name ?? "NULL - FILE NOT FOUND!"}");
             
             if (sidekickSprite != null)
             {
@@ -226,7 +202,6 @@ namespace battle
             sidekickBack.sortingLayerName = "Default";
             sidekickBack.sortingOrder = 200;
             
-            Debug.Log($"[SidekickManager] Set {_sidekick.Name} to Default sorting layer with order 200");
         }
         
         /// <summary>
@@ -265,7 +240,6 @@ namespace battle
             string[] spriteNames = { $"B_{spriteId:00}_1", $"B_{spriteId:00}_2" };
             int currentFrame = 0;
             
-            Debug.Log($"[SidekickManager] Starting animation for {_sidekick.Name} with sprites: {string.Join(", ", spriteNames)}");
             
             while (true)
             {
@@ -276,7 +250,6 @@ namespace battle
                 if (sprite != null && sidekickBack != null)
                 {
                     sidekickBack.sprite = sprite;
-                    Debug.Log($"[SidekickManager] Animated {_sidekick.Name} to frame {currentFrame}: {currentSpriteName}");
                 }
                 else
                 {
