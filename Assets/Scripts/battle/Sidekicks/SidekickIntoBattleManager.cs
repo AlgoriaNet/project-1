@@ -98,7 +98,7 @@ namespace battle
                 return;
             }
             
-            Sprite icon = sidekick.Skill.LoadIconSprite();
+            Sprite icon = LoadSidekickSkillIcon(sidekick);
             if (icon == null) 
             {
                 Debug.LogWarning($"[SidekickIntoBattleManager] Could not load skill icon for {sidekick.Name}");
@@ -111,6 +111,47 @@ namespace battle
             GameObject text = skillCd.transform.Find("skillCD_Text").gameObject;
             sidekickManager.skillCdMask = mask;
             sidekickManager.skillCdText = text;
+        }
+        
+        /// <summary>
+        /// Loads sidekick skill icon from the new path format: UILoading/CharacterImages/SkillIcon/S_XX_Name.png
+        /// Uses the sidekick's base_id and name directly from backend data
+        /// </summary>
+        private Sprite LoadSidekickSkillIcon(Sidekick sidekick)
+        {
+            // Use the same approach as SidekickManager for back sprites
+            int spriteId = GetSpriteIdForSidekick(sidekick.Name);
+            string iconPath = $"UILoading/CharacterImages/SkillIcon/S_{spriteId:00}_{sidekick.Name}";
+            
+            Sprite skillIcon = Resources.Load<Sprite>(iconPath);
+            if (skillIcon != null)
+            {
+                Debug.Log($"[SidekickIntoBattleManager] Successfully loaded skill icon: {iconPath}");
+            }
+            else
+            {
+                Debug.LogError($"[SidekickIntoBattleManager] Failed to load skill icon from path: {iconPath}");
+            }
+            
+            return skillIcon;
+        }
+        
+        /// <summary>
+        /// Maps sidekick names to their sprite IDs - same as SidekickManager
+        /// </summary>
+        private int GetSpriteIdForSidekick(string sidekickName)
+        {
+            switch (sidekickName)
+            {
+                case "Zorath": return 1;
+                case "Lyanna": return 5; 
+                case "Elenya": return 7;
+                case "Liraen": return 9;
+                case "Aurelia": return 4;
+                default:
+                    Debug.LogWarning($"[SidekickIntoBattleManager] Unknown sidekick name: {sidekickName}, using ID 1 as fallback");
+                    return 1;
+            }
         }
     }
 }
