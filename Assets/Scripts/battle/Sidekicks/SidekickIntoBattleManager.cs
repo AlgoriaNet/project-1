@@ -119,9 +119,24 @@ namespace battle
         /// </summary>
         private Sprite LoadSidekickSkillIcon(Sidekick sidekick)
         {
-            // Use the same approach as SidekickManager for back sprites
-            int spriteId = GetSpriteIdForSidekick(sidekick.Name);
-            string iconPath = $"UILoading/CharacterImages/SkillIcon/S_{spriteId:00}_{sidekick.Name}";
+            // Battle API sends BaseSidekick objects with 'id' field, not 'base_id'
+            string sidekickId = sidekick.id;
+            Debug.Log($"[SidekickIntoBattleManager] DEBUG - id: '{sidekickId}', Name: '{sidekick.Name}'");
+            
+            if (string.IsNullOrEmpty(sidekickId))
+            {
+                Debug.LogError($"[SidekickIntoBattleManager] BUG: Sidekick {sidekick.Name} has null/empty id!");
+                return null;
+            }
+            
+            int baseId;
+            if (!int.TryParse(sidekickId, out baseId))
+            {
+                Debug.LogError($"[SidekickIntoBattleManager] BUG: Cannot parse id '{sidekickId}' for {sidekick.Name}");
+                return null;
+            }
+            
+            string iconPath = $"UILoading/CharacterImages/SkillIcon/S_{baseId:00}_{sidekick.Name}";
             
             Sprite skillIcon = Resources.Load<Sprite>(iconPath);
             if (skillIcon != null)
@@ -134,24 +149,6 @@ namespace battle
             }
             
             return skillIcon;
-        }
-        
-        /// <summary>
-        /// Maps sidekick names to their sprite IDs - same as SidekickManager
-        /// </summary>
-        private int GetSpriteIdForSidekick(string sidekickName)
-        {
-            switch (sidekickName)
-            {
-                case "Zorath": return 1;
-                case "Lyanna": return 5; 
-                case "Elenya": return 7;
-                case "Liraen": return 9;
-                case "Aurelia": return 4;
-                default:
-                    Debug.LogWarning($"[SidekickIntoBattleManager] Unknown sidekick name: {sidekickName}, using ID 1 as fallback");
-                    return 1;
-            }
         }
     }
 }

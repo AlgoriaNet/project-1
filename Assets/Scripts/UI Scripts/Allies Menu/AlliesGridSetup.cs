@@ -272,6 +272,19 @@ public class AlliesGridSetup : MonoBehaviour
                 Debug.LogWarning($"❌ Image not found at path: {imagePath}");
             }
 
+            // Load skill icon for this ally
+            string skillIconPath = $"UILoading/CharacterImages/SkillIcon/S_{ally.index}_{ally.name}";
+            Sprite skillIconSprite = Resources.Load<Sprite>(skillIconPath);
+            
+            if (skillIconSprite != null)
+            {
+                skillIcon.sprite = skillIconSprite;
+            }
+            else
+            {
+                Debug.LogWarning($"❌ Skill icon not found at path: {skillIconPath}");
+            }
+
             // Assign Ally Name
             TextMeshProUGUI nameText = newAlly.transform.Find("NameText").GetComponent<TextMeshProUGUI>();
             nameText.text = ally.name;
