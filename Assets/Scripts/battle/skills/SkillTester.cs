@@ -183,12 +183,12 @@ namespace battle
 
             blazingRay1Skill = new Skill
             {
-                Name = "Skill_Blazing_Ray 1",
-                Icon = "skill_icon_fire",
-                Description = "Alternative blazing ray version",
+                Name = "Skill_Mega_Laser",
+                Icon = "skill_icon_light",
+                Description = "Massive laser beam attack",
                 Duration = 2f,
                 Cd = 8f,
-                DamageType = DamageType.Fire,
+                DamageType = DamageType.Light,
                 SkillTargetType = SkillTargetType.Latest,
                 DamageRatio = 2.2f,
                 Speed = 25,
@@ -475,7 +475,7 @@ namespace battle
             if (Input.GetKeyDown(bombBlastKey)) TestSkill("Bomb_Blast", bombBlastSkill);
             if (Input.GetKeyDown(fireTornadoKey)) TestSkill("SmallFireTornado", fireTornadoSkill);
             if (Input.GetKeyDown(blazingRayKey)) TestSkill("Blazing_Ray", blazingRaySkill);
-            if (Input.GetKeyDown(blazingRay1Key)) TestSkillDirect("skills/Skill_Blazing_Ray 1", blazingRay1Skill);
+            if (Input.GetKeyDown(blazingRay1Key)) TestSkillDirect("skills/Skill_Mega_Laser", blazingRay1Skill);
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
@@ -568,7 +568,7 @@ namespace battle
         {
             GUI.Label(new Rect(10, 10, 400, 20), "SKILL TESTING - Available Keys:");
             GUI.Label(new Rect(10, 30, 400, 20), $"1=Skill1, 4=Skill2, B=BlackHole, L=Lightning, F=Fireball");
-            GUI.Label(new Rect(10, 50, 400, 20), $"2=VolcanicStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, G=BlazingRay1, I=IceSpike");
+            GUI.Label(new Rect(10, 50, 400, 20), $"2=VolcanicStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, G=MegaLaser, I=IceSpike");
             GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, P=Thunder, N=SwiftTornado, S=SplitBullet");
             GUI.Label(new Rect(10, 90, 400, 20), $"M=StormBlade, U=Undead, W=WindFeather, D=IceSpear");
             GUI.Label(new Rect(10, 110, 400, 20), $"E=Inferno, Q=ThunderBolt, K=DarkTouch");

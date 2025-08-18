@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7082974963687910746}
   - component: {fileID: 250217287049559700}
   m_Layer: 0
-  m_Name: Skill_Blazing_Ray 1
+  m_Name: Skill_Mega_Laser
   m_TagString: Skill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
