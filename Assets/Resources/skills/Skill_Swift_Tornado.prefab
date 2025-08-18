@@ -46,7 +46,7 @@ GameObject:
   - component: {fileID: 651046745789695919}
   - component: {fileID: 3977952223429285947}
   m_Layer: 0
-  m_Name: Tornado
+  m_Name: Skill_Swift_Tornado
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

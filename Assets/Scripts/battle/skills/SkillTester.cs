@@ -234,7 +234,7 @@ namespace battle
 
             tornadoSkill = new Skill
             {
-                Name = "Tornado",
+                Name = "Swift_Tornado",
                 Icon = "skill_icon_wind",
                 Description = "Powerful wind tornado",
                 Duration = 4f,
@@ -549,7 +549,7 @@ namespace battle
             GUI.Label(new Rect(10, 10, 400, 20), "SKILL TESTING - Available Keys:");
             GUI.Label(new Rect(10, 30, 400, 20), $"1=Skill1, 4=Skill2, B=BlackHole, L=Lightning, F=Fireball");
             GUI.Label(new Rect(10, 50, 400, 20), $"2=VolcanicStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, I=IceSpike");
-            GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, P=Thunder, N=Tornado, S=SplitBullet");
+            GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, P=Thunder, N=SwiftTornado, S=SplitBullet");
             GUI.Label(new Rect(10, 90, 400, 20), $"M=StormBlade, U=Undead, W=WindFeather, D=IceSpear");
             GUI.Label(new Rect(10, 110, 400, 20), $"E=Inferno, Q=ThunderBolt, K=DarkTouch");
             GUI.Label(new Rect(10, 130, 400, 20), $"Monsters in scene: {FindObjectsOfType<MonsterManager>().Length}");
