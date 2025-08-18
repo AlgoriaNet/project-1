@@ -193,6 +193,7 @@ GameObject:
   - component: {fileID: 3601879539948318623}
   - component: {fileID: 2663906230484844977}
   - component: {fileID: 1460025684459727263}
+  - component: {fileID: 1460025684459727264}
   m_Layer: 0
   m_Name: Skill_leidian
   m_TagString: Untagged
@@ -237,7 +238,51 @@ MonoBehaviour:
   m_GameObject: {fileID: 4505732724163991564}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec90f506e3464789b8438538203964b0, type: 3}
+  m_Script: {fileID: 11500000, guid: 690cfe5215194574a7b4029887f80811, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skill: {fileID: 4175899431657896622}
+  Living: {fileID: 0}
+  Skill: 
+    Name: 
+    Icon: 
+    Description: 
+    ReleaseCount: 1
+    LaunchesCount: 1
+    ReleaseUltimateCount: 10
+    SplitCount: 3
+    MaxAngle: 60
+    Speed: 20
+    DestroyDelay: 0
+    LaunchesInterval: 0
+    Duration: 3
+    Cd: 9
+    Scope: 1
+    DamageRatio: 1.9
+    TwoStageDamageRatio: 0
+    ThreeStageDamageRatio: 0
+    ExtraDamageGain: 0
+    IsDynamic: 0
+    IsLivingPositionRelease: 1
+    IsImpenetrability: 1
+    IsTraceMonster: 0
+    IsCdRestByReleased: 0
+    DamageType: 2
+    SkillTargetType: 0
+    ActiveCharacter: []
+  targetIndex: 0
+  targetDirection: {x: 0, y: 0}
+--- !u!114 &1460025684459727264
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4505732724163991564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f15fd2ccc2f124461a236534fc31f0d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  releasingAudio: {fileID: 0}
+  releaseAudio: {fileID: 0}
+  hitAudio: {fileID: 0}
