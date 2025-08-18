@@ -27,7 +27,7 @@ namespace battle
         public KeyCode stormBladeKey = KeyCode.M;
         public KeyCode thunderBoltKey = KeyCode.Q;
         public KeyCode thunderPunishmentKey = KeyCode.P;
-        public KeyCode swiftTornadoKey = KeyCode.N;
+        public KeyCode tornadoKey = KeyCode.N;
         public KeyCode undeadSummoningKey = KeyCode.U;
         public KeyCode volcanicStormKey = KeyCode.Alpha2;
         public KeyCode windFeatherKey = KeyCode.W;
@@ -479,7 +479,7 @@ namespace battle
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
-            if (Input.GetKeyDown(swiftTornadoKey)) TestSkill("FireTornado", tornadoSkill);
+            if (Input.GetKeyDown(tornadoKey)) TestSkill("FireTornado", tornadoSkill);
             if (Input.GetKeyDown(splitBulletKey)) TestSkillDirect("skill_split_bullet", splitBulletSkill);
             if (Input.GetKeyDown(stormBladeKey)) TestSkill("Storm_Blade", stormBladeSkill);
             if (Input.GetKeyDown(undeadSummoningKey)) TestSkill("Undead_Summoning", undeadSummoningSkill);
