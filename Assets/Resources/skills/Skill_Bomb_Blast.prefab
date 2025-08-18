@@ -431,7 +431,7 @@ GameObject:
   - component: {fileID: 4819298240850193244}
   - component: {fileID: 6395035017942593083}
   m_Layer: 0
-  m_Name: Skill_Fireball3
+  m_Name: Skill_Bomb_Blast
   m_TagString: Skill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

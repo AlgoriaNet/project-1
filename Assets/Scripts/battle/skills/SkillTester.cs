@@ -453,7 +453,7 @@ namespace battle
             if (Input.GetKeyDown(lightningKey)) TestSkill("Chain_Lightning", chainLightningSkill);
             if (Input.GetKeyDown(fireballKey)) TestSkill("Fireball", fireballSkill);
             if (Input.GetKeyDown(fireball2Key)) TestSkillDirect("skills/Skill2", fireball2Skill);
-            if (Input.GetKeyDown(bombBlastKey)) TestSkill("Fireball3", bombBlastSkill);
+            if (Input.GetKeyDown(bombBlastKey)) TestSkill("Bomb_Blast", bombBlastSkill);
             if (Input.GetKeyDown(fireTornadoKey)) TestSkill("SmallFireTornado", fireTornadoSkill);
             if (Input.GetKeyDown(blazingRayKey)) TestSkill("Blazing_Ray", blazingRaySkill);
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
