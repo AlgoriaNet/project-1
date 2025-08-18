@@ -10,7 +10,7 @@ namespace battle
         [Header("Test Settings")]
         public KeyCode blackHoleKey = KeyCode.B;
         public KeyCode blazingRayKey = KeyCode.R;
-        public KeyCode blazingRay1Key = KeyCode.G;
+        public KeyCode megaLaserKey = KeyCode.G;
         public KeyCode bombBlastKey = KeyCode.Alpha3;
         public KeyCode darkTouchKey = KeyCode.K;
         public KeyCode fireballKey = KeyCode.F;
@@ -27,7 +27,7 @@ namespace battle
         public KeyCode stormBladeKey = KeyCode.M;
         public KeyCode thunderBoltKey = KeyCode.Q;
         public KeyCode thunderPunishmentKey = KeyCode.P;
-        public KeyCode tornadoKey = KeyCode.N;
+        public KeyCode swiftTornadoKey = KeyCode.N;
         public KeyCode undeadSummoningKey = KeyCode.U;
         public KeyCode volcanicStormKey = KeyCode.Alpha2;
         public KeyCode windFeatherKey = KeyCode.W;
@@ -40,7 +40,7 @@ namespace battle
         private Skill bombBlastSkill;
         private Skill fireTornadoSkill;
         private Skill blazingRaySkill;
-        private Skill blazingRay1Skill;
+        private Skill megalaserSkill;
         private Skill iceSpikeSkill;
         private Skill iceCrackBulletSkill;
         private Skill thunderPunishmentSkill;
@@ -181,7 +181,7 @@ namespace battle
                 IsImpenetrability = true
             };
 
-            blazingRay1Skill = new Skill
+            megalaserSkill = new Skill
             {
                 Name = "Skill_Mega_Laser",
                 Icon = "skill_icon_light",
@@ -475,11 +475,11 @@ namespace battle
             if (Input.GetKeyDown(bombBlastKey)) TestSkill("Bomb_Blast", bombBlastSkill);
             if (Input.GetKeyDown(fireTornadoKey)) TestSkill("SmallFireTornado", fireTornadoSkill);
             if (Input.GetKeyDown(blazingRayKey)) TestSkill("Blazing_Ray", blazingRaySkill);
-            if (Input.GetKeyDown(blazingRay1Key)) TestSkillDirect("skills/Skill_Mega_Laser", blazingRay1Skill);
+            if (Input.GetKeyDown(megaLaserKey)) TestSkillDirect("skills/Skill_Mega_Laser", megalaserSkill);
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
-            if (Input.GetKeyDown(tornadoKey)) TestSkill("FireTornado", tornadoSkill);
+            if (Input.GetKeyDown(swiftTornadoKey)) TestSkill("FireTornado", tornadoSkill);
             if (Input.GetKeyDown(splitBulletKey)) TestSkillDirect("skill_split_bullet", splitBulletSkill);
             if (Input.GetKeyDown(stormBladeKey)) TestSkill("Storm_Blade", stormBladeSkill);
             if (Input.GetKeyDown(undeadSummoningKey)) TestSkill("Undead_Summoning", undeadSummoningSkill);
