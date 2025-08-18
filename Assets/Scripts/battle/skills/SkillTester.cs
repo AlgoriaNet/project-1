@@ -9,27 +9,28 @@ namespace battle
     {
         [Header("Test Settings")]
         public KeyCode blackHoleKey = KeyCode.B;
-        public KeyCode lightningKey = KeyCode.L;
-        public KeyCode fireballKey = KeyCode.F;
-        public KeyCode volcanicStormKey = KeyCode.Alpha2;
-        public KeyCode bombBlastKey = KeyCode.Alpha3;
-        public KeyCode fireTornadoKey = KeyCode.T;
         public KeyCode blazingRayKey = KeyCode.R;
-        public KeyCode iceSpike = KeyCode.I;
-        public KeyCode iceCrackBulletKey = KeyCode.C;
-        public KeyCode thunderPunishmentKey = KeyCode.P;
-        public KeyCode tornadoKey = KeyCode.N;
-        public KeyCode splitBulletKey = KeyCode.S;
-        public KeyCode stormBladeKey = KeyCode.M;
-        public KeyCode undeadSummoningKey = KeyCode.U;
-        public KeyCode windFeatherKey = KeyCode.W;
-        public KeyCode iceSpearKey = KeyCode.D;
-        public KeyCode infemoKey = KeyCode.E;
-        public KeyCode thunderBoltKey = KeyCode.Q;
+        public KeyCode blazingRay1Key = KeyCode.G;
+        public KeyCode bombBlastKey = KeyCode.Alpha3;
         public KeyCode darkTouchKey = KeyCode.K;
+        public KeyCode fireballKey = KeyCode.F;
+        public KeyCode fireTornadoKey = KeyCode.T;
+        public KeyCode iceCrackBulletKey = KeyCode.C;
+        public KeyCode iceSpearKey = KeyCode.D;
+        public KeyCode iceSpike = KeyCode.I;
+        public KeyCode infemoKey = KeyCode.E;
+        public KeyCode ChainLightningKey = KeyCode.L;
+        public KeyCode oKey = KeyCode.O;
         public KeyCode skill1Key = KeyCode.Alpha1;
         public KeyCode skill2Key = KeyCode.Alpha4;
-        public KeyCode oKey = KeyCode.O;
+        public KeyCode splitBulletKey = KeyCode.S;
+        public KeyCode stormBladeKey = KeyCode.M;
+        public KeyCode thunderBoltKey = KeyCode.Q;
+        public KeyCode thunderPunishmentKey = KeyCode.P;
+        public KeyCode tornadoKey = KeyCode.N;
+        public KeyCode undeadSummoningKey = KeyCode.U;
+        public KeyCode volcanicStormKey = KeyCode.Alpha2;
+        public KeyCode windFeatherKey = KeyCode.W;
         public Transform spawnPoint;
         
         private Skill blackHoleSkill;
@@ -39,6 +40,7 @@ namespace battle
         private Skill bombBlastSkill;
         private Skill fireTornadoSkill;
         private Skill blazingRaySkill;
+        private Skill blazingRay1Skill;
         private Skill iceSpikeSkill;
         private Skill iceCrackBulletSkill;
         private Skill thunderPunishmentSkill;
@@ -167,6 +169,23 @@ namespace battle
                 Name = "Skill_Blazing_Ray",
                 Icon = "skill_icon_fire",
                 Description = "Concentrated beam of fire",
+                Duration = 2f,
+                Cd = 8f,
+                DamageType = DamageType.Fire,
+                SkillTargetType = SkillTargetType.Latest,
+                DamageRatio = 2.2f,
+                Speed = 25,
+                ReleaseCount = 1,
+                LaunchesCount = 1,
+                IsDynamic = false,
+                IsImpenetrability = true
+            };
+
+            blazingRay1Skill = new Skill
+            {
+                Name = "Skill_Blazing_Ray 1",
+                Icon = "skill_icon_fire",
+                Description = "Alternative blazing ray version",
                 Duration = 2f,
                 Cd = 8f,
                 DamageType = DamageType.Fire,
@@ -450,12 +469,13 @@ namespace battle
         void Update()
         {
             if (Input.GetKeyDown(blackHoleKey)) TestSkill("Black_Hole", blackHoleSkill);
-            if (Input.GetKeyDown(lightningKey)) TestSkill("Chain_Lightning", chainLightningSkill);
+            if (Input.GetKeyDown(ChainLightningKey)) TestSkill("Chain_Lightning", chainLightningSkill);
             if (Input.GetKeyDown(fireballKey)) TestSkill("Fireball", fireballSkill);
             if (Input.GetKeyDown(volcanicStormKey)) TestSkillDirect("skills/Skill_Volcanic_Storm", volcanicStormSkill);
             if (Input.GetKeyDown(bombBlastKey)) TestSkill("Bomb_Blast", bombBlastSkill);
             if (Input.GetKeyDown(fireTornadoKey)) TestSkill("SmallFireTornado", fireTornadoSkill);
             if (Input.GetKeyDown(blazingRayKey)) TestSkill("Blazing_Ray", blazingRaySkill);
+            if (Input.GetKeyDown(blazingRay1Key)) TestSkillDirect("skills/Skill_Blazing_Ray 1", blazingRay1Skill);
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
@@ -548,7 +568,7 @@ namespace battle
         {
             GUI.Label(new Rect(10, 10, 400, 20), "SKILL TESTING - Available Keys:");
             GUI.Label(new Rect(10, 30, 400, 20), $"1=Skill1, 4=Skill2, B=BlackHole, L=Lightning, F=Fireball");
-            GUI.Label(new Rect(10, 50, 400, 20), $"2=VolcanicStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, I=IceSpike");
+            GUI.Label(new Rect(10, 50, 400, 20), $"2=VolcanicStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, G=BlazingRay1, I=IceSpike");
             GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, P=Thunder, N=SwiftTornado, S=SplitBullet");
             GUI.Label(new Rect(10, 90, 400, 20), $"M=StormBlade, U=Undead, W=WindFeather, D=IceSpear");
             GUI.Label(new Rect(10, 110, 400, 20), $"E=Inferno, Q=ThunderBolt, K=DarkTouch");
