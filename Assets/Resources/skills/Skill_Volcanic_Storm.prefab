@@ -169,7 +169,7 @@ GameObject:
   - component: {fileID: 4821665686597814223}
   - component: {fileID: 4821665686597814224}
   m_Layer: 0
-  m_Name: Skill2
+  m_Name: Skill_Volcanic_Storm
   m_TagString: Skill
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -280,7 +280,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &5968813599328043723
 Transform:
   m_ObjectHideFlags: 0

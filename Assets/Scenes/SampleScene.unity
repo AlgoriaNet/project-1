@@ -47398,12 +47398,11 @@ MonoBehaviour:
   lightningKey: 108
   fireballKey: 102
   fireball2Key: 50
-  fireball3Key: 51
+  bombBlastKey: 51
   fireTornadoKey: 116
   blazingRayKey: 114
   iceSpike: 105
   iceCrackBulletKey: 99
-  laserKey: 122
   thunderPunishmentKey: 112
   tornadoKey: 110
   splitBulletKey: 115
@@ -47412,7 +47411,7 @@ MonoBehaviour:
   windFeatherKey: 119
   iceSpearKey: 100
   infemoKey: 101
-  thunderBolt3Key: 113
+  thunderBoltKey: 113
   darkTouchKey: 107
   skill1Key: 49
   skill2Key: 52
