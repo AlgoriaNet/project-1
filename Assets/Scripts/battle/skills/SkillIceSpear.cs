@@ -1,47 +1,88 @@
 using battle;
 using UnityEngine;
 using utils;
+using System.Collections;
+using System.Collections.Generic;
+using model;
 
 namespace battle
 {
     public class SkillIceSpear : BaseSkillController
     {
-        private Rigidbody2D _spearRigidbody;
-        private bool hasHit = false;
+        private List<MonsterManager> affectedEnemies = new List<MonsterManager>();
+        private float damageRange = 2f; // Range for damage detection
+        private bool hasDealtDamage = false;
         
-        public override void Start()
+        protected override void Init()
         {
-            base.Start();
-            transform.rotation = Utils.DirectionQuaternion(TargetDirection, Vector2.left);
-            _spearRigidbody = GetComponent<Rigidbody2D>();
-            if (_spearRigidbody)
-            {
-                _spearRigidbody.velocity = TargetDirection * Skill.Speed;
-            }
+            // Start damage detection coroutine
+            StartCoroutine(DamageDetectionCoroutine());
             
-            // Ensure skill is destroyed after duration even if no collision
+            // Destroy after duration
             Destroy(gameObject, Skill.Duration);
         }
         
-        protected override void OnTriggerEnter2D(Collider2D other)
+        private IEnumerator DamageDetectionCoroutine()
         {
-            if (other.gameObject.CompareTag("Monster") && !hasHit)
+            float elapsed = 0f;
+            
+            while (elapsed < Skill.Duration && !hasDealtDamage)
             {
-                hasHit = true;
-                Attack(other.GetComponent<MonsterManager>());
-                // Stop movement after hitting
-                if (_spearRigidbody)
+                // Check for monsters in range
+                UpdateAffectedEnemies();
+                
+                // Apply damage if any monsters are found
+                if (affectedEnemies.Count > 0)
                 {
-                    _spearRigidbody.velocity = Vector2.zero;
+                    ApplyIceSpearDamage();
+                    hasDealtDamage = true;
+                    break; // Ice spear hits once
                 }
-                // Destroy after hit with proper delay
-                Destroy(gameObject, Skill.DestroyDelay);
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+        }
+        
+        private void UpdateAffectedEnemies()
+        {
+            affectedEnemies.Clear();
+            var allMonsters = FindObjectsOfType<MonsterManager>();
+            
+            foreach (var monster in allMonsters)
+            {
+                if (monster != null && !monster.isDead)
+                {
+                    float distance = Vector3.Distance(monster.transform.position, transform.position);
+                    if (distance <= damageRange)
+                    {
+                        affectedEnemies.Add(monster);
+                    }
+                }
+            }
+        }
+        
+        private void ApplyIceSpearDamage()
+        {
+            foreach (var enemy in affectedEnemies)
+            {
+                if (enemy != null && !enemy.isDead)
+                {
+                    // Apply full damage (ice spear is a projectile that hits hard)
+                    var result = Living.Attack(Skill.DamageType, enemy.Monster, Skill.DamageRatio);
+                    enemy.BeHarmed(result);
+                    enemy.CheckDead();
+                    
+                    // Apply any buffs from skill
+                    var buffs = Skill.ActiveCharacter.FindAll(character => character.Contains("ADD_BUFF_"));
+                    buffs.ForEach(buff => AppendBuff(enemy.Monster, buff));
+                }
             }
         }
         
         protected override void WhenAttackAfter()
         {
-            // Ice spear effect after attack (could add freeze effect here)
+            // Ice spear effect after attack 
         }
     }
 }
