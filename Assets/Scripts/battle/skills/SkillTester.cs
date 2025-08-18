@@ -12,12 +12,11 @@ namespace battle
         public KeyCode lightningKey = KeyCode.L;
         public KeyCode fireballKey = KeyCode.F;
         public KeyCode fireball2Key = KeyCode.Alpha2;
-        public KeyCode fireball3Key = KeyCode.Alpha3;
+        public KeyCode bombBlastKey = KeyCode.Alpha3;
         public KeyCode fireTornadoKey = KeyCode.T;
         public KeyCode blazingRayKey = KeyCode.R;
         public KeyCode iceSpike = KeyCode.I;
         public KeyCode iceCrackBulletKey = KeyCode.C;
-        public KeyCode laserKey = KeyCode.Z;
         public KeyCode thunderPunishmentKey = KeyCode.P;
         public KeyCode tornadoKey = KeyCode.N;
         public KeyCode splitBulletKey = KeyCode.S;
@@ -26,7 +25,7 @@ namespace battle
         public KeyCode windFeatherKey = KeyCode.W;
         public KeyCode iceSpearKey = KeyCode.D;
         public KeyCode infemoKey = KeyCode.E;
-        public KeyCode thunderBolt3Key = KeyCode.Q;
+        public KeyCode thunderBoltKey = KeyCode.Q;
         public KeyCode darkTouchKey = KeyCode.K;
         public KeyCode skill1Key = KeyCode.Alpha1;
         public KeyCode skill2Key = KeyCode.Alpha4;
@@ -37,12 +36,11 @@ namespace battle
         private Skill chainLightningSkill;
         private Skill fireballSkill;
         private Skill fireball2Skill;
-        private Skill fireball3Skill;
+        private Skill bombBlastSkill;
         private Skill fireTornadoSkill;
         private Skill blazingRaySkill;
         private Skill iceSpikeSkill;
         private Skill iceCrackBulletSkill;
-        private Skill laserSkill;
         private Skill thunderPunishmentSkill;
         private Skill tornadoSkill;
         private Skill splitBulletSkill;
@@ -51,7 +49,7 @@ namespace battle
         private Skill windFeatherSkill;
         private Skill iceSpearSkill;
         private Skill infemoSkill;
-        private Skill thunderBolt3Skill;
+        private Skill thunderBoltSkill;
         private Skill darkTouchSkill;
         private Skill skill1;
         private Skill skill2;
@@ -130,16 +128,16 @@ namespace battle
                 IsImpenetrability = true
             };
 
-            fireball3Skill = new Skill
+            bombBlastSkill = new Skill
             {
-                Name = "Skill_Fireball3",
-                Icon = "skill_icon_fire",
-                Description = "Advanced fireball projectile",
+                Name = "Skill_Bomb_Blast",
+                Icon = "skill_icon_physical",
+                Description = "Explosive bomb blast with shockwave damage",
                 Duration = 3f,
                 Cd = 7f,
                 DamageType = DamageType.Fire,
                 SkillTargetType = SkillTargetType.Latest,
-                DamageRatio = 1.8f,
+                DamageRatio = 2.0f,
                 Speed = 20,
                 ReleaseCount = 1,
                 LaunchesCount = 1,
@@ -215,22 +213,6 @@ namespace battle
                 IsImpenetrability = true
             };
 
-            laserSkill = new Skill
-            {
-                Name = "Skill_Thunder_Bolt",
-                Icon = "skill_icon_lightning",
-                Description = "Lightning beam",
-                Duration = 1.0f,
-                Cd = 7f,
-                DamageType = DamageType.Light,
-                SkillTargetType = SkillTargetType.Latest,
-                DamageRatio = 2.5f,
-                Speed = 30,
-                ReleaseCount = 1,
-                LaunchesCount = 1,
-                IsDynamic = false,
-                IsImpenetrability = true
-            };
 
             thunderPunishmentSkill = new Skill
             {
@@ -369,11 +351,11 @@ namespace battle
                 IsImpenetrability = false
             };
 
-            thunderBolt3Skill = new Skill
+            thunderBoltSkill = new Skill
             {
-                Name = "Skill_Leridan",
+                Name = "Skill_Thunder_Bolt",
                 Icon = "skill_icon_light",
-                Description = "Holy light attack",
+                Description = "Thunder bolt lightning attack",
                 Duration = 3f,
                 Cd = 9f,
                 DamageType = DamageType.Light,
@@ -470,13 +452,12 @@ namespace battle
             if (Input.GetKeyDown(blackHoleKey)) TestSkill("Black_Hole", blackHoleSkill);
             if (Input.GetKeyDown(lightningKey)) TestSkill("Chain_Lightning", chainLightningSkill);
             if (Input.GetKeyDown(fireballKey)) TestSkill("Fireball", fireballSkill);
-            if (Input.GetKeyDown(fireball2Key)) TestSkill("2", fireball2Skill);
-            if (Input.GetKeyDown(fireball3Key)) TestSkill("Fireball3", fireball3Skill);
+            if (Input.GetKeyDown(fireball2Key)) TestSkillDirect("skills/Skill2", fireball2Skill);
+            if (Input.GetKeyDown(bombBlastKey)) TestSkill("Fireball3", bombBlastSkill);
             if (Input.GetKeyDown(fireTornadoKey)) TestSkill("SmallFireTornado", fireTornadoSkill);
             if (Input.GetKeyDown(blazingRayKey)) TestSkill("Blazing_Ray", blazingRaySkill);
             if (Input.GetKeyDown(iceSpike)) TestSkill("Ice_Spike", iceSpikeSkill);
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
-            if (Input.GetKeyDown(laserKey)) TestSkill("Thunder_Bolt", laserSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
             if (Input.GetKeyDown(tornadoKey)) TestSkill("FireTornado", tornadoSkill);
             if (Input.GetKeyDown(splitBulletKey)) TestSkillDirect("skill_split_bullet", splitBulletSkill);
@@ -485,7 +466,7 @@ namespace battle
             if (Input.GetKeyDown(windFeatherKey)) TestSkill("Wind_Feather", windFeatherSkill);
             if (Input.GetKeyDown(iceSpearKey)) TestSkill("Ice_Spear", iceSpearSkill);
             if (Input.GetKeyDown(infemoKey)) TestSkill("Inferno", infemoSkill);
-            if (Input.GetKeyDown(thunderBolt3Key)) TestSkill("Thunder_Bolt", thunderBolt3Skill);
+            if (Input.GetKeyDown(thunderBoltKey)) TestSkill("Thunder_Bolt", thunderBoltSkill); 
             if (Input.GetKeyDown(darkTouchKey)) TestSkill("Dark_Touch", darkTouchSkill);
             if (Input.GetKeyDown(skill1Key)) TestSkill("1", skill1);
             if (Input.GetKeyDown(skill2Key)) TestSkill("2", skill2);
@@ -567,8 +548,8 @@ namespace battle
         {
             GUI.Label(new Rect(10, 10, 400, 20), "SKILL TESTING - Available Keys:");
             GUI.Label(new Rect(10, 30, 400, 20), $"1=Skill1, 4=Skill2, B=BlackHole, L=Lightning, F=Fireball");
-            GUI.Label(new Rect(10, 50, 400, 20), $"2=Lightning, 3=Fireball3, T=FireTornado, R=BlazingRay, I=IceSpike");
-            GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, Z=Lightning, P=Thunder, N=Tornado, S=SplitBullet");
+            GUI.Label(new Rect(10, 50, 400, 20), $"2=LightningStorm, 3=BombBlast, T=FireTornado, R=BlazingRay, I=IceSpike");
+            GUI.Label(new Rect(10, 70, 400, 20), $"C=IceCrack, P=Thunder, N=Tornado, S=SplitBullet");
             GUI.Label(new Rect(10, 90, 400, 20), $"M=StormBlade, U=Undead, W=WindFeather, D=IceSpear");
             GUI.Label(new Rect(10, 110, 400, 20), $"E=Inferno, Q=ThunderBolt, K=DarkTouch");
             GUI.Label(new Rect(10, 130, 400, 20), $"Monsters in scene: {FindObjectsOfType<MonsterManager>().Length}");

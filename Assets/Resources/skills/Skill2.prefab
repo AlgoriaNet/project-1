@@ -167,6 +167,7 @@ GameObject:
   - component: {fileID: 5181124774907133500}
   - component: {fileID: 823597710342326723}
   - component: {fileID: 4821665686597814223}
+  - component: {fileID: 4821665686597814224}
   m_Layer: 0
   m_Name: Skill2
   m_TagString: Skill
@@ -212,10 +213,54 @@ MonoBehaviour:
   m_GameObject: {fileID: 4549667841515468306}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec90f506e3464789b8438538203964b0, type: 3}
+  m_Script: {fileID: 11500000, guid: 690cfe5215194574a7b4029887f80811, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skill: {fileID: 780438055197058223}
+  Living: {fileID: 0}
+  Skill: 
+    Name: 
+    Icon: 
+    Description: 
+    ReleaseCount: 1
+    LaunchesCount: 1
+    ReleaseUltimateCount: 10
+    SplitCount: 3
+    MaxAngle: 60
+    Speed: 25
+    DestroyDelay: 0
+    LaunchesInterval: 0
+    Duration: 1.5
+    Cd: 6
+    Scope: 1
+    DamageRatio: 1.5
+    TwoStageDamageRatio: 0
+    ThreeStageDamageRatio: 0
+    ExtraDamageGain: 0
+    IsDynamic: 0
+    IsLivingPositionRelease: 1
+    IsImpenetrability: 1
+    IsTraceMonster: 0
+    IsCdRestByReleased: 0
+    DamageType: 2
+    SkillTargetType: 0
+    ActiveCharacter: []
+  targetIndex: 0
+  targetDirection: {x: 0, y: 0}
+--- !u!114 &4821665686597814224
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4549667841515468306}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b26fdbeebad524d4ba2bb1f9606fafd8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  releasingAudio: {fileID: 0}
+  releaseAudio: {fileID: 0}
+  hitAudio: {fileID: 0}
 --- !u!1 &9079825687612990576
 GameObject:
   m_ObjectHideFlags: 0

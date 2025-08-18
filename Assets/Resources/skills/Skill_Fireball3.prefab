@@ -564,7 +564,7 @@ MonoBehaviour:
   - {fileID: 300543247034349956}
   - {fileID: 8466553620436627238}
   fireball: {fileID: 300543247034349954}
-  blast: {fileID: 0}
+  blast: {fileID: 4330058809485910741}
 --- !u!1001 &4819859423033695286
 PrefabInstance:
   m_ObjectHideFlags: 0
