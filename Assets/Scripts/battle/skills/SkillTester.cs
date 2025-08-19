@@ -310,7 +310,7 @@ namespace battle
                 DamageType = DamageType.Darkly,
                 SkillTargetType = SkillTargetType.LatestMultiple,
                 DamageRatio = 1.0f,
-                Speed = 0,
+                Speed = 8,
                 ReleaseCount = 3,
                 LaunchesCount = 1,
                 IsDynamic = true,
@@ -330,7 +330,7 @@ namespace battle
                 Speed = 15,
                 ReleaseCount = 5,
                 LaunchesCount = 1,
-                IsDynamic = false,
+                IsDynamic = true,
                 IsImpenetrability = true
             };
 
