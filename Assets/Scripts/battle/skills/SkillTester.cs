@@ -299,7 +299,7 @@ namespace battle
                 ReleaseCount = 1,
                 LaunchesCount = 1,
                 IsDynamic = false,
-                IsImpenetrability = true
+                IsImpenetrability = false
             };
 
             undeadSummoningSkill = new Skill
