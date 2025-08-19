@@ -20,7 +20,6 @@ namespace battle
         public KeyCode iceSpike = KeyCode.I;
         public KeyCode infemoKey = KeyCode.E;
         public KeyCode ChainLightningKey = KeyCode.L;
-        public KeyCode oKey = KeyCode.O;
         public KeyCode skill1Key = KeyCode.Alpha1;
         public KeyCode skill2Key = KeyCode.Alpha4;
         public KeyCode splitBulletKey = KeyCode.S;
@@ -55,7 +54,6 @@ namespace battle
         private Skill darkTouchSkill;
         private Skill skill1;
         private Skill skill2;
-        private Skill oSkill;
         private Living testLiving;
         
         void Start()
@@ -438,22 +436,6 @@ namespace battle
                 IsImpenetrability = true
             };
 
-            oSkill = new Skill
-            {
-                Name = "Skill_",
-                Icon = "skill_icon_basic",
-                Description = "Empty skill test",
-                Duration = 2f,
-                Cd = 3f,
-                DamageType = DamageType.Light,
-                SkillTargetType = SkillTargetType.Latest,
-                DamageRatio = 1.0f,
-                Speed = 15,
-                ReleaseCount = 1,
-                LaunchesCount = 1,
-                IsDynamic = false,
-                IsImpenetrability = true
-            };
             
             // Create test living entity
             testLiving = new Sidekick
@@ -490,7 +472,6 @@ namespace battle
             if (Input.GetKeyDown(darkTouchKey)) TestSkill("Dark_Touch", darkTouchSkill);
             if (Input.GetKeyDown(skill1Key)) TestSkill("1", skill1);
             if (Input.GetKeyDown(skill2Key)) TestSkill("2", skill2);
-            if (Input.GetKeyDown(oKey)) TestSkill("", oSkill);
         }
         
         private void TestSkill(string skillPrefabName, Skill skill)
