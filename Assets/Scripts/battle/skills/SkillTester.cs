@@ -268,18 +268,18 @@ namespace battle
 
             splitBulletSkill = new Skill
             {
-                Name = "skill_split_bullet",
+                Name = "Skill_Split_Bullet",
                 Icon = "skill_icon_physical",
                 Description = "Bullet that splits into multiple projectiles",
                 Duration = 3f,
                 Cd = 6f,
                 DamageType = DamageType.Physics,
-                SkillTargetType = SkillTargetType.LatestMultiple,
+                SkillTargetType = SkillTargetType.Latest,
                 DamageRatio = 1.1f,
                 Speed = 18,
                 ReleaseCount = 3,
                 LaunchesCount = 1,
-                IsDynamic = false,
+                IsDynamic = true,
                 IsImpenetrability = true
             };
 
@@ -319,13 +319,13 @@ namespace battle
 
             windFeatherSkill = new Skill
             {
-                Name = "Skill_Wind_Feather",
+                Name = "Wind_Feather",
                 Icon = "skill_icon_wind",
                 Description = "Light wind feather projectiles",
                 Duration = 3f,
                 Cd = 5f,
                 DamageType = DamageType.Wind,
-                SkillTargetType = SkillTargetType.LatestMultiple,
+                SkillTargetType = SkillTargetType.Latest,
                 DamageRatio = 1.0f,
                 Speed = 15,
                 ReleaseCount = 5,
@@ -462,7 +462,7 @@ namespace battle
             if (Input.GetKeyDown(iceCrackBulletKey)) TestSkill("IceCrackBullet", iceCrackBulletSkill);
             if (Input.GetKeyDown(thunderPunishmentKey)) TestSkill("Thunder_Punishment", thunderPunishmentSkill);
             if (Input.GetKeyDown(tornadoKey)) TestSkill("FireTornado", tornadoSkill);
-            if (Input.GetKeyDown(splitBulletKey)) TestSkillDirect("skill_split_bullet", splitBulletSkill);
+            if (Input.GetKeyDown(splitBulletKey)) TestSkillDirect("skills/skill_split_bullet", splitBulletSkill);
             if (Input.GetKeyDown(stormBladeKey)) TestSkill("Storm_Blade", stormBladeSkill);
             if (Input.GetKeyDown(undeadSummoningKey)) TestSkill("Undead_Summoning", undeadSummoningSkill);
             if (Input.GetKeyDown(windFeatherKey)) TestSkill("Wind_Feather", windFeatherSkill);
@@ -489,7 +489,30 @@ namespace battle
 
             if (skillObject != null)
             {
-                Debug.Log($"Testing skill: {skill.Name} - {skillPrefabName}");
+                Debug.Log($"✅ SKILL CREATED: {skill.Name} - {skillPrefabName}");
+                Debug.Log($"📍 Position: {skillObject.transform.position}");
+                
+                // Check components
+                var spriteRenderer = skillObject.GetComponent<SpriteRenderer>();
+                var animator = skillObject.GetComponent<Animator>();
+                var audioSource = skillObject.GetComponent<AudioSource>();
+                
+                Debug.Log($"🎨 SpriteRenderer: {(spriteRenderer ? "EXISTS" : "MISSING")}");
+                Debug.Log($"🎬 Animator: {(animator ? "EXISTS" : "MISSING")}");
+                Debug.Log($"🔊 AudioSource: {(audioSource ? "EXISTS" : "MISSING")}");
+                
+                if (spriteRenderer)
+                {
+                    Debug.Log($"👁️ Sprite: {(spriteRenderer.sprite ? spriteRenderer.sprite.name : "NULL")}");
+                    Debug.Log($"👁️ Visible: {spriteRenderer.isVisible}");
+                    Debug.Log($"👁️ Color: {spriteRenderer.color}");
+                }
+                
+                if (animator)
+                {
+                    Debug.Log($"🎭 Controller: {(animator.runtimeAnimatorController ? animator.runtimeAnimatorController.name : "NULL")}");
+                    Debug.Log($"🎭 Layer Count: {animator.layerCount}");
+                }
                 
                 // Auto-destroy infinite loop skills after a reasonable time
                 if (skillPrefabName == "Thunder_Bolt" || skillPrefabName == "Ice_Spear" || skillPrefabName == "2")

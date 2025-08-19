@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5335010149859703458}
   - component: {fileID: 197005795822102875}
   m_Layer: 0
-  m_Name: skill_split_bullet
+  m_Name: Skill_Split_Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
